@@ -3,12 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using TMPro;
 
 public class TextEvaluation : MonoBehaviour
 {
-    private void Start()
+    [SerializeField] private TMP_InputField inputText;
+
+    Manager manager;
+
+    private void Awake()
     {
-        EvaluateText();
+        manager = GameObject.FindGameObjectWithTag("GameController").GetComponent<Manager>();
     }
 
     public void EvaluateText()
@@ -24,12 +29,12 @@ public class TextEvaluation : MonoBehaviour
 
         var data = new TextData()
         {
-            Text = "I would like to have a mountain with snow"
+            Text = inputText.text
         };
 
         var prediction = predictionEngine.Predict(data);
 
-        print("\nWords without stop words: " + string.Join(",", prediction.WordsWithoutStopWords));
+        manager.infoText.text = "Generating a " + string.Join(" ", prediction.WordsWithoutStopWords);
     }
 }
 
