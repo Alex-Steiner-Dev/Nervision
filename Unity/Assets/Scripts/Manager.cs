@@ -6,4 +6,5 @@ using TMPro;
 public class Manager : MonoBehaviour
 {
     public TextMeshProUGUI infoText;
+    public GenerationManager generationManager;
 }
