@@ -60,6 +60,7 @@
     <Compile Include="Assets/Scripts/ObjectRotation.cs" />
     <Compile Include="Assets/Scripts/TextEvaluation.cs" />
     <Compile Include="Assets/Scripts/Manager.cs" />
+    <Compile Include="Assets/Scripts/ImageGeneration.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets/TextMesh Pro/Shaders/TMPro.cginc" />

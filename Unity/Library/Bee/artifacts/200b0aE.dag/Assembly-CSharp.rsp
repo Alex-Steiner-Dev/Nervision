@@ -374,6 +374,7 @@
 -r:"Library/Bee/artifacts/200b0aE.dag/UnityEditor.UI.ref.dll"
 -r:"Library/Bee/artifacts/200b0aE.dag/UnityEngine.UI.ref.dll"
 "Assets/Scripts/GenerationManager.cs"
+"Assets/Scripts/ImageGeneration.cs"
 "Assets/Scripts/Manager.cs"
 "Assets/Scripts/ObjectRotation.cs"
 "Assets/Scripts/TextEvaluation.cs"
