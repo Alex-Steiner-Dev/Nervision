@@ -1,11 +1,18 @@
 from flask import Flask
+from flask import request
+
 from getImage import *
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route('/', methods = ['POST'])
 def index():
-    return getImage("desert with cacti")
+    if request.method == 'POST':
+        x = request.form.get('prompt', '')
+        print(x)
+        return getImage(x)
+    else:
+        return "ciao"
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=1000)
