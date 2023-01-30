@@ -56,10 +56,10 @@
     <Analyzer Include="/Users/alex.steiner/Desktop/Computer Science/Programs/Visual Studio.app/Contents/MonoBundle/Addins/MonoDevelop.Unity/Analyzers/Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets/Scripts/TextEvaluation.cs" />
-    <Compile Include="Assets/Scripts/Manager.cs" />
     <Compile Include="Assets/Scripts/GenerationManager.cs" />
     <Compile Include="Assets/Scripts/ObjectRotation.cs" />
+    <Compile Include="Assets/Scripts/TextEvaluation.cs" />
+    <Compile Include="Assets/Scripts/Manager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets/TextMesh Pro/Shaders/TMPro.cginc" />
