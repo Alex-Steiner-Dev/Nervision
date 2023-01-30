@@ -1,15 +1,11 @@
 ﻿<Properties StartupConfiguration="{CD8C9303-404B-FB8D-6B9B-21988D5CAC0A}|">
-  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="47b948a9-20ad-4e29-8d2e-88e358a9e79b" />
-  <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
-  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="4a12307c-7746-41b4-ac44-fbb639d27105" />
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/ObjectRotation.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/ImageGeneration.cs">
     <Files>
-      <File FileName="Assets/Scripts/TextEvaluation.cs" Line="8" Column="30" />
-      <File FileName="Assets/Scripts/GenerationManager.cs" Line="11" Column="94" />
-      <File FileName="Assets/Scripts/ObjectRotation.cs" Line="11" Column="18" />
+      <File FileName="Assets/Scripts/TextEvaluation.cs" Line="38" Column="58" />
+      <File FileName="Assets/Scripts/GenerationManager.cs" Line="15" Column="15" />
+      <File FileName="Assets/Scripts/ImageGeneration.cs" Line="33" Column="30" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -24,4 +20,8 @@
     </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
 </Properties>

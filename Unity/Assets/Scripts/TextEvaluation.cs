@@ -15,6 +15,7 @@ public class TextEvaluation : MonoBehaviour
         manager = GameObject.FindGameObjectWithTag("GameController").GetComponent<Manager>();
     }
 
+    [Obsolete]
     public void EvaluateText()
     {
         var mlContext = new MLContext();
@@ -33,7 +34,8 @@ public class TextEvaluation : MonoBehaviour
 
         var prediction = predictionEngine.Predict(data);
 
-        manager.generationManager.Generate(prediction.WordsWithoutStopWords.ToString());
+        //manager.generationManager.Generate(prediction.WordsWithoutStopWords.ToString());
+        manager.generationManager.Generate(inputText.text);
     }
 }
 

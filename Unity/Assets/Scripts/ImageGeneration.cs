@@ -6,17 +6,15 @@ using System.Net;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class ImageGeneration : MonoBehaviour
 {
     [SerializeField] private string serverUrl;
+    [SerializeField] private Image img;
 
-    private void Start()
-    {
-        generateImage("test");
-    }
-
-    private void generateImage(string prompt)
+    [Obsolete]
+    public void generateImage(string prompt)
     {
         var wb = new WebClient();
 
@@ -26,6 +24,17 @@ public class ImageGeneration : MonoBehaviour
         var response = wb.UploadValues(serverUrl, "POST", data);
         string responseInString = Encoding.UTF8.GetString(response);
 
-        print(responseInString);
+        StartCoroutine(setImage(responseInString));
+    }
+
+    [Obsolete]
+    private IEnumerator setImage(string url)
+    {
+        url = url.Remove(0, 3);
+        url = url.Remove(url.Length - 1, 1);
+        print(url);
+        WWW www = new WWW(url);
+        yield return www;
+        img.sprite = Sprite.Create(www.texture, new Rect(0, 0, www.texture.width, www.texture.height), new Vector2(0, 0));
     }
 }
