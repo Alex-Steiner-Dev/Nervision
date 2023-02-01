@@ -1,26 +1,47 @@
-import cv2
 import numpy as np
-import matplotlib.pyplot as plt
-import trimesh
+import cv2
 
-# Load the image using OpenCV
-gray = cv2.imread('depth.png')
+# Load the image
+img = cv2.imread("test.jpeg")
 
-# Generate a 3D array of X, Y, and Z values
-X, Y = np.meshgrid(range(gray.shape[1]), range(gray.shape[0]))
-Z = gray
+# Convert the image to grayscale
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-# Combine X, Y, and Z into a single array
-points = np.column_stack((X.ravel(), Y.ravel(), Z.ravel()))
+# Convert the grayscale image to a depth image
+depth = gray.astype(np.float32) / 255.0
 
-# Write the point cloud to a PLY file
-with open("point_cloud.ply", "w") as f:
-    f.write("ply\n")
-    f.write("format ascii 1.0\n")
-    f.write("element vertex {}\n".format(points.shape[0]))
-    f.write("property float x\n")
-    f.write("property float y\n")
-    f.write("property float z\n")
-    f.write("end_header\n")
-    for point in points:
-        f.write("{} {} {}\n".format(*point))
+# Generate the point cloud
+rows, cols = depth.shape
+[X, Y] = np.meshgrid(np.arange(0, cols, 1), np.arange(0, rows, 1))
+Z = depth
+
+# Stack the X, Y, and Z arrays to form the point cloud
+point_cloud = np.column_stack((X.flatten(), Y.flatten(), Z.flatten()))
+
+print(point_cloud.shape)
+
+from stl import mesh
+
+# Create a mesh from the point cloud
+number_of_triangles = (rows - 1) * (cols - 1)
+triangles = np.zeros((number_of_triangles, 3, 3), dtype=np.float32)
+triangle_index = 0
+for i in range(rows - 1):
+    for j in range(cols - 1):
+        # First triangle
+        triangles[triangle_index, 0, :] = point_cloud[i * cols + j, :]
+        triangles[triangle_index, 1, :] = point_cloud[i * cols + j + 1, :]
+        triangles[triangle_index, 2, :] = point_cloud[(i + 1) * cols + j, :]
+        triangle_index += 1
+
+        # Second triangle
+        triangles[triangle_index, 0, :] = point_cloud[(i + 1) * cols + j + 1, :]
+        triangles[triangle_index, 1, :] = point_cloud[(i + 1) * cols + j, :]
+        triangles[triangle_index, 2, :] = point_cloud[i * cols + j + 1, :]
+        triangle_index += 1
+
+
+mesh = mesh.Mesh(triangles, remove_empty_areas=False)
+
+# Save the mesh to a PLY file
+mesh.save('point_cloud.ply', mode=mesh.Mesh.MODE_ASCII)
