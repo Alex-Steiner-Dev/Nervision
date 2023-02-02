@@ -1,49 +1,31 @@
-import argparse
-import sys
-import os
+import numpy as np
 from PIL import Image
 
-focalLength = 1
-scalingFactor = 1
+def image_to_point_cloud(image_path):
+    image = Image.open(image_path)
+    image_array = np.array(image)
 
-def generate_pointcloud(rgb_file,depth_file):
-    rgb = Image.open(rgb_file)
-    depth =  Image.open(depth_file)
-    width, height =  rgb.size
-    centerX = width/2 
-    centerY = height/2
+    height, width = image_array.shape[:2]
 
-    
-    if rgb.size != depth.size:
-        raise Exception("Color and depth image do not have the same resolution.")
+    points = []
 
-    
+    for y in range(height):
+        for x in range(width):
+            pixel = image_array[y, x]
+            points.append([x, y, pixel])
 
-    points = []    
-    for v in range(rgb.size[1]):
-        for u in range(rgb.size[0]):
-            color = rgb.getpixel((u,v))
-            Z = depth.getpixel((u,v))[0] / scalingFactor * 10
-            if Z==0: continue
-            X = (u - centerX) * Z / focalLength * 10
-            Y = (v - centerY) * Z / focalLength * 10
-            points.append("%f %f %f %d %d %d 0\n"%(X,Y,Z,color[0],color[1],color[2]))
-    file = open("output.ply","w")
-    file.write('''ply
-format ascii 1.0
-element vertex %d
-property float x
-property float y
-property float z
-property uchar red
-property uchar green
-property uchar blue
-property uchar alpha
-end_header
-%s
-'''%(len(points),"".join(points)))
-    file.close()
+    with open("point_cloud.ply", "w") as file:
 
-if __name__ == '__main__':
-    generate_pointcloud("depth.png","depth.png")
-    
+        file.write("ply\n")
+        file.write("format ascii 1.0\n")
+        file.write("element vertex " + str(len(points)) + "\n")
+        file.write("property float x\n")
+        file.write("property float y\n")
+        file.write("property float z\n")
+        file.write("end_header\n")
+
+        for point in points:
+            file.write(str(point[0]) + " " + str(point[1]) + " " + str(point[2]) + "\n")
+
+if __name__ == "__main__":
+    image_to_point_cloud("test.jpeg")
