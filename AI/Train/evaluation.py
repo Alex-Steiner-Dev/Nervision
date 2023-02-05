@@ -26,6 +26,7 @@ def evalutate():
         newModel = False
         count = 0
         score = 0
+        whatisIt = ""
         with open(modelName, 'r') as file:
             while (line := file.readline().rstrip()):
                 if line[0] == "/":
@@ -33,6 +34,7 @@ def evalutate():
                     open("point_cloud.pc", "w").close()
 
                 elif line[0] == "#":
+                    whatisIt = line.replace("# ", "").replace(".obj", "")
                     newModel = False
                 elif line == "|": 
                     pointCloud1 = np.loadtxt("../Evaluation/point_cloud.pc")
@@ -51,7 +53,7 @@ def evalutate():
                     for j in bar:
                         sleep(1)
                         
-                    print(f"The probability of being a chair is { score / maxScore  * 100 }%")
+                    print(f"The probability of being a {whatisIt} is { score / maxScore  * 100 }%")
 
                     score = 0
 
