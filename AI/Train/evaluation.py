@@ -9,7 +9,7 @@ from scipy.spatial import distance
 modelName = "model.ape"
 evaluationDir = glob.glob("../Evaluation/*.obj")
 
-maxScore = 3000
+maxScore = 100
 
 def evalutate():
     bar = tqdm(range(0, len(evaluationDir)), desc = "Evaluating Model") 
@@ -38,20 +38,20 @@ def evalutate():
                     pointCloud1 = np.loadtxt("../Evaluation/point_cloud.pc")
                     pointCloud2 = np.loadtxt("point_cloud.pc")
 
-                    pointCloud1_split = np.array_split(pointCloud1, 3000)
-                    pointCloud2_split = np.array_split(pointCloud2, 3000)
+                    pointCloud1_split = np.array_split(pointCloud1, 100)
+                    pointCloud2_split = np.array_split(pointCloud2, 100)
 
                     for l,m in zip(pointCloud1_split, pointCloud2_split):
                         distances = distance.cdist(l, m)
 
-                        if (distances == 0).any():
+                        if (distances <= 300).any():
                             score+=1
                     
-                    print(f" The probability of being a chair is { score / maxScore  * 100 }%")
-                    
-                    
+                                        
                     for j in bar:
                         sleep(1)
+                        
+                    print(f"The probability of being a chair is { score / maxScore  * 100 }%")
 
                     score = 0
 
