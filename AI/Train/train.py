@@ -5,7 +5,7 @@ from mesh_to_point_cloud import *
 from tqdm import tqdm
 from time import sleep
 
-modelName = "model.ape"
+modelName = "../AI/Train/model.ape"
 dataSetDir = glob.glob("../Data/*")
 
 def train():

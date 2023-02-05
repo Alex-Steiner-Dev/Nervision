@@ -1,5 +1,10 @@
 from flask import Flask
 from flask import render_template
+import sys
+
+sys.path.insert(1, '../AI/train')
+
+import evaluation
 
 app = Flask(__name__)
 
