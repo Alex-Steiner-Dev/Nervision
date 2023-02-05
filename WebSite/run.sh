@@ -1,2 +1,2 @@
 clear 
-node server.js
+python server.py
