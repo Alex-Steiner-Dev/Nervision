@@ -1,21 +1,20 @@
 import glob
 import os
-import sys
 from mesh_to_point_cloud import *
 
 from tqdm import tqdm
 from time import sleep
 
 modelName = "model.ape"
-subDir = glob.glob("../Data/*")
+dataSetDir = glob.glob("../Data/*")
 
 def train():
-    bar = tqdm(range(0, len(subDir)), desc = "Training Model")            
+    bar = tqdm(range(0, len(dataSetDir)), desc = "Training Model")            
 
     open(modelName, "w").close()
     file = open(modelName, "a")
 
-    for i in subDir:            
+    for i in dataSetDir:            
         three_d_model = glob.glob(i + "/*.obj")
         description = glob.glob(i + "/*.txt")
             
@@ -28,7 +27,7 @@ def train():
             file.write("// " + description_file.read() + "\n")
 
         with open(point_cloud[0]) as three_d_model_file:
-            file.write(three_d_model_file.read())
+            file.write(three_d_model_file.read() + "\n")
 
         for j in bar:
             sleep(1)
