@@ -1,10 +1,9 @@
 import open3d as o3d
 import numpy as np
-import trimesh
 
 def mesh_to_point_cloud(mesh_location, file_location):
-    mesh = trimesh.load(mesh_location)
-    vertices = mesh.vertices
+    pcd = o3d.io.read_point_cloud(mesh_location)
+    vertices = np.asarray(pcd.points)
 
     step = int(vertices.shape[0]/5000)
     downsampled_vertices = vertices[::step, :]
