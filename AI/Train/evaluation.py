@@ -10,8 +10,8 @@ from time import sleep
 modelName = "model.ape"
 evaluationDir = glob.glob("../Evaluation/*.obj")
 
-tollerances = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-maxScore = 17377500
+tollerances = [0, 30, 50, 70, 90]
+maxScore = 16342740
 
 def evalutate():
     bar = tqdm(range(0, len(evaluationDir)), desc = "Evaluating Model") 
@@ -28,13 +28,19 @@ def evalutate():
         newModel = False
         count = 0
         score = 0
-
         with open(modelName, 'r') as file:
             while (line := file.readline().rstrip()):
                 if line[0] == "/":
                     newModel = True
                 elif line[0] == "#":
                     newModel = False
+                elif line == "|":        
+                    for j in bar:
+                        sleep(1)
+                    print(f"The probability of being a chair is {maxScore / score * 100}")
+
+                    score = 0
+
                 elif newModel == True:
                     pos_x = float(line.split()[0])
                     pos_y = float(line.split()[0])
@@ -47,16 +53,11 @@ def evalutate():
                     for k in tollerances:
                         if pos_x - model_pos_x < k and pos_x - model_pos_x < k:
                             score+= tollerances[len(tollerances) - 1] - k
-                        elif pos_y - model_pos_y < k and pos_y - model_pos_y < k:
+                        if pos_y - model_pos_y < k and pos_y - model_pos_y < k:
                             score+= tollerances[len(tollerances) - 1] - k
-                        elif pos_z - model_pos_z < k and pos_z - model_pos_z < k:
+                        if pos_z - model_pos_z < k and pos_z - model_pos_z < k:
                             score+= tollerances[len(tollerances) - 1] - k
 
                 count+=1
 
-        for j in bar:
-            sleep(1)
-
-        print(f"The probability of being a chair is {maxScore / score * 100}")
-        
 evalutate()
