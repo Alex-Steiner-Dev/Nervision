@@ -11,7 +11,7 @@ modelName = "model.ape"
 evaluationDir = glob.glob("../Evaluation/*.obj")
 
 tollerances = [0, 30, 50, 70, 90]
-maxScore = 16342740
+maxScore = 2524860
 
 def evalutate():
     bar = tqdm(range(0, len(evaluationDir)), desc = "Evaluating Model") 
