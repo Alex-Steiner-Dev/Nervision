@@ -9,18 +9,21 @@
   <body>
 
     <div class="container">
-      <h1>APE 3D Model Generator</h1>
 
-      <div class="input-section">
-        <label for="prompt">Enter the prompt for the 3D model:</label>
-        <input type="text" id="prompt" placeholder="e.g. chair">
-        <br>
-        <button id="generate-button">Generate Model</button>
-      </div>
+      <form method="post" action="/generate">
+        <h1>APE 3D Model Generator</h1>
 
-      <div id="result">
+        <div class="input-section">
+          <label for="prompt">Enter the prompt for the 3D model:</label>
+          <input name="prompt" type="text" id="prompt" placeholder="e.g. chair">
+          <br>
+          <button id="generate-button">Generate Model</button>
+        </div>
 
-      </div>
+        <div id="result">
+
+        </div>
+      </form>
 
     </div>
 
