@@ -1,17 +1,15 @@
-
 import glob
-import os
-import linecache
 from mesh_to_point_cloud import *
-
+import open3d as o3d
 from tqdm import tqdm
 from time import sleep
+import numpy as np
+from scipy.spatial import distance
 
 modelName = "model.ape"
 evaluationDir = glob.glob("../Evaluation/*.obj")
 
-tollerances = [0, 30, 50, 70, 90]
-maxScore = 2524860
+maxScore = 5000
 
 def evalutate():
     bar = tqdm(range(0, len(evaluationDir)), desc = "Evaluating Model") 
@@ -32,31 +30,31 @@ def evalutate():
             while (line := file.readline().rstrip()):
                 if line[0] == "/":
                     newModel = True
+                    open("point_cloud.pc", "w").close()
+
                 elif line[0] == "#":
                     newModel = False
-                elif line == "|":        
+                elif line == "|": 
+                    pointCloud1 = np.loadtxt("../Evaluation/point_cloud.pc")
+                    pointCloud2 = np.loadtxt("point_cloud.pc")
+
+                    distances = distance.cdist(pointCloud1, pointCloud2)
+
+                    if (distances == 0).any():
+                        score+=1
+                    
+                    if(score != 0):
+                        print(f"The probability of being a chair is { maxScore / score * 100 }")
+                    
+                    
                     for j in bar:
                         sleep(1)
-                    print(f"The probability of being a chair is {maxScore / score * 100}")
 
                     score = 0
 
                 elif newModel == True:
-                    pos_x = float(line.split()[0])
-                    pos_y = float(line.split()[0])
-                    pos_z = float(line.split()[0])
-
-                    model_pos_x = float(lines[count].split()[0])
-                    model_pos_y = float(lines[count].split()[1])
-                    model_pos_z = float(lines[count].split()[2])
-
-                    for k in tollerances:
-                        if pos_x - model_pos_x < k and pos_x - model_pos_x < k:
-                            score+= tollerances[len(tollerances) - 1] - k
-                        if pos_y - model_pos_y < k and pos_y - model_pos_y < k:
-                            score+= tollerances[len(tollerances) - 1] - k
-                        if pos_z - model_pos_z < k and pos_z - model_pos_z < k:
-                            score+= tollerances[len(tollerances) - 1] - k
+                  with open("point_cloud.pc", "a") as f:
+                        f.write(line + "\n")
 
                 count+=1
 
