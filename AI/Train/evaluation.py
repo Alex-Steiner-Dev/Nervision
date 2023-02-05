@@ -43,8 +43,7 @@ def evalutate():
                     if (distances == 0).any():
                         score+=1
                     
-                    if(score != 0):
-                        print(f"The probability of being a chair is { maxScore / score * 100 }")
+                    print(f"The probability of being a chair is { maxScore / score * 100 }")
                     
                     
                     for j in bar:
