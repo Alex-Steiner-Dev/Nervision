@@ -50,7 +50,12 @@ def stemming(prompt):
         output.append(stemmer.stem(x))
     return output
 
+
 def part_of_speech(prompt):
     pos = nltk.pos_tag(prompt)
+
+    for(word, pos_) in pos:
+        if pos_[0] == "V":
+            pos.remove((word, pos_))
 
     return pos
