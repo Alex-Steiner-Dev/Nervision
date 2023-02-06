@@ -12,9 +12,12 @@ from nltk.tokenize import word_tokenize
 #nltk.download('stopwords')
 
 spell = Speller(lang='en')
+
 stop_words = set(stopwords.words('english'))
 stop_words.remove("with")
 stop_words.add("generate")
+stop_words.add("create")
+
 stemmer = PorterStemmer()
 
 def process_text(prompt):
