@@ -9,7 +9,8 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
 spell = Speller(lang='en')
-stop = stopwords.words('english')
+stop_words = set(stopwords.words('english'))
+stop_words.remove("with")
 
 def process_text(prompt):
     prompt = prompt.lower()
@@ -26,7 +27,6 @@ def remove_unicode(prompt):
 
 def remove_stop_words(prompt):
     output = ""
-    stop_words = set(stopwords.words('english'))
   
     word_tokens = word_tokenize(prompt)
     output = [w for w in word_tokens if not w in stop_words]
