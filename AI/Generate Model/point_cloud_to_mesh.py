@@ -1,9 +1,9 @@
 import numpy as np
-from scipy.spatial import Delaunay
 import trimesh
 
 def point_cloud_to_mesh_obj(points, file_name):
-    mesh = trimesh.PointCloud(points)
-    mesh = mesh.polygon_mesh(alpha=1.0)
-    mesh.export("mesh.ply")
+    cloud = trimesh.PointCloud(points)
+    print(cloud)
+    mesh = cloud.process()
+    mesh.export("file_name" + '.obj', file_type='obj')
 

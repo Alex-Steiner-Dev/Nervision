@@ -27,7 +27,7 @@ def train():
             file.write("// " + description_file.read() + "\n")
 
         with open(point_cloud[0]) as three_d_model_file:
-            file.write(three_d_model_file.read() + "|")
+            file.write(three_d_model_file.read() + "|" + "\n")
 
         for j in bar:
             sleep(1)
