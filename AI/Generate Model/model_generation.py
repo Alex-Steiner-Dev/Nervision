@@ -1,4 +1,5 @@
 import numpy as np
+from point_cloud_to_mesh import *
 
 modelName = "../Train/model.ape"
 
@@ -12,6 +13,7 @@ def generate_single(word):
     with open(modelName, "r") as file:
         while (line := file.readline()):
             if line[0] == "|" and foundModel:
+                point_cloud_to_mesh_obj(points, "model.obj")
                 break
 
             elif foundModel:

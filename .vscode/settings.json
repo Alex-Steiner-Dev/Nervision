@@ -1,0 +1,7 @@
+{
+    "python.analysis.extraPaths": [
+        "./AI/Train",
+        "./AI",
+        "./AI/Generate Model"
+    ]
+}
