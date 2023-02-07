@@ -6,7 +6,7 @@ from time import sleep
 import numpy as np
 from scipy.spatial import distance
 
-modelName = "../AI/Train/model.ape"
+modelName = "model.ape"
 evaluationDir = glob.glob("../Evaluation/*.obj")
 
 maxScore = 100
@@ -62,3 +62,5 @@ def evalutate():
                         f.write(line + "\n")
 
                 count+=1
+
+evalutate()

@@ -8,7 +8,6 @@ sys.path.insert(1, '../AI/')
 sys.path.insert(2, '../AI/Train')
 sys.path.insert(3, '../AI/Generate Model')
 
-from evaluation import *
 from text_process import *
 from model_generation import *
 
