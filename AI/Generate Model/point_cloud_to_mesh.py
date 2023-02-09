@@ -1,13 +1,12 @@
 import open3d as o3d
 import numpy as np
+import pyvista as pv
 
 
 def point_cloud_to_mesh_obj(points):
-    pcd = o3d.PointCloud()
-    pcd.points = o3d.Vector3dVector(points)
+    cloud = pv.PolyData(points)
+    cloud.plot()
 
-    # Compute the mesh
-    mesh, densities = pcd.compute_triangle_mesh()
-
-    # Save the mesh to a file
-    o3d.write_triangle_mesh("mesh.ply", mesh)
+    volume = cloud.delaunay_3d(alpha=2.)
+    shell = volume.extract_geometry()
+    shell.plot()
