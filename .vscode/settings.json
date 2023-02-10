@@ -1,7 +1,3 @@
-{
-    "python.analysis.extraPaths": [
-        "./AI/Train",
-        "./AI",
-        "./AI/Generate Model"
-    ]
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:e8fc60e111fc5ddfe294c768fcb019150006a73036fd433d6b15fbe71f595687
+size 149
