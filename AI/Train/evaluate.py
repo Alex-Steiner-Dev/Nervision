@@ -7,7 +7,7 @@ from tensorflow.keras.models import load_model
 loaded_model = load_model("point_cloud_classifier.h5")
 
 # Preprocess a new point cloud
-new_point_cloud = trimesh.load("../Data/bathtub/test/bathtub_0141.off").sample(2048)
+new_point_cloud = trimesh.load("../Data/toilet/test/toilet_0345.off").sample(2048)
 new_point_cloud = new_point_cloud.reshape(1, -1) # Reshape the point cloud into a 2D array
 
 
