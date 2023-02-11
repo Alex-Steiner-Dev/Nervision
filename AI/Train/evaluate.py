@@ -1,19 +1,64 @@
+import os
+import glob
 import trimesh
 import numpy as np
 import tensorflow as tf
+from matplotlib import pyplot as plt
 from tensorflow.keras.models import load_model
 
-# Load the saved model
-loaded_model = load_model("point_cloud_classifier.h5")
+model = load_model("point_cloud_classifier.h5")
 
-# Preprocess a new point cloud
-new_point_cloud = trimesh.load("../Data/toilet/test/toilet_0345.off").sample(2048)
-new_point_cloud = new_point_cloud.reshape(1, -1) # Reshape the point cloud into a 2D array
+DATA_DIR = "../Data/*"
+CLASS_MAP = {0: "Bathtub", 1:"Bed", 2:"Chair", 3:"Desk", 4:"Dresser", 5:"Monitor", 6:"Night Stand", 7:"Sofa", 8:"Table", 9:"Toilet"}
 
+def parse_dataset(num_points=2048):
+    test_points = []
+    test_labels = []
 
-predictions = loaded_model.predict(new_point_cloud)
-predicted_class = np.argmax(predictions)
+    folders = glob.glob(DATA_DIR)
 
-labels = {0: 'Data\\bathtub', 1: 'Data\\bed', 2: 'Data\\chair', 3: 'Data\\desk', 4: 'Data\\dresser', 5: 'Data\\monitor', 6: 'Data\\night_stand', 7: 'Data\\sofa', 8: 'Data\\table', 9: 'Data\\toilet'}
+    for i, folder in enumerate(folders):
+        print("processing class: {}".format(os.path.basename(folder)))
 
-print("Predicted class label:", labels[predicted_class])
+        test_files = glob.glob(folder + "/test/*")
+
+        for f in test_files:
+            test_points.append(trimesh.load(f).sample(num_points))
+            test_labels.append(i)
+
+    return (
+        np.array(test_points),
+        np.array(test_labels),
+    )
+
+NUM_POINTS = 2048
+NUM_CLASSES = 10
+BATCH_SIZE = 32
+
+test_points, test_labels = parse_dataset(NUM_POINTS)
+
+test_dataset = tf.data.Dataset.from_tensor_slices((test_points, test_labels))
+test_dataset = test_dataset.shuffle(len(test_points)).batch(BATCH_SIZE)
+
+data = test_dataset.take(1)
+
+points, labels = list(data)[0]
+points = points[:8, ...]
+labels = labels[:8, ...]
+
+preds = model.predict(points)
+preds = tf.math.argmax(preds, -1)
+
+points = points.numpy()
+
+fig = plt.figure(figsize=(15, 10))
+for i in range(8):
+    ax = fig.add_subplot(2, 4, i + 1, projection="3d")
+    ax.scatter(points[i, :, 0], points[i, :, 1], points[i, :, 2])
+    ax.set_title(
+        "pred: {:}, label: {:}".format(
+            CLASS_MAP[preds[i].numpy()], CLASS_MAP[labels.numpy()[i]]
+        )
+    )
+    ax.set_axis_off()
+plt.show()

@@ -63,7 +63,6 @@ test_dataset = tf.data.Dataset.from_tensor_slices((test_points, test_labels))
 train_dataset = train_dataset.shuffle(len(train_points)).map(augment).batch(BATCH_SIZE)
 test_dataset = test_dataset.shuffle(len(test_points)).batch(BATCH_SIZE)
 
-
 def conv_bn(x, filters):
     x = layers.Conv1D(filters, kernel_size=1, padding="valid")(x)
     x = layers.BatchNormalization(momentum=0.0)(x)
