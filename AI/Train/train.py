@@ -92,8 +92,6 @@ class OrthogonalRegularizer(keras.regularizers.Regularizer):
 
 
 def tnet(inputs, num_features):
-
-    # Initalise bias as the indentity matrix
     bias = keras.initializers.Constant(np.eye(num_features).flatten())
     reg = OrthogonalRegularizer(num_features)
 
@@ -110,7 +108,7 @@ def tnet(inputs, num_features):
         activity_regularizer=reg,
     )(x)
     feat_T = layers.Reshape((num_features, num_features))(x)
-    # Apply affine transformation to input features
+ 
     return layers.Dot(axes=(2, 1))([inputs, feat_T])
 
 inputs = keras.Input(shape=(NUM_POINTS, 3))
@@ -141,27 +139,12 @@ model.compile(
 )
 
 model.fit(train_dataset, epochs=20, validation_data=test_dataset)
-
-data = test_dataset.take(1)
-
-points, labels = list(data)[0]
-points = points[:8, ...]
-labels = labels[:8, ...]
-
-# run test data through model
-preds = model.predict(points)
-preds = tf.math.argmax(preds, -1)
-
-points = points.numpy()
-
-fig = plt.figure(figsize=(15, 10))
-for i in range(8):
-    ax = fig.add_subplot(2, 4, i + 1, projection="3d")
-    ax.scatter(points[i, :, 0], points[i, :, 1], points[i, :, 2])
-    ax.set_title(
-        "pred: {:}, label: {:}".format(
-            CLASS_MAP[preds[i].numpy()], CLASS_MAP[labels.numpy()[i]]
-        )
-    )
-    ax.set_axis_off()
-plt.show()
+tf.keras.models.save_model(
+    model,
+    overwrite=True,
+    include_optimizer=True,
+    save_format=None,
+    signatures=None,
+    options=None,
+    save_traces=True
+)
