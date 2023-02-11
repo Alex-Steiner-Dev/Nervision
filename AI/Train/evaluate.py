@@ -1,71 +1,21 @@
-import os
-import glob
 import trimesh
 import numpy as np
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
-from matplotlib import pyplot as plt
+from tensorflow.keras.models import load_model
 
-DATA_DIR = "../Data/*"
+model = load_model("model.h5")
 
-def parse_dataset(num_points=2048):
-    test_points = []
-    test_labels = []
-    class_map = {}
+def predict(input_points):
+    input_points = input_points[np.newaxis, ...]
+    predictions = model.predict(input_points)
+    return predictions.argmax(axis=-1)[0]
 
-    folders = glob.glob(DATA_DIR)
+def detect(mesh_path):
+    mesh = trimesh.load(mesh_path)
+    points = mesh.sample(NUM_POINTS)
+    prediction = predict(points)
+    return prediction
 
-    for i, folder in enumerate(folders):
-        print("processing class: {}".format(os.path.basename(folder)))
-    
-        class_map[i] = folder.split("/")[-1]
-
-        test_files = glob.glob(folder + "/test/*")
-
-        for f in test_files:
-            test_points.append(trimesh.load(f).sample(num_points))
-            test_labels.append(i)
-
-    return (
-        np.array(test_points),
-        np.array(test_labels),
-        class_map,
-    )
-
-NUM_POINTS = 2048
-NUM_CLASSES = 10
-BATCH_SIZE = 32
-
-test_points, test_labels, CLASS_MAP = parse_dataset(
-    NUM_POINTS
-)
-
-
-test_dataset = tf.data.Dataset.from_tensor_slices((test_points, test_labels))
-test_dataset = test_dataset.shuffle(len(test_points)).batch(BATCH_SIZE)
-
-data = test_dataset.take(1)
-
-points, labels = list(data)[0]
-points = points[:8, ...]
-labels = labels[:8, ...]
-
-model = tf.keras.models.load_model('model')
-
-preds = model.predict(points)
-preds = tf.math.argmax(preds, -1)
-
-points = points.numpy()
-
-fig = plt.figure(figsize=(15, 10))
-for i in range(8):
-    ax = fig.add_subplot(2, 4, i + 1, projection="3d")
-    ax.scatter(points[i, :, 0], points[i, :, 1], points[i, :, 2])
-    ax.set_title(
-        "pred: {:}, label: {:}".format(
-            CLASS_MAP[preds[i].numpy()], CLASS_MAP[labels.numpy()[i]]
-        )
-    )
-    ax.set_axis_off()
-plt.show()
+# Example usage
+detection = detect("../Data/bathtub/test/bathtub_0107.off")
+print("Detected class:", detection)

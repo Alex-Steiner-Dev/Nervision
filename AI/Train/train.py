@@ -79,10 +79,9 @@ def dense_bn(x, filters):
 
 
 class OrthogonalRegularizer(keras.regularizers.Regularizer):
-    def __init__(self, num_features, l2reg=0.001, lambda_value=0.01):
+    def __init__(self, num_features, l2reg=0.001):
         self.num_features = num_features
         self.l2reg = l2reg
-        self.lambda_value = lambda_value
         self.eye = tf.eye(num_features)
 
     def __call__(self, x):
@@ -90,12 +89,6 @@ class OrthogonalRegularizer(keras.regularizers.Regularizer):
         xxt = tf.tensordot(x, x, axes=(2, 2))
         xxt = tf.reshape(xxt, (-1, self.num_features, self.num_features))
         return tf.reduce_sum(self.l2reg * tf.square(xxt - self.eye))
-    
-    def get_config(self):
-        return {
-            "lambda_value": self.lambda_value
-        }
-
 
 def tnet(inputs, num_features):
     bias = keras.initializers.Constant(np.eye(num_features).flatten())
@@ -145,9 +138,5 @@ model.compile(
 )
 
 model.fit(train_dataset,  epochs=1, validation_data=test_dataset)
-
-converter = tf.lite.TFLiteConverter.from_keras_model(model)
-tflite_model = converter.convert()
-
-with open('model.tflite', 'wb') as f:
-    f.write(tflite_model)
+model.layers = [layer for layer in model.layers if layer.__class__.__name__ != "OrthogonalRegularizer"]
+model.save("model.h5")
