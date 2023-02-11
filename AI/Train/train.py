@@ -3,10 +3,8 @@ import glob
 import trimesh
 import numpy as np
 import tensorflow as tf
-import numpy as np
-import tensorflow as tf
-from tensorflow.keras import layers, models
-from tensorflow.keras.utils import to_categorical
+from tensorflow import keras
+from tensorflow.keras import layers
 
 tf.random.set_seed(1234)
 
@@ -53,32 +51,77 @@ train_points, test_points, train_labels, test_labels, CLASS_MAP = parse_dataset(
     NUM_POINTS
 )
 
+def augment(points, label):
+    points += tf.random.uniform(points.shape, -0.005, 0.005, dtype=tf.float64)
+    points = tf.random.shuffle(points)
 
-print(CLASS_MAP)
+    return points, label
 
-num_classes = len(np.unique(train_labels))
-train_points = train_points.reshape(train_points.shape[0], -1)
-test_points = test_points.reshape(test_points.shape[0], -1)
-train_labels = to_categorical(train_labels, num_classes)
-test_labels = to_categorical(test_labels, num_classes)
+train_dataset = tf.data.Dataset.from_tensor_slices((train_points, train_labels))
+test_dataset = tf.data.Dataset.from_tensor_slices((test_points, test_labels))
 
-model = models.Sequential()
-model.add(layers.Dense(512, activation="relu", input_shape=(NUM_POINTS * 3,)))
-model.add(layers.BatchNormalization())
-model.add(layers.Dense(256, activation="relu"))
-model.add(layers.BatchNormalization())
-model.add(layers.Dense(128, activation="relu"))
-model.add(layers.BatchNormalization())
-model.add(layers.Dense(64, activation="relu"))
-model.add(layers.BatchNormalization())
-model.add(layers.Dense(32, activation="relu"))
-model.add(layers.BatchNormalization())
-model.add(layers.Dense(16, activation="relu"))
-model.add(layers.BatchNormalization())
-model.add(layers.Dense(NUM_CLASSES, activation="softmax"))
+train_dataset = train_dataset.shuffle(len(train_points)).map(augment).batch(BATCH_SIZE)
+test_dataset = test_dataset.shuffle(len(test_points)).batch(BATCH_SIZE)
 
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-model.fit(train_points, train_labels, epochs=500, batch_size=64, validation_data=(test_points, test_labels))
+
+def conv_bn(x, filters):
+    x = layers.Conv1D(filters, kernel_size=1, padding="valid")(x)
+    x = layers.BatchNormalization(momentum=0.0)(x)
+    return layers.Activation("relu")(x)
+
+def dense_bn(x, filters):
+    x = layers.Dense(filters)(x)
+    x = layers.BatchNormalization(momentum=0.0)(x)
+    return layers.Activation("relu")(x)
+
+
+def tnet(inputs, num_features):
+    bias = keras.initializers.Constant(np.eye(num_features).flatten())
+
+    x = conv_bn(inputs, 32)
+    x = conv_bn(x, 64)
+    x = conv_bn(x, 512)
+    x = layers.GlobalMaxPooling1D()(x)
+    x = dense_bn(x, 256)
+    x = dense_bn(x, 128)
+    x = layers.Dense(
+        num_features * num_features,
+        kernel_initializer="zeros",
+        bias_initializer=bias,
+        activity_regularizer=None,
+    )(x)
+    feat_T = layers.Reshape((num_features, num_features))(x)
+  
+    return layers.Dot(axes=(2, 1))([inputs, feat_T])
+
+
+inputs = keras.Input(shape=(NUM_POINTS, 3))
+
+x = tnet(inputs, 3)
+x = conv_bn(x, 32)
+x = conv_bn(x, 32)
+x = tnet(x, 32)
+x = conv_bn(x, 32)
+x = conv_bn(x, 64)
+x = conv_bn(x, 512)
+x = layers.GlobalMaxPooling1D()(x)
+x = dense_bn(x, 256)
+x = layers.Dropout(0.3)(x)
+x = dense_bn(x, 128)
+x = layers.Dropout(0.3)(x)
+
+outputs = layers.Dense(NUM_CLASSES, activation="softmax")(x)
+
+model = keras.Model(inputs=inputs, outputs=outputs, name="pointnet")
+model.summary()
+
+model.compile(
+    loss="sparse_categorical_crossentropy",
+    optimizer=keras.optimizers.Adam(learning_rate=0.001),
+    metrics=["sparse_categorical_accuracy"],
+)
+
+model.fit(train_dataset, epochs=1, validation_data=test_dataset)
 
 test_loss, test_acc = model.evaluate(test_points, test_labels)
 print('Test accuracy:', test_acc)
