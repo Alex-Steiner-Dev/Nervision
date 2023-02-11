@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 
 tf.random.set_seed(1234)
 
-DATA_DIR = "../Data/bed/"
+DATA_DIR = "../Data/*"
 
 def parse_dataset(num_points=2048):
 
@@ -25,8 +25,8 @@ def parse_dataset(num_points=2048):
     
         class_map[i] = folder.split("/")[-1]
   
-        train_files = glob.glob(folder + "train/*")
-        test_files = glob.glob(folder + "test/*")
+        train_files = glob.glob(folder + "/train/*")
+        test_files = glob.glob(folder + "/test/*")
 
         for f in train_files:
             train_points.append(trimesh.load(f).sample(num_points))
@@ -138,13 +138,5 @@ model.compile(
     metrics=["sparse_categorical_accuracy"],
 )
 
-model.fit(train_dataset, epochs=20, validation_data=test_dataset)
-tf.keras.models.save_model(
-    model,
-    overwrite=True,
-    include_optimizer=True,
-    save_format=None,
-    signatures=None,
-    options=None,
-    save_traces=True
-)
+model.fit(train_dataset,  epochs=1, validation_data=test_dataset)
+model.save('model/')
