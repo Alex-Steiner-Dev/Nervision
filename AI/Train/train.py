@@ -120,7 +120,7 @@ model.compile(
     metrics=["sparse_categorical_accuracy"],
 )
 
-model.fit(train_dataset, epochs=1, validation_data=test_dataset)
+model.fit(train_dataset, epochs=20, validation_data=test_dataset)
 
 test_loss, test_acc = model.evaluate(test_points, test_labels)
 print('Test accuracy:', test_acc)
