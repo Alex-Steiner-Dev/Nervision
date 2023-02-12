@@ -104,7 +104,6 @@ x = layers.Dropout(0.3)(x)
 outputs = layers.Dense(NUM_CLASSES, activation="softmax")(x)
 
 model = keras.Model(inputs=inputs, outputs=outputs, name="classification")
-model.summary()
 
 model.compile(
     loss="sparse_categorical_crossentropy",
@@ -112,7 +111,7 @@ model.compile(
     metrics=["sparse_categorical_accuracy"],
 )
 
-model.fit(train_dataset, epochs=20, validation_data=test_dataset)
+model.fit(train_dataset, epochs=60, validation_data=test_dataset)
 
 test_loss, test_acc = model.evaluate(test_points, test_labels)
 print('Test accuracy:', test_acc)

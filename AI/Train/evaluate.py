@@ -7,8 +7,6 @@ from tensorflow.keras.models import load_model
 model = load_model("point_cloud_classifier.h5")
 CLASS_MAP = {0: "bathtub", 1:"bed", 2:"chair", 3:"desk", 4:"dresser", 5:"monitor", 6:"night stand", 7:"sofa", 8:"table", 9:"toilet"}
 
-os.system("cls")
-
 def evaluate(path):
     points = trimesh.load(path).sample(2048)
     points = np.expand_dims(points, axis=0)
@@ -25,4 +23,4 @@ def evaluate(path):
 
     print(f"The model given is to {round(temp * 100, 2)}% a {CLASS_MAP[int(preds.numpy())]}")
 
-evaluate("../Data/desk/test/desk_0201.off")
+evaluate("../Data/night_stand/test/night_stand_0286.off")
