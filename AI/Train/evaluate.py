@@ -1,16 +1,28 @@
 import trimesh
+import os
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 
 model = load_model("point_cloud_classifier.h5")
+CLASS_MAP = {0: "bathtub", 1:"bed", 2:"chair", 3:"desk", 4:"dresser", 5:"monitor", 6:"night stand", 7:"sofa", 8:"table", 9:"toilet"}
 
-CLASS_MAP = {0: "Bathtub", 1:"Bed", 2:"Chair", 3:"Desk", 4:"Dresser", 5:"Monitor", 6:"Night Stand", 7:"Sofa", 8:"Table", 9:"Toilet"}
+os.system("cls")
 
-points = trimesh.load("../Data/desk/test/desk_0201.off").sample(2048)
-print(points.shape)
+def evaluate(path):
+    points = trimesh.load(path).sample(2048)
+    points = np.expand_dims(points, axis=0)
 
-preds = model.predict(points)
-preds = tf.math.argmax(preds, -1)
+    preds = model.predict(points)
 
-print("pred: {:}".format(CLASS_MAP[preds.numpy()]))
+    temp = 0
+    for i in preds:
+        for j in i:
+            if j > temp:
+                temp = j
+
+    preds = tf.math.argmax(preds, -1)
+
+    print(f"The model given is to {round(temp * 100, 2)}% a {CLASS_MAP[int(preds.numpy())]}")
+
+evaluate("../Data/desk/test/desk_0201.off")
