@@ -1,25 +1,30 @@
-import trimesh
-import os
 import numpy as np
-import tensorflow as tf
-from tensorflow.keras.models import load_model
+import trimesh
+from keras.layers import Input, Dense, LeakyReLU
+from keras.models import Model
 
-model = load_model("../point_cloud_classifier.h5")
-CLASS_MAP = {0: "bathtub", 1:"bed", 2:"chair", 3:"desk", 4:"dresser", 5:"monitor", 6:"night stand", 7:"sofa", 8:"table", 9:"toilet"}
+input_shape = (2048 * 3,)
 
-class Discriminator():
-    def evaluate(path):
-        points = trimesh.load(path).sample(2048)
-        points = np.expand_dims(points, axis=0)
+inputs = Input(shape=input_shape)
 
-        preds = model.predict(points)
+x = Dense(512, activation=LeakyReLU(alpha=0.2))(inputs)
+x = Dense(256, activation=LeakyReLU(alpha=0.2))(x)
+x = Dense(128, activation=LeakyReLU(alpha=0.2))(x)
 
-        temp = 0
-        for i in preds:
-            for j in i:
-                if j > temp:
-                    temp = j
+output = Dense(1, activation='sigmoid')(x)
 
-        preds = tf.math.argmax(preds, -1)
+model = Model(inputs=inputs, outputs=output)
 
-        print(f"The model given is to {round(temp * 100, 2)}% a {CLASS_MAP[int(preds.numpy())]}")
+model.compile(loss='binary_crossentropy', optimizer='adam')
+
+fake_point_clouds = np.random.rand(2048 * 3, 2048 * 3)
+real_point_clouds = trimesh.load("../Data/dresser/test/dresser_0201.off").sample(2048)
+
+print(fake_point_clouds.shape)
+print(real_point_clouds.shape)
+
+fake_scores = model.predict(fake_point_clouds)
+#real_scores = model.predict(real_point_clouds)
+
+print("Average score for fake point clouds:", np.mean(fake_scores))
+#print("Average score for real point clouds:", np.mean(real_scores))
