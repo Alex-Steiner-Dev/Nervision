@@ -23,4 +23,4 @@ def evaluate(path):
 
     print(f"The model given is to {round(temp * 100, 2)}% a {CLASS_MAP[int(preds.numpy())]}")
 
-evaluate("../Data/night_stand/test/night_stand_0286.off")
+evaluate("../Data/bed/test/bed_0516.off")
