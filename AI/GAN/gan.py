@@ -1,38 +1,31 @@
+import trimesh
+import os
 import numpy as np
-import keras
-from keras import layers
 import tensorflow as tf
+from tensorflow.keras.models import load_model
 import pyvista as pv
 
-def make_discriminator():
-    model = keras.Sequential()
-    model.add(layers.Dense(256, input_dim=3, activation='relu'))
-    model.add(layers.Dense(128, activation='relu'))
-    model.add(layers.Dense(64, activation='relu'))
-    model.add(layers.Dense(1, activation='sigmoid'))
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    return model
+model = load_model("../Train/point_cloud_classifier.h5")
 
-def make_generator():
-    model = keras.Sequential()
-    model.add(layers.Dense(256, input_dim=3, activation='relu'))
-    model.add(layers.Dense(128, activation='relu'))
-    model.add(layers.Dense(64, activation='relu'))
-    model.add(layers.Dense(3, activation='tanh'))
-    return model
+def evaluate(points):
+    points = np.expand_dims(points, axis=0)
+    preds = model.predict(points)
 
-discriminator = make_discriminator()
-generator = make_generator()
+    temp = 0
+    for i in preds:
+        for j in i:
+            print(j)
+            if j > temp:
+                temp = j
 
+    preds = tf.math.argmax(preds, -1)
 
-combined_model = keras.Sequential([generator, discriminator])
-combined_model.compile(loss='binary_crossentropy', optimizer='adam')
+    if round(temp * 100, 2) <= 50:
+        print("Fake")
+    else:
+        print("Real")
 
-noise = np.random.rand(2048, 3)
-
-generated_points = generator.predict(noise)
-
-labels = discriminator.predict(generated_points)
-
-point_cloud = pv.PolyData(generated_points)
+points = np.random.rand(2048,3)
+point_cloud = pv.PolyData(points)
 point_cloud.plot()
+evaluate(points)
