@@ -1,110 +1,73 @@
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
-import numpy as np
-from tqdm import tqdm
-import trimesh
 import glob
+import imageio
+import matplotlib.pyplot as plt
+import numpy as np
 import os
+import PIL
+from tensorflow.keras import layers
+import time
 
-DATA_DIR = "../Data/*"
+from IPython import display
 
-def parse_dataset(num_points=2048):
-    train_points = []
-    train_labels = []
-    folders = glob.glob(DATA_DIR)
+(train_images, train_labels), (_, _) = tf.keras.datasets.mnist.load_data()
 
-    for i, folder in enumerate(folders):
-        print("Processing class: {}".format(os.path.basename(folder)))
-    
-        train_files = glob.glob(folder + "/train/*")
-        for f in train_files:
-            train_points.append(trimesh.load(f).sample(num_points))
-            train_labels.append(i)
+train_images = train_images.reshape(train_images.shape[0], 28, 28, 1).astype('float32')
+train_images = (train_images - 127.5) / 127.5  # Normalize the images to [-1, 1]
 
-    return (
-        np.array(train_points),
-        np.array(train_labels),
-    )
+BUFFER_SIZE = 60000
+BATCH_SIZE = 256
 
-NUM_POINTS = 2048
-NUM_CLASSES = 10
-BATCH_SIZE = 32
+# Batch and shuffle the data
+train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
 
-train_points, train_labels = parse_dataset()
+def make_generator_model():
+    model = tf.keras.Sequential()
+    model.add(layers.Dense(7*7*256, use_bias=False, input_shape=(100,)))
+    model.add(layers.BatchNormalization())
+    model.add(layers.LeakyReLU())
 
-def augment(points, label):
-    points += tf.random.uniform(points.shape, -0.005, 0.005, dtype=tf.float64)
-    points = tf.random.shuffle(points)
+    model.add(layers.Reshape((7, 7, 256)))
+    assert model.output_shape == (None, 7, 7, 256)  # Note: None is the batch size
 
-    return points, label
+    model.add(layers.Conv2DTranspose(128, (5, 5), strides=(1, 1), padding='same', use_bias=False))
+    assert model.output_shape == (None, 7, 7, 128)
+    model.add(layers.BatchNormalization())
+    model.add(layers.LeakyReLU())
 
-dataset = tf.data.Dataset.from_tensor_slices((train_points, train_labels))
+    model.add(layers.Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same', use_bias=False))
+    assert model.output_shape == (None, 14, 14, 64)
+    model.add(layers.BatchNormalization())
+    model.add(layers.LeakyReLU())
 
-discriminator = keras.Sequential(
-    [
-        keras.Input(shape=(2048, 2048, 3)),
-        layers.Conv2D(2048, kernel_size=4, strides=2, padding="same"),
-        layers.LeakyReLU(alpha=0.2),
-        layers.Conv2D(4096, kernel_size=4, strides=2, padding="same"),
-        layers.LeakyReLU(alpha=0.2),
-        layers.Conv2D(4096, kernel_size=4, strides=2, padding="same"),
-        layers.LeakyReLU(alpha=0.2),
-        layers.Flatten(),
-        layers.Dropout(0.2),
-        layers.Dense(1, activation="sigmoid"),
-    ],
-    name="discriminator",
-)
-discriminator.summary()
+    model.add(layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
+    assert model.output_shape == (None, 28, 28, 1)
 
-latent_dim = 128
+    return model
 
-generator = keras.Sequential(
-    [
-        keras.Input(shape=(latent_dim,)),
-        layers.Dense(8 * 8 * 4096),
-        layers.Reshape((8, 8, 4096)),
-        layers.Conv2DTranspose(4096, kernel_size=4, strides=2, padding="same"),
-        layers.LeakyReLU(alpha=0.2),
-        layers.Conv2DTranspose(256, kernel_size=4, strides=2, padding="same"),
-        layers.LeakyReLU(alpha=0.2),
-        layers.Conv2DTranspose(512, kernel_size=4, strides=2, padding="same"),
-        layers.LeakyReLU(alpha=0.2),
-        layers.Conv2D(3, kernel_size=5, padding="same", activation="sigmoid"),
-    ],
-    name="generator",
-)
-generator.summary()
+generator = make_generator_model()
 
-opt_gen = keras.optimizers.Adam(1e-4)
-opt_disc = keras.optimizers.Adam(1e-4)
-loss_fn = keras.losses.BinaryCrossentropy()
+noise = tf.random.normal([1, 100])
+generated_image = generator(noise, training=False)
 
-for epoch in range(10):
-    for idx, (real) in enumerate(tqdm(dataset)):
-        batch_size = real.shape[0]
-        with tf.GradientTape() as gen_tape:
-            random_latent_vectors = tf.random.normal(shape = (batch_size, latent_dim))
-            fake = generator(random_latent_vectors)
+plt.imshow(generated_image[0, :, :, 0], cmap='gray')
 
-        if idx % 100 == 0:
-            print(fake[0])
+def make_discriminator_model():
+    model = tf.keras.Sequential()
+    model.add(layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same',
+                                     input_shape=[28, 28, 1]))
+    model.add(layers.LeakyReLU())
+    model.add(layers.Dropout(0.3))
 
-        with tf.GradientTape() as disc_tape:
-            loss_disc_real = loss_fn(tf.ones((batch_size, 1)), discriminator(real))
-            loss_disc_fake = loss_fn(tf.zeros((batch_size, 1)), discriminator(fake))
-            loss_disc = (loss_disc_real + loss_disc_fake)/2
+    model.add(layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same'))
+    model.add(layers.LeakyReLU())
+    model.add(layers.Dropout(0.3))
 
-        grads = disc_tape.gradient(loss_disc, discriminator.trainable_weights)
-        opt_disc.apply_gradients(
-            zip(grads, discriminator.trainable_weights)
-        )
+    model.add(layers.Flatten())
+    model.add(layers.Dense(1))
 
-        with tf.GradientTape() as gen_tape:
-            fake = generator(random_latent_vectors)
-            output = discriminator(fake)
-            loss_gen = loss_fn(tf.ones(batch_size, 1), output)
+    return model
 
-        grads = gen_tape.gradient(loss_gen, generator.trainable_weights)
-        opt_gen.apply_gradients(zip(grads, generator.trainable_weights))
+discriminator = make_discriminator_model()
+decision = discriminator(generated_image)
+print (decision)
