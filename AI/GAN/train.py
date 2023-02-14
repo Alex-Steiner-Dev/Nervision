@@ -2,16 +2,17 @@ import tensorflow as tf
 from tensorflow.keras.datasets import cifar10
 import numpy as np
 from lsgan import build_generator, build_discriminator, build_train_step
+from dataset import parse_dataset
 
 epoch = 50
 steps = 1000
-image_size = (32, 32, 3)
-noise_size = (2, 2, 32)
+image_size = (2048, 3)
+noise_size = (2048,3)
 batch_size = 16
 
-(x_train, y_train), (x_test, y_test) = cifar10.load_data()
+x_train, x_test, y_train, y_test = parse_dataset()
 
-num_of_data = x_train.shape[0]
+num_of_data = 100
 
 generator = build_generator(noise_size)
 discriminator = build_discriminator(image_size)

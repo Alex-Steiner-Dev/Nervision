@@ -1,42 +1,42 @@
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Dense, Conv2D, GlobalAveragePooling2D, LeakyReLU, Conv2DTranspose
+from tensorflow.keras.layers import Input, Dense, Conv1D, GlobalAveragePooling1D, LeakyReLU, Conv1DTranspose
 from tensorflow.keras.optimizers import Adam
 
 def build_generator(input_shape):
     x = Input(input_shape)
 
-    y = Conv2DTranspose(512, (3, 3), strides=(2,2), padding="same")(x)
+    y = Conv1DTranspose(512, 3, strides=2, padding="same")(x)
     y = LeakyReLU(0.2)(y)
 
-    y = Conv2DTranspose(256, (3, 3), strides=(2,2), padding="same")(y)
+    y = Conv1DTranspose(256, 3, strides=2, padding="same")(y)
     y = LeakyReLU(0.2)(y)
 
-    y = Conv2DTranspose(128, (3, 3), strides=(2,2), padding="same")(y)
+    y = Conv1DTranspose(128, 3, strides=2, padding="same")(y)
     y = LeakyReLU(0.2)(y)
 
-    y = Conv2DTranspose(64, (3, 3), strides=(2,2), padding="same")(y)
+    y = Conv1DTranspose(64, 3, strides=2, padding="same")(y)
     y = LeakyReLU(0.2)(y)
 
-    y = Conv2D(3, (3, 3), padding="same", activation="tanh")(y)
+    y = Conv1D(3, 3, padding="same", activation="tanh")(y)
     return Model(x, y)
 
 def build_discriminator(input_shape):
     x = Input(input_shape)
 
-    y = Conv2D(64, (3, 3), strides=(2,2), padding="same")(x)
+    y = Conv1D(64, 3, strides=2, padding="same")(x)
     y = LeakyReLU(0.2)(y)
 
-    y = Conv2D(128, (3, 3), strides=(2,2), padding="same")(y)
+    y = Conv1D(128, 3, strides=2, padding="same")(y)
     y = LeakyReLU(0.2)(y)
 
-    y = Conv2D(256, (3, 3), strides=(2,2), padding="same")(y)
+    y = Conv1D(256, 3, strides=2, padding="same")(y)
     y = LeakyReLU(0.2)(y)
 
-    y = Conv2D(512, (3, 3), strides=(2,2), padding="same")(y)
+    y = Conv1D(512, 3, strides=2, padding="same")(y)
     y = LeakyReLU(0.2)(y)
 
-    y = GlobalAveragePooling2D()(y)
+    y = GlobalAveragePooling1D()(y)
     y = Dense(1)(y)
     return Model(x, y)
 
