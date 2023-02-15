@@ -1,74 +1,108 @@
-import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Dense, Conv1D, GlobalAveragePooling1D, LeakyReLU, Conv1DTranspose
-from tensorflow.keras.optimizers import Adam
+from keras.models import Model
+from keras.layers import Input
+from keras.layers.core import Activation
+from keras.layers.convolutional import Conv3D, Deconv3D
+from keras.layers.advanced_activations import LeakyReLU
+from keras.layers.normalization import BatchNormalization
 
-def build_generator(input_shape):
-    x = Input(input_shape)
+def generator(phase_train=True, params={'z_size':200, 'strides':(2,2,2), 'kernel_size':(4,4,4)}):
+    """
+    Returns a Generator Model with input params and phase_train 
+    Args:
+        phase_train (boolean): training phase or not
+        params (dict): Dictionary with model parameters    
+    Returns:
+        model (keras.Model): Keras Generator model
+    """
 
-    y = Conv1DTranspose(512, 3, strides=1, padding="same")(x)
-    y = LeakyReLU(0.2)(y)
+    z_size = params['z_size']
+    strides = params['strides']
+    kernel_size = params['kernel_size'] 
+    
+    inputs = Input(shape=(1, 1, 1, z_size))
 
-    y = Conv1DTranspose(256, 3, strides=1, padding="same")(y)
-    y = LeakyReLU(0.2)(y)
+    g1 = Deconv3D(filters=512, kernel_size=kernel_size,
+                  strides=(1, 1, 1), kernel_initializer='glorot_normal',
+                  bias_initializer='zeros', padding='valid')(inputs)
+    g1 = BatchNormalization()(g1, training=phase_train)
+    g1 = Activation(activation='relu')(g1)
 
-    y = Conv1DTranspose(128, 3, strides=1, padding="same")(y)
-    y = LeakyReLU(0.2)(y)
+    g2 = Deconv3D(filters=256, kernel_size=kernel_size,
+                  strides=strides, kernel_initializer='glorot_normal',
+                  bias_initializer='zeros', padding='same')(g1)
+    g2 = BatchNormalization()(g2, training=phase_train)
+    g2 = Activation(activation='relu')(g2)
 
-    y = Conv1DTranspose(64, 3, strides=1, padding="same")(y)
-    y = LeakyReLU(0.2)(y)
+    g3 = Deconv3D(filters=128, kernel_size=kernel_size,
+                  strides=strides, kernel_initializer='glorot_normal',
+                  bias_initializer='zeros', padding='same')(g2)
+    g3 = BatchNormalization()(g3, training=phase_train)
+    g3 = Activation(activation='relu')(g3)
 
-    y = Conv1D(3, 3, padding="same", activation="tanh")(y)
-    return Model(x,y)
+    g4 = Deconv3D(filters=64, kernel_size=kernel_size,
+                  strides=strides, kernel_initializer='glorot_normal',
+                  bias_initializer='zeros', padding='same')(g3)
+    g4 = BatchNormalization()(g4, training=phase_train)
+    g4 = Activation(activation='relu')(g4)
 
-def build_discriminator(input_shape):
-    x = Input(input_shape)
+    g5 = Deconv3D(filters=1, kernel_size=kernel_size,
+                  strides=strides, kernel_initializer='glorot_normal',
+                  bias_initializer='zeros', padding='same')(g4)
+    g5 = BatchNormalization()(g5, training=phase_train)
+    g5 = Activation(activation='sigmoid')(g5) 
 
-    y = Conv1D(64, 3, strides=1, padding="same")(x)
-    y = LeakyReLU(0.2)(y)
+    model = Model(inputs=inputs, outputs=g5)
+    model.summary()
 
-    y = Conv1D(128, 3, strides=1, padding="same")(y)
-    y = LeakyReLU(0.2)(y)
+    return model
 
-    y = Conv1D(256, 3, strides=1, padding="same")(y)
-    y = LeakyReLU(0.2)(y)
+def discriminator(phase_train = True, params={'cube_len':64, 'strides':(2,2,2), 'kernel_size':(4,4,4), 'leak_value':0.2}):
+    """
+    Returns a Discriminator Model with input params and phase_train 
+    Args:
+        phase_train (boolean): training phase or not
+        params (dict): Dictionary with model parameters    
+    Returns:
+        model (keras.Model): Keras Discriminator model
+    """
+    cube_len = params['cube_len']
+    strides = params['strides']
+    kernel_size = params['kernel_size'] 
+    leak_value = params['leak_value']
+    
+    inputs = Input(shape=(cube_len, cube_len, cube_len, 1))
 
-    y = Conv1D(512, 3, strides=1, padding="same")(y)
-    y = LeakyReLU(0.2)(y)
+    d1 = Conv3D(filters=64, kernel_size=kernel_size,
+                  strides=strides, kernel_initializer='glorot_normal',
+                  bias_initializer='zeros', padding='same')(inputs)
+    d1 = BatchNormalization()(d1, training=phase_train)
+    d1 = LeakyReLU(leak_value)(d1)
 
-    y = GlobalAveragePooling1D()(y)
-    y = Dense(1)(y)
-    return Model(x, y)
+    d2 = Conv3D(filters=128, kernel_size=kernel_size,
+                  strides=strides, kernel_initializer='glorot_normal',
+                  bias_initializer='zeros', padding='same')(d1)
+    d2 = BatchNormalization()(d2, training=phase_train)
+    d2 = LeakyReLU(leak_value)(d2)
 
+    d3 = Conv3D(filters=256, kernel_size=kernel_size,
+                  strides=strides, kernel_initializer='glorot_normal',
+                  bias_initializer='zeros', padding='same')(d2)
+    d3 = BatchNormalization()(d3, training=phase_train)
+    d3 = LeakyReLU(leak_value)(d3)
 
-def build_train_step(generator, discriminator):
-    d_optimizer = Adam(lr=0.0001, beta_1=0.0, beta_2=0.9)
-    g_optimizer = Adam(lr=0.0001, beta_1=0.0, beta_2=0.9)
+    d4 = Conv3D(filters=512, kernel_size=kernel_size,
+                  strides=strides, kernel_initializer='glorot_normal',
+                  bias_initializer='zeros', padding='same')(d3)
+    d4 = BatchNormalization()(d4, training=phase_train)
+    d4 = LeakyReLU(leak_value)(d4)
 
-    @tf.function
-    def train_step(real_image, noise):
-        fake_image = generator(noise)
+    d5 = Conv3D(filters=1, kernel_size=kernel_size,
+                  strides=(1, 1, 1), kernel_initializer='glorot_normal',
+                  bias_initializer='zeros', padding='valid')(d4)
+    d5 = BatchNormalization()(d5, training=phase_train)
+    d5 = Activation(activation='sigmoid')(d5) 
 
-        pred_real = discriminator(real_image)
-        pred_fake = discriminator(fake_image)
+    model = Model(inputs=inputs, outputs=d5)
+    model.summary()
 
-        LAMBA = tf.cast(0.0002, dtype=tf.float32)
-
-        pred_real = tf.cast(pred_real, dtype=tf.float32)
-        pred_fake = tf.cast(pred_fake, dtype=tf.float32)
-
-        real_image = tf.cast(real_image, dtype=tf.float32)
-        fake_image = tf.cast(fake_image, dtype=tf.float32)
-
-        d_loss = tf.reduce_mean(tf.maximum(pred_real - pred_fake + LAMBA * tf.reduce_sum(tf.abs(real_image-fake_image)), 0.0))
-        g_loss = tf.reduce_mean(pred_fake)
-
-        d_gradients = tf.gradients(d_loss, discriminator.trainable_variables)
-        g_gradients = tf.gradients(g_loss, generator.trainable_variables)
-
-        d_optimizer.apply_gradients(zip(d_gradients, discriminator.trainable_variables))
-        g_optimizer.apply_gradients(zip(g_gradients, generator.trainable_variables))
-
-        return d_loss, g_loss
-
-    return train_step
+    return model

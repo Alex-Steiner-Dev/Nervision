@@ -3,7 +3,6 @@ from tensorflow.keras.datasets import cifar10
 import numpy as np
 from lsgan import build_generator, build_discriminator, build_train_step
 from dataset import parse_dataset
-import time
 
 epoch = 50
 steps = 1000
