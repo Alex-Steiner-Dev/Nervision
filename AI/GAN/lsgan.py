@@ -47,9 +47,10 @@ def build_train_step(generator, discriminator):
 
     @tf.function
     def train_step(real_image, noise):
-
         fake_image = generator(noise)
-        pred_real, pred_fake = tf.split(discriminator(tf.concat([real_image, fake_image], axis=0)), num_or_size_splits=2, axis=0)
+
+        pred_real = discriminator(real_image)
+        pred_fake = discriminator(fake_image)
 
         LAMBA = 0.0002
         d_loss = tf.reduce_mean(tf.maximum(pred_real - pred_fake + LAMBA * tf.reduce_sum(tf.abs(real_image-fake_image),axis=[1,2,3]), 0.0))
