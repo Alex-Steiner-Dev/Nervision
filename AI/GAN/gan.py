@@ -1,49 +1,69 @@
 import numpy as np
-from keras.models import Sequential
-from keras.layers import Dense, Reshape, Input, BatchNormalization, Activation, LeakyReLU
+from keras.models import Sequential, Model
+from keras.layers import Dense, Reshape, Input, BatchNormalization, Activation, LeakyReLU, Flatten, Dropout
 from keras.optimizers import Adam
 from dataset import parse_dataset
 import pyvista as pv
 
 #data = parse_dataset()
-input_shape = (2048, 3)
-epoch = 100
 
-def build_generator():
-    model = Sequential([
-        Dense(3,input_shape=input_shape, activation='relu'),
-        Dense(1024, activation='relu'),
-        Dense(512, activation='relu'),
-        Dense(256, activation='relu'),
-        Dense(128, activation='relu'),
-        Dense(64, activation='relu'),
-        Dense(3, activation='tanh'),
+def discriminator():
+    input = Input(shape=(2048,3))
 
-    ])
+    x = Flatten()(input)
+    x = Dropout(0.4)(x)
+
+    x = Dense(1024, activation=LeakyReLU(alpha=0.2))(x)
+    x = Dropout(0.4)(x)
+
+    x = Dense(512, activation=LeakyReLU(alpha=0.2))(x)
+    x = Dropout(0.4)(x)
+
+    x = Dense(512, activation=LeakyReLU(alpha=0.2))(x)
+
+    output = Dense(1, activation="sigmoid")(x)
+
+    model = Model(input, output)
+    model.compile(optimizer=Adam(lr=0.0002, beta_1=0.5), loss="binary_crossentropy")
 
     return model
 
-def build_discriminator():
-    model = Sequential([
-        Dense(3,input_shape=input_shape)
-    ])
+def generator():
+    input = Input(shape=(2048,3))
+
+    x = Dense(256, activation=LeakyReLU(alpha=0.2))(input)
+    x = Dense(512, activation=LeakyReLU(alpha=0.2))(input)
+    x = Dense(1024, activation=LeakyReLU(alpha=0.2))(input)
+    x = Dense(6144, activation=LeakyReLU(alpha=0.2))(input)
+
+    output = Reshape((2048,3))(x)
+
+    return Model(input, output)
+
+def gan(discr, gener):
+    discr.trainable = False
+
+    model = Sequential({
+        gener,
+        discr
+    })
+
+    model.compile(optimizer=Adam(lr=0.0002, beta_1=0.5), loss="binary_crossentropy")
 
     return model
 
 def train():
-    generator = build_generator()
-    discriminator = build_discriminator()
+    discr = discriminator()
+    gener = generator()
+
+    gan_model = gan(discr, gener)
 
     z = np.random.rand(2048, 3)
 
-    generation = generator.predict(z)
+    #point_cloud = pv.PolyData(generation)
+    #point_cloud.plot()
 
-    point_cloud = pv.PolyData(generation)
-    point_cloud.plot()
-
-    ouput = discriminator.predict(generation)
-
-    for i in range(epoch):
+    for i in range(100):
         pass
 
 train()
