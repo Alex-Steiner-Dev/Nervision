@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Sequential, Model
-from keras.layers import Dense, Reshape, Input, BatchNormalization, Activation, LeakyReLU, Flatten, Dropout
+from keras.layers import Dense, Reshape, Input, BatchNormalization, Activation, LeakyReLU, Flatten, Dropout, Conv1DTranspose
 from keras.optimizers import Adam
 from dataset import parse_dataset
 import pyvista as pv
@@ -29,16 +29,27 @@ def discriminator():
     return model
 
 def generator():
-    input = Input(shape=(2048))
+    model = Sequential()
 
-    x = Dense(256, activation=LeakyReLU(alpha=0.2))(input)
-    x = Dense(512, activation=LeakyReLU(alpha=0.2))(input)
-    x = Dense(1024, activation=LeakyReLU(alpha=0.2))(input)
-    x = Dense(6144, activation=LeakyReLU(alpha=0.2))(input)
+    model.add(Dense(256, input_shape=(100,)))
+    model.add(LeakyReLU(alpha=0.2))
+    model.add(BatchNormalization())
 
-    output = Reshape((2048, 3))(x)
+    model.add(Dense(512))
+    model.add(LeakyReLU(alpha=0.2))
+    model.add(BatchNormalization())
 
-    return Model(input, output)
+    model.add(Dense(1024))
+    model.add(LeakyReLU(alpha=0.2))
+    model.add(BatchNormalization())
+
+    model.add(Dense(2048*3, activation='tanh'))
+    model.add(Reshape((2048, 3)))
+
+    noise = Input(shape=(100,))
+    point_cloud = model(noise)
+
+    return Model(noise, point_cloud)
 
 def gan(discr, gener):
     discr.trainable = False
@@ -58,10 +69,13 @@ def train():
 
     gan_model = gan(discr, gener)
 
-    z = np.random.rand(2048, 3)
+    noise = np.random.normal(0, 1, size=(1, 100))
 
-    #point_cloud = pv.PolyData(generation)
-    #point_cloud.plot()
+    z = gener.predict(noise)
+    z = z.reshape((2048,3))
+
+    point_cloud = pv.PolyData(z)
+    point_cloud.plot()
 
     for i in range(100):
         pass
