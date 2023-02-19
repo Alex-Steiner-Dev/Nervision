@@ -12,22 +12,21 @@ epoch = 100
 def discriminator():
     input = Input(shape=(2048,3))
 
-    model = Sequential()
+    x = Flatten()(input)
+    x = Dropout(0.4)(x)
 
-    model.add(Flatten()(input))
-    model.add(Dropout(0.4))
+    x = Dense(1024, activation=LeakyReLU(alpha=0.2))(x)
+    x = Dropout(0.4)(x)
 
-    model.add(Dense(1024, activation=LeakyReLU(alpha=0.2)))
-    model.add(Dropout(0.4))
+    x = Dense(512, activation=LeakyReLU(alpha=0.2))(x)
+    x = Dropout(0.4)(x)
 
-    model.add(Dense(512, activation=LeakyReLU(alpha=0.2)))
-    model.add(Dropout(0.4))
+    x = Dense(512, activation=LeakyReLU(alpha=0.2))(x)
 
-    model.add(Dense(512, activation=LeakyReLU(alpha=0.2)))
+    output = Dense(1, activation="sigmoid")(x)
 
-    model.add(x = Dense(1, activation="sigmoid"))
-
-    model.compile(optimizer=Adam(learning_rate=0.0002, beta_1=0.5), loss="binary_crossentropy")
+    model = Model(input, output)
+    model.compile(optimizer=Adam(learning_rate=0.0002, beta_1=0.5), loss="binary_crossentropy", metrics=["accuracy"])
 
     return model
 
@@ -71,18 +70,18 @@ def train():
     gener = generator()
 
     gan_model = gan(discr, gener)
+    
+    points = []
 
-    for i in tqdm(range(epoch)):
-        real = data[0][0]
-        noise = np.random.normal(0, 1, size=(1024, 3))
+    real = data[0][0]
+    noise = np.random.normal(0, 1, size=(1024, 3))
   
-        final = np.vstack((real, noise))
-        final = final.reshape(1, 2048, 3)
-        print(final.shape)
-
-        dloss = discr.train_on_batch(final)
-        #gloss = gan_model.train_on_batch()
-
-        pass
+    final = np.vstack((real, noise))
+    final = final.reshape(1, 2048, 3)
+        
+    dloss = discr.fit(data, np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), epochs=100, batch_size=32)
+    #gloss = gan_model.fit(np.random.normal(0, 1, size=(2048, 3)), np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), epochs=100, batch_size=32)
+      
+    points.append(final)
 
 train()
