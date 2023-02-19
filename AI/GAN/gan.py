@@ -1,16 +1,16 @@
 import numpy as np
 from keras.models import Sequential, Model
-from keras.layers import Dense, Reshape, Input, BatchNormalization, Activation, LeakyReLU, Flatten, Dropout, Conv1DTranspose
+from keras.layers import Dense, Reshape, Input, BatchNormalization, Activation, LeakyReLU, Flatten, Dropout
 from keras.optimizers import Adam
 from dataset import parse_dataset
 import pyvista as pv
 from tqdm import tqdm
 
 data = parse_dataset()
-epoch = 100
+epochs = 10000
 
 def discriminator():
-    input = Input(shape=(2048,3))
+    input = Input(shape=(4096,3)) 
 
     x = Flatten()(input)
     x = Dropout(0.4)(x)
@@ -26,18 +26,13 @@ def discriminator():
     output = Dense(1, activation="sigmoid")(x)
 
     model = Model(input, output)
-    model.compile(optimizer=Adam(learning_rate=0.0002, beta_1=0.5), loss="binary_crossentropy", metrics=["accuracy"])
 
     return model
 
 def generator():
     model = Sequential()
 
-    model.add(Dense(256, input_shape=(100,)))
-    model.add(LeakyReLU(alpha=0.2))
-    model.add(BatchNormalization())
-
-    model.add(Dense(512))
+    model.add(Dense(512, input_shape=(100,)))
     model.add(LeakyReLU(alpha=0.2))
     model.add(BatchNormalization())
 
@@ -45,13 +40,11 @@ def generator():
     model.add(LeakyReLU(alpha=0.2))
     model.add(BatchNormalization())
 
-    model.add(Dense(2048*3, activation='tanh'))
-    model.add(Reshape((2048, 3)))
+    model.add(Dense(4096 * 3, activation='tanh'))  # remove UpSampling1D
 
-    noise = Input(shape=(100,))
-    point_cloud = model(noise)
+    model.add(Reshape((4096, 3)))  # change to output shape to (None, 4096, 3)
 
-    return Model(noise, point_cloud)
+    return model
 
 def gan(discr, gener):
     discr.trainable = False
@@ -69,19 +62,26 @@ def train():
     discr = discriminator()
     gener = generator()
 
-    gan_model = gan(discr, gener)
+    discr.compile(optimizer='adam', loss='binary_crossentropy')
     
-    points = []
+    gan_model = gan(discr, gener)
 
-    real = data[0][0]
-    noise = np.random.normal(0, 1, size=(1024, 3))
-  
-    final = np.vstack((real, noise))
-    final = final.reshape(1, 2048, 3)
-        
-    dloss = discr.fit(data, np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), epochs=100, batch_size=32)
-    #gloss = gan_model.fit(np.random.normal(0, 1, size=(2048, 3)), np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), epochs=100, batch_size=32)
-      
-    points.append(final)
+    for epoch in range(epochs):
+        real = data[0][0]
+        real = np.reshape(real, (1, real.shape[0], real.shape[1]))
+
+        noise = np.random.normal(0, 1, size=(1, 100))
+        fake = gener.predict(noise)
+
+        d_loss_real = discr.train_on_batch(real, np.array([1]))
+        d_loss_fake = discr.train_on_batch(fake, np.array([1]))
+
+        d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
+
+        noise = np.random.normal(0, 1, (4096, 3))
+        g_loss = gan_model.train_on_batch(noise, np.array([1]))
+
+        if epoch % 100 == 0:
+            print(f"Epoch: {epoch}, Discriminator Loss: {d_loss}, Generator Loss: {g_loss}")
 
 train()
