@@ -126,3 +126,4 @@ dist
 .yarn/install-state.gz
 .pnp.*
 WebSite/.DS_Store
+AI/GAN/model.h5

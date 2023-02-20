@@ -1,88 +1,95 @@
-import numpy as np
+from keras.layers import Input, Dense, Reshape, Flatten, Dropout
+from keras.layers import BatchNormalization, Activation, LeakyReLU
 from keras.models import Sequential, Model
-from keras.layers import Dense, Reshape, Input, BatchNormalization, Activation, LeakyReLU, Flatten, Dropout
 from keras.optimizers import Adam
-import pyvista as pv
+from dataset import parse_dataset
+import numpy as np
 
-data = parse_dataset()
-epochs = 500
+dataset = parse_dataset()
 
-def discriminator():
-    input = Input(shape=(4096,3)) 
+class LSGAN():
+    def __init__(self):
+        self.shape = (4096, 3)
+        self.latent_dim = 100
 
-    x = Flatten()(input)
-    x = Dropout(0.4)(x)
+        optimizer = Adam(0.0002, 0.5)
 
-    x = Dense(1024, activation=LeakyReLU(alpha=0.2))(x)
-    x = Dropout(0.4)(x)
+        self.discriminator = self.build_discriminator()
+        self.discriminator.compile(loss='mse',
+            optimizer=optimizer,
+            metrics=['accuracy'])
 
-    x = Dense(512, activation=LeakyReLU(alpha=0.2))(x)
-    x = Dropout(0.4)(x)
+        self.generator = self.build_generator()
 
-    x = Dense(512, activation=LeakyReLU(alpha=0.2))(x)
+        z = Input(shape=(self.latent_dim,))
+        mesh = self.generator(z)
 
-    output = Dense(1, activation="sigmoid")(x)
+        self.discriminator.trainable = False
 
-    model = Model(input, output)
+        valid = self.discriminator(mesh)
 
-    return model
+        self.combined = Model(z, valid)
+        
+        self.combined.compile(loss='mse', optimizer=optimizer)
 
-def generator():
-    model = Sequential()
+    def build_generator(self):
 
-    model.add(Dense(512, input_shape=(100,)))
-    model.add(LeakyReLU(alpha=0.2))
-    model.add(BatchNormalization())
+        model = Sequential()
 
-    model.add(Dense(1024))
-    model.add(LeakyReLU(alpha=0.2))
-    model.add(BatchNormalization())
+        model.add(Dense(256, input_dim=self.latent_dim))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(BatchNormalization(momentum=0.8))
+        model.add(Dense(512))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(BatchNormalization(momentum=0.8))
+        model.add(Dense(1024))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(BatchNormalization(momentum=0.8))
+        model.add(Dense(np.prod(self.shape), activation='tanh'))
+        model.add(Reshape(self.shape))
 
-    model.add(Dense(4096 * 3, activation='tanh'))
+        noise = Input(shape=(self.latent_dim,))
+        mesh = model(noise)
 
-    model.add(Reshape((4096, 3)))
+        return Model(noise, mesh)
 
-    return model
+    def build_discriminator(self):
 
-def gan(discr, gener):
-    discr.trainable = False
+        model = Sequential()
 
-    model = Sequential([
-        gener,
-        discr
-    ])
+        model.add(Flatten(input_shape=self.shape))
+        model.add(Dense(512))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(Dense(256))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(Dense(1))
+        
+        img = Input(shape=self.shape)
+        validity = model(img)
 
-    model.compile(optimizer=Adam(learning_rate=0.0002, beta_1=0.5), loss="binary_crossentropy")
+        return Model(img, validity)
 
-    return model
+    def train(self, epochs, batch_size=128, sample_interval=50):
+        valid = np.ones((batch_size, 1))
+        fake = np.zeros((batch_size, 1))
 
-def train():
-    discr = discriminator()
-    gener = generator()
+        for epoch in range(epochs):
+            real = dataset[0][0]
 
-    discr.compile(optimizer='adam', loss='binary_crossentropy')
-    
-    gan_model = gan(discr, gener)
+            noise = np.random.normal(0, 1, (batch_size, self.latent_dim))
 
-    losses = []
-    for epoch in range(epochs):
-        real = data[0][0]
-        real = np.reshape(real, (1, real.shape[0], real.shape[1]))
+            gen_model = self.generator.predict(noise)
 
-        noise = np.random.normal(0, 1, size=(1, 100))
-        fake = gener.predict(noise)
+            d_loss_real = self.discriminator.train_on_batch(real, valid)
+            d_loss_fake = self.discriminator.train_on_batch(gen_model, fake)
+            d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
 
-        d_loss_real = discr.train_on_batch(real, np.array([1]))
-        d_loss_fake = discr.train_on_batch(fake, np.array([1]))
+            g_loss = self.combined.train_on_batch(noise, valid)
 
-        d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
+            print ("%d [D loss: %f, acc.: %.2f%%] [G loss: %f]" % (epoch, d_loss[0], 100*d_loss[1], g_loss))
 
-        noise = np.random.normal(0, 1, size=(1, 100))
-        g_loss = gan_model.train_on_batch(noise, np.zeros((1, 1)))
+        self.combined.save("model.h5")
 
-        if epoch % 100 == 0:
-            losses.append(f"Epoch: {epoch}, Discriminator Loss: {d_loss}, Generator Loss: {g_loss}")
-
-    gan_model.save("model.h5")
-
-train()
+if __name__ == '__main__':
+    gan = LSGAN()
+    gan.train(epochs=30000, batch_size=4096, sample_interval=200)
