@@ -79,7 +79,7 @@ def train():
         d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
 
         noise = np.random.normal(0, 1, (4096, 3))
-        g_loss = gan_model.train_on_batch(noise, np.array([1]))
+        g_loss = gan_model.train_on_batch(noise, np.ones((1,4096, 1)))
 
         if epoch % 100 == 0:
             print(f"Epoch: {epoch}, Discriminator Loss: {d_loss}, Generator Loss: {g_loss}")
