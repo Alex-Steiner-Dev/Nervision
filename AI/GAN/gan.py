@@ -2,12 +2,10 @@ import numpy as np
 from keras.models import Sequential, Model
 from keras.layers import Dense, Reshape, Input, BatchNormalization, Activation, LeakyReLU, Flatten, Dropout
 from keras.optimizers import Adam
-from dataset import parse_dataset
 import pyvista as pv
-from tqdm import tqdm
 
 data = parse_dataset()
-epochs = 10000
+epochs = 500
 
 def discriminator():
     input = Input(shape=(4096,3)) 
@@ -40,9 +38,9 @@ def generator():
     model.add(LeakyReLU(alpha=0.2))
     model.add(BatchNormalization())
 
-    model.add(Dense(4096 * 3, activation='tanh'))  # remove UpSampling1D
+    model.add(Dense(4096 * 3, activation='tanh'))
 
-    model.add(Reshape((4096, 3)))  # change to output shape to (None, 4096, 3)
+    model.add(Reshape((4096, 3)))
 
     return model
 
@@ -66,6 +64,7 @@ def train():
     
     gan_model = gan(discr, gener)
 
+    losses = []
     for epoch in range(epochs):
         real = data[0][0]
         real = np.reshape(real, (1, real.shape[0], real.shape[1]))
@@ -78,10 +77,12 @@ def train():
 
         d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
 
-        noise = np.random.normal(0, 1, (4096, 3))
-        g_loss = gan_model.train_on_batch(noise, np.ones((1,4096, 1)))
+        noise = np.random.normal(0, 1, size=(1, 100))
+        g_loss = gan_model.train_on_batch(noise, np.zeros((1, 1)))
 
         if epoch % 100 == 0:
-            print(f"Epoch: {epoch}, Discriminator Loss: {d_loss}, Generator Loss: {g_loss}")
+            losses.append(f"Epoch: {epoch}, Discriminator Loss: {d_loss}, Generator Loss: {g_loss}")
+
+    gan_model.save("model.h5")
 
 train()
