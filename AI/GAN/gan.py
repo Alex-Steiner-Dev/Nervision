@@ -1,6 +1,6 @@
 import numpy as np
-from keras.layers import Input, Dense, Reshape, Flatten, LeakyReLU, BatchNormalization
-from keras.layers.convolutional import Conv1D
+from keras.layers import Input, BatchNormalization, Activation, LeakyReLU
+from keras.layers.convolutional import Conv3D, Conv3DTranspose
 from keras.models import Sequential, Model
 from keras.optimizers import Adam
 import matplotlib.pyplot as plt
@@ -9,90 +9,125 @@ import random
 
 data = parse_dataset()
 
-num_points = 4096
-
-def generator():
-    model = Sequential()
-    model.add(Dense(256, input_dim=100))
-    model.add(LeakyReLU(alpha=0.2))
-    model.add(BatchNormalization(momentum=0.8))
-    model.add(Dense(512))
-    model.add(LeakyReLU(alpha=0.2))
-    model.add(BatchNormalization(momentum=0.8))
-    model.add(Dense(1024))
-    model.add(LeakyReLU(alpha=0.2))
-    model.add(BatchNormalization(momentum=0.8))
-    model.add(Dense(num_points * 3, activation='tanh'))
-    model.add(Reshape((num_points, 3)))
-    noise = Input(shape=(100,))
-    cloud = model(noise)
-    return Model(inputs=noise, outputs=cloud)
-
-def discriminator():
-    model = Sequential()
-    model.add(Conv1D(64, 4, strides=2, padding='same', input_shape=(num_points, 3)))
-    model.add(LeakyReLU(alpha=0.2))
-    model.add(Conv1D(128, 4, strides=2, padding='same'))
-    model.add(LeakyReLU(alpha=0.2))
-    model.add(Conv1D(256, 4, strides=2, padding='same'))
-    model.add(LeakyReLU(alpha=0.2))
-    model.add(Conv1D(512, 4, strides=2, padding='same'))
-    model.add(LeakyReLU(alpha=0.2))
-    model.add(Flatten())
-    model.add(Dense(1))
-    cloud = Input(shape=(num_points, 3))
-    validity = model(cloud)
-    return Model(inputs=cloud, outputs=validity)
-
-optimizer = Adam(lr=0.0002, beta_1=0.5)
-
-discriminator = discriminator()
-discriminator.compile(loss='mse', optimizer=optimizer, metrics=['accuracy'])
-
-generator = generator()
-
-z = Input(shape=(100,))
-cloud = generator(z)
-
-discriminator.trainable = False
-
-validity = discriminator(cloud)
-
-combined = Model(z, validity)
-combined.compile(loss='mse', optimizer=optimizer)
-
 epochs = 10000
 batch_size = 1
 save_interval = 1000
+latent_dim = 200
+im_dim = 64
+kernel_size = 4
+strides = 2
+batch_size = 1
 
-# Adversarial ground truths
-valid = np.ones((batch_size, 1))
-fake = np.zeros((batch_size, 1))
+def build_generator():
+    model = Sequential()
+    model.add(Conv3DTranspose(filters=512, kernel_size=kernel_size,
+        strides=(1, 1, 1), kernel_initializer='glorot_normal',
+        bias_initializer='zeros', padding='valid'))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
+
+    model.add(Conv3DTranspose(filters=256, kernel_size=kernel_size,
+        strides=strides, kernel_initializer='glorot_normal',
+        bias_initializer='zeros', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
+
+    model.add(Conv3DTranspose(filters=128, kernel_size=kernel_size,
+        strides=strides, kernel_initializer='glorot_normal',
+        bias_initializer='zeros', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
+    
+    model.add(Conv3DTranspose(filters=64, kernel_size=kernel_size,
+        strides=strides, kernel_initializer='glorot_normal',
+        bias_initializer='zeros', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
+
+    model.add(Conv3DTranspose(filters=1, kernel_size=kernel_size,
+        strides=strides, kernel_initializer='glorot_normal',
+        bias_initializer='zeros', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Activation('sigmoid'))
+
+    noise = Input(shape=(1, 1, 1, latent_dim))
+    image = model(noise)
+
+    return Model(inputs=noise, outputs=image)
+
+def build_discriminator():
+    model = Sequential()
+    model.add(Conv3D(filters=64, kernel_size=kernel_size,
+        strides=strides, kernel_initializer='glorot_normal',
+        bias_initializer='zeros', padding='same'))
+    model.add(BatchNormalization())
+    model.add(LeakyReLU(alpha=0.2))
+
+    model.add(Conv3D(filters=128, kernel_size=kernel_size,
+        strides=strides, kernel_initializer='glorot_normal',
+        bias_initializer='zeros', padding='same'))
+    model.add(BatchNormalization())
+    model.add(LeakyReLU(alpha=0.2))
+
+    model.add(Conv3D(filters=256, kernel_size=kernel_size,
+        strides=strides, kernel_initializer='glorot_normal',
+        bias_initializer='zeros', padding='same'))
+    model.add(BatchNormalization())
+    model.add(LeakyReLU(alpha=0.2))
+
+    model.add(Conv3D(filters=512, kernel_size=kernel_size,
+        strides=strides, kernel_initializer='glorot_normal',
+        bias_initializer='zeros', padding='same'))
+    model.add(BatchNormalization())
+    model.add(LeakyReLU(alpha=0.2))
+
+    model.add(Conv3D(filters=1, kernel_size=kernel_size,
+        strides=(1, 1, 1), kernel_initializer='glorot_normal',
+        bias_initializer='zeros', padding='valid'))
+    model.add(BatchNormalization())
+    model.add(Activation('sigmoid'))
+
+    image = Input(shape=(im_dim, im_dim, im_dim, 1))
+    validity = model(image)
+
+    return Model(inputs=image, outputs=validity)
+
+dis_optim = Adam(lr=1e-5, beta_1=0.5)
+gen_optim = Adam(lr=0.0025, beta_1=0.5)
+
+discriminator = build_discriminator()
+
+discriminator.compile(loss='binary_crossentropy', optimizer=dis_optim)
+
+generator = build_generator()
+
+z = Input(shape=(1, 1, 1, latent_dim))
+img = generator(z)
+
+discriminator.trainable = False
+validity = discriminator(img)
+
+combined = Model(input=z, output=validity)
+combined.compile(loss='binary_crossentropy', optimizer=gen_optim)
 
 for epoch in range(epochs):
-    point_clouds = data[0][random.randint(0, len(data[0]) - 1)]
-    point_clouds = point_clouds.reshape(1,4096, 3)
+    real = data[0][0]
 
-    noise = np.random.normal(0, 1, (batch_size, 100))
-    gen_point_clouds = generator.predict(noise)
+    z = np.random.normal(0, 0.33, size=[batch_size, 1, 1, 1,latent_dim]).astype(np.float32)
+    fake = generator.predict(z)
 
-    d_loss_real = discriminator.train_on_batch(point_clouds, valid)
-    d_loss_fake = discriminator.train_on_batch(gen_point_clouds, fake)
-    d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
+    real = np.expand_dims(real, axis=4)
 
-    g_loss = combined.train_on_batch(noise, valid)
+    lab_real = np.reshape([1] *batch_size, (-1, 1, 1, 1, 1))
+    lab_fake = np.reshape([0] *batch_size, (-1, 1, 1, 1, 1))
 
-    if epoch % 100 == 0:
-        print(f"Epoch {epoch} [D loss: {d_loss[0]}, acc.: {100 * d_loss[1]:.2f}%] [G loss: {g_loss}]")
+    d_loss_real = discriminator.train_on_batch(real, lab_real)
+    d_loss_fake = discriminator.train_on_batch(fake, lab_fake)
 
-    if epoch % save_interval == 0:
-        noise = np.random.normal(0, 1, (1, 100))
-        gen_point_cloud = generator.predict(noise)
+    d_loss = 0.5*np.add(d_loss_real, d_loss_fake)
 
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.scatter(gen_point_cloud[0, :, 0], gen_point_cloud[0, :, 1], gen_point_cloud[0, :, 2])
-        plt.savefig(f"generations/generated_point_cloud_{epoch}.png")
-        plt.close(fig)
+    z = np.random.normal(0, 0.33, size=[batch_size, 1, 1, 1,latent_dim]).astype(np.float32)
 
-gen_point_cloud.save("model.h5")
+    g_loss = combined.train_on_batch(z, np.reshape([1] *batch_size, (-1, 1, 1, 1, 1))).astype(np.float64)
+
+generator.save("model.h5")

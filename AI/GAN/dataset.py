@@ -17,9 +17,10 @@ def parse_dataset(num_points=4096):
     
         train_files = glob.glob(folder + "/train/*")
 
-        for f in train_files:
-            train_points.append(trimesh.load(f).sample(num_points))
+        #for f in train_files:
+            #train_points.append(trimesh.load(f).sample(num_points))
         
+        train_points.append(trimesh.load(train_files[0]).sample(num_points))
         objects.append(train_points)
 
     return objects
