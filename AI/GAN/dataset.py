@@ -6,6 +6,8 @@ import numpy as np
 DATA_DIR = "../Data/*"
 
 def parse_dataset(num_points=4096):
+    print("Loading dataset...")
+    
     objects = []
 
     folders = glob.glob(DATA_DIR)
@@ -17,7 +19,7 @@ def parse_dataset(num_points=4096):
 
         for f in train_files:
             train_points.append(trimesh.load(f).sample(num_points))
-
+        
         objects.append(train_points)
 
     return objects
