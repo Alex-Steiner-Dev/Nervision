@@ -1,3 +1,10 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:752d9e5cdf87ee3d22f78ee6aa87c10d29150a05351fbbdb79ab52cf42bdf9c5
-size 748
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=3000)

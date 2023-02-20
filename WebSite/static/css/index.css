@@ -1,4 +1,84 @@
-canvas {
-    width: 960px;
-    height: 500px;
-  }
+/* Nav bar styling */
+nav {
+  background-color: #333;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+
+nav h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: 1px;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+nav ul li {
+  margin-left: 20px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+nav ul li a {
+  color: #fff;
+  text-decoration: none;
+}
+
+/* Latest creations section styling */
+#latest-creations {
+  margin-top: 50px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.latest-creation {
+  width: calc(33.33% - 20px);
+  margin-bottom: 40px;
+  background-color: #f4f4f4;
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+}
+
+.latest-creation img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.latest-creation h2 {
+  margin: 20px;
+  font-size: 20px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Footer styling */
+footer {
+  background-color: #333;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50px;
+  position: absolute;
+  bottom: 0;
+}
+
+footer p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 1px;
+}
