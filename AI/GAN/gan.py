@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from keras.layers import Input, LeakyReLU, BatchNormalization
-from keras.layers.convolutional import Conv3D, Deconv3D
+from keras.layers.convolutional import Conv3D, Conv3DTranspose
 from keras.layers.core import Activation
 from keras.models import Model
 from keras.optimizers import Adam
@@ -19,14 +19,14 @@ def build_generator():
 
     input_layer = Input(shape=gen_input_shape)
 
-    a = Deconv3D(filters=gen_filters[0],
+    a = Conv3DTranspose(filters=gen_filters[0],
                  kernel_size=gen_kernel_sizes[0],
                  strides=gen_strides[0])(input_layer)
     a = BatchNormalization()(a, training=True)
     a = Activation(activation='relu')(a)
 
     for i in range(gen_convolutional_blocks - 1):
-        a = Deconv3D(filters=gen_filters[i + 1],
+        a = Conv3DTranspose(filters=gen_filters[i + 1],
                      kernel_size=gen_kernel_sizes[i + 1],
                      strides=gen_strides[i + 1], padding='same')(a)
         a = BatchNormalization()(a, training=True)
@@ -74,6 +74,7 @@ def saveFromVoxels(voxels, path):
     ax = fig.add_subplot(111, projection='3d')
     ax.scatter(x, y, -z, zdir='z', c='red')
     plt.savefig(path)
+    plt.close()
 
 if __name__ == '__main__':
     gen_learning_rate = 0.0025
@@ -112,32 +113,28 @@ if __name__ == '__main__':
         gen_losses = []
         dis_losses = []
 
-        number_of_batches = int(volumes.shape[0] / batch_size)
-        for index in range(number_of_batches):
-            z_sample = np.random.normal(0, 0.33, size=[batch_size, 1, 1, 1, z_size]).astype(np.float32)
-            volumes_batch = volumes[index * batch_size:(index + 1) * batch_size, :, :, :]
-
-            gen_volumes = generator.predict_on_batch(z_sample)
-
-            discriminator.trainable = True
-
-            if index % 2 == 0:
-                loss_real = discriminator.train_on_batch(volumes_batch, labels_real)
-                loss_fake = discriminator.train_on_batch(gen_volumes, labels_fake)
-
-                d_loss = 0.5 * np.add(loss_real, loss_fake)
-            else:
-                d_loss = 0.0
-
-            discriminator.trainable = False
+        z_sample = np.random.normal(0, 0.33, size=[batch_size, 1, 1, 1, z_size]).astype(np.float32)
    
-            z = np.random.normal(0, 0.33, size=[batch_size, 1, 1, 1, z_size]).astype(np.float32)
-            g_loss = adversarial_model.train_on_batch(z, labels_real)
-  
-            gen_losses.append(g_loss)
-            dis_losses.append(d_loss)
+        gen_volumes = generator.predict_on_batch(z_sample)
 
-        if epoch % 10 == 0:
+        discriminator.trainable = True
+
+        loss_real = discriminator.train_on_batch(volumes, labels_real)
+        loss_fake = discriminator.train_on_batch(gen_volumes, labels_fake)
+
+        d_loss = 0.5 * np.add(loss_real, loss_fake)
+
+        discriminator.trainable = False
+   
+        z = np.random.normal(0, 0.33, size=[batch_size, 1, 1, 1, z_size]).astype(np.float32)
+        g_loss = adversarial_model.train_on_batch(z, labels_real)
+  
+        gen_losses.append(g_loss)
+        dis_losses.append(d_loss)
+
+        print(f"[Epoch: {epoch}] - [Generator Loss: {g_loss}] - [Discriminator Loss - {d_loss}]")
+
+        if epoch % 15 == 0:
             z_sample2 = np.random.normal(0, 0.33, size=[batch_size, 1, 1, 1, z_size]).astype(np.float32)
             generated_volumes = generator.predict(z_sample2, verbose=3)
             for i, generated_volume in enumerate(generated_volumes[:5]):
@@ -145,9 +142,6 @@ if __name__ == '__main__':
                 voxels[voxels < 0.5] = 0.
                 voxels[voxels >= 0.5] = 1.
                 saveFromVoxels(voxels, "Predictions/img_{}".format(epoch))
-
-        print(f"[Epoch: {epoch}] - [Generator Loss: {gen_losses[len(gen_losses) - 1]}] - [Discriminator Loss - {dis_losses[len(dis_losses) - 1]}]")
-
-
+            
     generator.save_weights(os.path.join("Models", "generator_weights.h5"))
     discriminator.save_weights(os.path.join("Models", "discriminator_weights.h5"))
