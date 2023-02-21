@@ -1,133 +1,151 @@
+import os
 import numpy as np
-from keras.layers import Input, BatchNormalization, Activation, LeakyReLU
-from keras.layers.convolutional import Conv3D, Conv3DTranspose
-from keras.models import Sequential, Model
+from keras.layers import Input, LeakyReLU, BatchNormalization
+from keras.layers.convolutional import Conv3D, Convolution3DTranspose
+from keras.layers.core import Activation
+from keras.models import Model
 from keras.optimizers import Adam
-import matplotlib.pyplot as plt
 from dataset import parse_dataset
-import random
-
-data = parse_dataset()
-
-epochs = 10000
-batch_size = 1
-save_interval = 1000
-latent_dim = 200
-im_dim = 64
-kernel_size = 4
-strides = 2
-batch_size = 1
+import matplotlib.pyplot as plt
 
 def build_generator():
-    model = Sequential()
-    model.add(Conv3DTranspose(filters=512, kernel_size=kernel_size,
-        strides=(1, 1, 1), kernel_initializer='glorot_normal',
-        bias_initializer='zeros', padding='valid'))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
+    z_size = 200
+    gen_filters = [512, 256, 128, 64, 1]
+    gen_kernel_sizes = [4, 4, 4, 4, 4]
+    gen_strides = [1, 2, 2, 2, 2]
+    gen_input_shape = (1, 1, 1, z_size)
+    gen_activations = ['relu', 'relu', 'relu', 'relu', 'sigmoid']
+    gen_convolutional_blocks = 5
 
-    model.add(Conv3DTranspose(filters=256, kernel_size=kernel_size,
-        strides=strides, kernel_initializer='glorot_normal',
-        bias_initializer='zeros', padding='same'))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
+    input_layer = Input(shape=gen_input_shape)
 
-    model.add(Conv3DTranspose(filters=128, kernel_size=kernel_size,
-        strides=strides, kernel_initializer='glorot_normal',
-        bias_initializer='zeros', padding='same'))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    
-    model.add(Conv3DTranspose(filters=64, kernel_size=kernel_size,
-        strides=strides, kernel_initializer='glorot_normal',
-        bias_initializer='zeros', padding='same'))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
+    a = Convolution3DTranspose(filters=gen_filters[0],
+                 kernel_size=gen_kernel_sizes[0],
+                 strides=gen_strides[0])(input_layer)
+    a = BatchNormalization()(a, training=True)
+    a = Activation(activation='relu')(a)
 
-    model.add(Conv3DTranspose(filters=1, kernel_size=kernel_size,
-        strides=strides, kernel_initializer='glorot_normal',
-        bias_initializer='zeros', padding='same'))
-    model.add(BatchNormalization())
-    model.add(Activation('sigmoid'))
+    for i in range(gen_convolutional_blocks - 1):
+        a = Convolution3DTranspose(filters=gen_filters[i + 1],
+                     kernel_size=gen_kernel_sizes[i + 1],
+                     strides=gen_strides[i + 1], padding='same')(a)
+        a = BatchNormalization()(a, training=True)
+        a = Activation(activation=gen_activations[i + 1])(a)
 
-    noise = Input(shape=(1, 1, 1, latent_dim))
-    image = model(noise)
-
-    return Model(inputs=noise, outputs=image)
+    gen_model = Model(inputs=[input_layer], outputs=[a])
+    return gen_model
 
 def build_discriminator():
-    model = Sequential()
-    model.add(Conv3D(filters=64, kernel_size=kernel_size,
-        strides=strides, kernel_initializer='glorot_normal',
-        bias_initializer='zeros', padding='same'))
-    model.add(BatchNormalization())
-    model.add(LeakyReLU(alpha=0.2))
+    dis_input_shape = (64, 64, 64, 1)
+    dis_filters = [64, 128, 256, 512, 1]
+    dis_kernel_sizes = [4, 4, 4, 4, 4]
+    dis_strides = [2, 2, 2, 2, 1]
+    dis_paddings = ['same', 'same', 'same', 'same', 'valid']
+    dis_alphas = [0.2, 0.2, 0.2, 0.2, 0.2]
+    dis_activations = ['leaky_relu', 'leaky_relu', 'leaky_relu',
+                       'leaky_relu', 'sigmoid']
+    dis_convolutional_blocks = 5
 
-    model.add(Conv3D(filters=128, kernel_size=kernel_size,
-        strides=strides, kernel_initializer='glorot_normal',
-        bias_initializer='zeros', padding='same'))
-    model.add(BatchNormalization())
-    model.add(LeakyReLU(alpha=0.2))
+    dis_input_layer = Input(shape=dis_input_shape)
 
-    model.add(Conv3D(filters=256, kernel_size=kernel_size,
-        strides=strides, kernel_initializer='glorot_normal',
-        bias_initializer='zeros', padding='same'))
-    model.add(BatchNormalization())
-    model.add(LeakyReLU(alpha=0.2))
+    a = Conv3D(filters=dis_filters[0],
+               kernel_size=dis_kernel_sizes[0],
+               strides=dis_strides[0],
+               padding=dis_paddings[0])(dis_input_layer)
+    a = LeakyReLU(dis_alphas[0])(a)
 
-    model.add(Conv3D(filters=512, kernel_size=kernel_size,
-        strides=strides, kernel_initializer='glorot_normal',
-        bias_initializer='zeros', padding='same'))
-    model.add(BatchNormalization())
-    model.add(LeakyReLU(alpha=0.2))
+    for i in range(dis_convolutional_blocks - 1):
+        a = Conv3D(filters=dis_filters[i + 1],
+                   kernel_size=dis_kernel_sizes[i + 1],
+                   strides=dis_strides[i + 1],
+                   padding=dis_paddings[i + 1])(a)
+        a = BatchNormalization()(a, training=True)
+        if dis_activations[i + 1] == 'leaky_relu':
+            a = LeakyReLU(dis_alphas[i + 1])(a)
+        elif dis_activations[i + 1] == 'sigmoid':
+            a = Activation(activation='sigmoid')(a)
 
-    model.add(Conv3D(filters=1, kernel_size=kernel_size,
-        strides=(1, 1, 1), kernel_initializer='glorot_normal',
-        bias_initializer='zeros', padding='valid'))
-    model.add(BatchNormalization())
-    model.add(Activation('sigmoid'))
+    dis_model = Model(inputs=[dis_input_layer], outputs=[a])
+    return dis_model
 
-    image = Input(shape=(im_dim, im_dim, im_dim, 1))
-    validity = model(image)
+def saveFromVoxels(voxels, path):
+    z, x, y = voxels.nonzero()
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(x, y, -z, zdir='z', c='red')
+    plt.savefig(path)
 
-    return Model(inputs=image, outputs=validity)
+if __name__ == '__main__':
+    gen_learning_rate = 0.0025
+    dis_learning_rate = 10e-5
+    beta = 0.5
+    batch_size = 1
+    z_size = 200
+    epochs = 1000
 
-dis_optim = Adam(lr=1e-5, beta_1=0.5)
-gen_optim = Adam(lr=0.0025, beta_1=0.5)
+    gen_optimizer = Adam(lr=gen_learning_rate, beta_1=beta)
+    dis_optimizer = Adam(lr=dis_learning_rate, beta_1=beta)
 
-discriminator = build_discriminator()
+    discriminator = build_discriminator()
+    discriminator.compile(loss='binary_crossentropy', optimizer=dis_optimizer)
 
-discriminator.compile(loss='binary_crossentropy', optimizer=dis_optim)
+    generator = build_generator()
+    generator.compile(loss='binary_crossentropy', optimizer=gen_optimizer)
 
-generator = build_generator()
+    discriminator.trainable = False
 
-z = Input(shape=(1, 1, 1, latent_dim))
-img = generator(z)
+    input_layer = Input(shape=(1, 1, 1, z_size))
+    generated_volumes = generator(input_layer)
+    validity = discriminator(generated_volumes)
+    adversarial_model = Model(inputs=[input_layer], outputs=[validity])
+    adversarial_model.compile(loss='binary_crossentropy', optimizer=gen_optimizer)
 
-discriminator.trainable = False
-validity = discriminator(img)
+    volumes = parse_dataset()[2]
+    volumes = volumes.reshape(1, 64, 64, 64)
 
-combined = Model(input=z, output=validity)
-combined.compile(loss='binary_crossentropy', optimizer=gen_optim)
+    labels_real = np.reshape(np.ones((batch_size,)), (-1, 1, 1, 1, 1))
+    labels_fake = np.reshape(np.zeros((batch_size,)), (-1, 1, 1, 1, 1))
 
-for epoch in range(epochs):
-    real = data[0][0]
+    for epoch in range(epochs):
+        gen_losses = []
+        dis_losses = []
 
-    z = np.random.normal(0, 0.33, size=[batch_size, 1, 1, 1,latent_dim]).astype(np.float32)
-    fake = generator.predict(z)
+        number_of_batches = int(volumes.shape[0] / batch_size)
+        for index in range(number_of_batches):
+            z_sample = np.random.normal(0, 0.33, size=[batch_size, 1, 1, 1, z_size]).astype(np.float32)
+            volumes_batch = volumes[index * batch_size:(index + 1) * batch_size, :, :, :]
 
-    real = np.expand_dims(real, axis=4)
+            gen_volumes = generator.predict_on_batch(z_sample)
 
-    lab_real = np.reshape([1] *batch_size, (-1, 1, 1, 1, 1))
-    lab_fake = np.reshape([0] *batch_size, (-1, 1, 1, 1, 1))
+            discriminator.trainable = True
 
-    d_loss_real = discriminator.train_on_batch(real, lab_real)
-    d_loss_fake = discriminator.train_on_batch(fake, lab_fake)
+            if index % 2 == 0:
+                loss_real = discriminator.train_on_batch(volumes_batch, labels_real)
+                loss_fake = discriminator.train_on_batch(gen_volumes, labels_fake)
 
-    d_loss = 0.5*np.add(d_loss_real, d_loss_fake)
+                d_loss = 0.5 * np.add(loss_real, loss_fake)
+            else:
+                d_loss = 0.0
 
-    z = np.random.normal(0, 0.33, size=[batch_size, 1, 1, 1,latent_dim]).astype(np.float32)
+            discriminator.trainable = False
+   
+            z = np.random.normal(0, 0.33, size=[batch_size, 1, 1, 1, z_size]).astype(np.float32)
+            g_loss = adversarial_model.train_on_batch(z, labels_real)
+  
+            gen_losses.append(g_loss)
+            dis_losses.append(d_loss)
 
-    g_loss = combined.train_on_batch(z, np.reshape([1] *batch_size, (-1, 1, 1, 1, 1))).astype(np.float64)
+            if index % 10 == 0:
+                z_sample2 = np.random.normal(0, 0.33, size=[batch_size, 1, 1, 1, z_size]).astype(np.float32)
+                generated_volumes = generator.predict(z_sample2, verbose=3)
+                for i, generated_volume in enumerate(generated_volumes[:5]):
+                    voxels = np.squeeze(generated_volume)
+                    voxels[voxels < 0.5] = 0.
+                    voxels[voxels >= 0.5] = 1.
+                    saveFromVoxels(voxels, "Predictions/img_{}_{}_{}".format(epoch, index, i))
 
-generator.save("model.h5")
+            print(f"[Epoch: {epoch}] - [Generator Loss: {g_loss}] - [Discriminator Loss - {dis_losses[len(dis_losses) - 1]}]")
+
+
+        generator.save_weights(os.path.join("Models", "generator_weights.h5"))
+        discriminator.save_weights(os.path.join("Models", "discriminator_weights.h5"))
