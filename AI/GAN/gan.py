@@ -100,11 +100,13 @@ if __name__ == '__main__':
     adversarial_model = Model(inputs=[input_layer], outputs=[validity])
     adversarial_model.compile(loss='binary_crossentropy', optimizer=gen_optimizer)
 
-    volumes = parse_dataset()[2]
+    volumes = parse_dataset()[0]
     volumes = volumes.reshape(1, 64, 64, 64)
 
     labels_real = np.reshape(np.ones((batch_size,)), (-1, 1, 1, 1, 1))
     labels_fake = np.reshape(np.zeros((batch_size,)), (-1, 1, 1, 1, 1))
+
+    os.system("cls")
 
     for epoch in range(epochs):
         gen_losses = []
@@ -135,17 +137,17 @@ if __name__ == '__main__':
             gen_losses.append(g_loss)
             dis_losses.append(d_loss)
 
-            if index % 10 == 0:
-                z_sample2 = np.random.normal(0, 0.33, size=[batch_size, 1, 1, 1, z_size]).astype(np.float32)
-                generated_volumes = generator.predict(z_sample2, verbose=3)
-                for i, generated_volume in enumerate(generated_volumes[:5]):
-                    voxels = np.squeeze(generated_volume)
-                    voxels[voxels < 0.5] = 0.
-                    voxels[voxels >= 0.5] = 1.
-                    saveFromVoxels(voxels, "Predictions/img_{}_{}_{}".format(epoch, index, i))
+        if epoch % 10 == 0:
+            z_sample2 = np.random.normal(0, 0.33, size=[batch_size, 1, 1, 1, z_size]).astype(np.float32)
+            generated_volumes = generator.predict(z_sample2, verbose=3)
+            for i, generated_volume in enumerate(generated_volumes[:5]):
+                voxels = np.squeeze(generated_volume)
+                voxels[voxels < 0.5] = 0.
+                voxels[voxels >= 0.5] = 1.
+                saveFromVoxels(voxels, "Predictions/img_{}".format(epoch))
 
-            print(f"[Epoch: {epoch}] - [Generator Loss: {g_loss}] - [Discriminator Loss - {dis_losses[len(dis_losses) - 1]}]")
+        print(f"[Epoch: {epoch}] - [Generator Loss: {gen_losses[len(gen_losses) - 1]}] - [Discriminator Loss - {dis_losses[len(dis_losses) - 1]}]")
 
 
-        generator.save_weights(os.path.join("Models", "generator_weights.h5"))
-        discriminator.save_weights(os.path.join("Models", "discriminator_weights.h5"))
+    generator.save_weights(os.path.join("Models", "generator_weights.h5"))
+    discriminator.save_weights(os.path.join("Models", "discriminator_weights.h5"))
