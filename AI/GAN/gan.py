@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from keras.layers import Input, LeakyReLU, BatchNormalization
-from keras.layers.convolutional import Conv3D, Convolution3DTranspose
+from keras.layers.convolutional import Conv3D, Deconv3D
 from keras.layers.core import Activation
 from keras.models import Model
 from keras.optimizers import Adam
@@ -19,14 +19,14 @@ def build_generator():
 
     input_layer = Input(shape=gen_input_shape)
 
-    a = Convolution3DTranspose(filters=gen_filters[0],
+    a = Deconv3D(filters=gen_filters[0],
                  kernel_size=gen_kernel_sizes[0],
                  strides=gen_strides[0])(input_layer)
     a = BatchNormalization()(a, training=True)
     a = Activation(activation='relu')(a)
 
     for i in range(gen_convolutional_blocks - 1):
-        a = Convolution3DTranspose(filters=gen_filters[i + 1],
+        a = Deconv3D(filters=gen_filters[i + 1],
                      kernel_size=gen_kernel_sizes[i + 1],
                      strides=gen_strides[i + 1], padding='same')(a)
         a = BatchNormalization()(a, training=True)
