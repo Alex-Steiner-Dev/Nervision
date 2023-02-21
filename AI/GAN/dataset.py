@@ -23,9 +23,9 @@ def parse_dataset():
     folders = glob.glob(DATA_DIR)
 
     for i, folder in enumerate(folders):
-        train_files = glob.glob(folder + "/30/train/*")
+        train_files = glob.glob(folder + "/30/train/*.mat")
 
         voxel = getVoxelsFromMat(train_files[0])
-        objects.append(getVoxelsFromMat(voxel))
+        objects.append(voxel)
 
     return objects
