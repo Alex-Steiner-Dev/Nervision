@@ -42,12 +42,12 @@ vae.add_loss(vae_loss)
 
 # Train the VAE
 vae.compile(optimizer=keras.optimizers.Adam(lr=0.001))
-vae.fit(points, epochs=100, batch_size=1)
+vae.fit(points, epochs=1000, batch_size=1)
 
-vae.save("vae.h5")
+vae.save_weights("vae.h5")
 
 # Generate new point clouds from the VAE
-latent_vectors = np.random.normal(size=(5000, latent_dim))
+latent_vectors = np.random.normal(size=(1000, latent_dim))
 generated_points = decoder.predict(latent_vectors)
 
 pcd = open3d.geometry.PointCloud()
