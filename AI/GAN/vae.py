@@ -5,8 +5,7 @@ import trimesh
 
 # Load the chair mesh using Trimesh
 chair_mesh = trimesh.load('../Data/chair/train/chair_0001.off')
-points = chair_mesh.sample(1000000)
-
+points = chair_mesh.sample(5000)
 
 points = (points - points.mean(axis=0)) / points.std(axis=0) # normalize the points
 
@@ -43,12 +42,12 @@ vae.add_loss(vae_loss)
 
 # Train the VAE
 vae.compile(optimizer=keras.optimizers.Adam(lr=0.001))
-vae.fit(points, epochs=10000, batch_size=1)
+vae.fit(points, epochs=100, batch_size=1)
 
 vae.save("vae.h5")
 
 # Generate new point clouds from the VAE
-latent_vectors = np.random.normal(size=(16384, latent_dim))
+latent_vectors = np.random.normal(size=(5000, latent_dim))
 generated_points = decoder.predict(latent_vectors)
 
 pcd = open3d.geometry.PointCloud()
