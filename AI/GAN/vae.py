@@ -48,6 +48,7 @@ encoder = Model(encoder_input, [mean, log_var, latent])
 # Define the decoder model
 decoder = Model(decoder_input, decoder_output)
 
+<<<<<<< HEAD
 # Define the VAE model
 vae_output = decoder(latent)
 vae = Model(encoder_input, vae_output)
@@ -60,6 +61,17 @@ def vae_loss(encoder_input, vae_output):
 
 # Compile the VAE model
 vae.compile(optimizer=Adam(learning_rate=0.0001), loss=vae_loss)
+=======
+# Train the VAE
+vae.compile(optimizer=keras.optimizers.Adam(lr=0.001))
+vae.fit(points, epochs=100, batch_size=1)
+
+vae.save("vae.h5")
+
+# Generate new point clouds from the VAE
+latent_vectors = np.random.normal(size=(5000, latent_dim))
+generated_points = decoder.predict(latent_vectors)
+>>>>>>> parent of 43213b136 (Save Weights)
 
 # Train the VAE model
 vae.fit(X_train, X_train, epochs=10, batch_size=32)
