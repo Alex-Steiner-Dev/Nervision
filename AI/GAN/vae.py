@@ -1,59 +1,65 @@
+from tensorflow.keras.layers import Input, Dense, Lambda
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import mse
+from tensorflow.keras import backend as K
 import numpy as np
-import keras
-import open3d
+
+import numpy as np
 import trimesh
-from keras.layers import Dense, Input, Lambda
-from keras.models import Model
 
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
 chair_mesh = trimesh.load('../Data/chair/train/chair_0001.off')
-points = chair_mesh.sample(4096)
-points = points.reshape(4096, 3)
-text_inputs = [    "modern leather chair",    "traditional wooden chair",    "ergonomic mesh chair",    "leather executive chair",    "fabric dining chair",    "wooden rocking chair",    "modern ergonomic chair",    "traditional leather armchair",    "ergonomic gaming chair",    "leather recliner chair"]
+X_train = chair_mesh.sample(4096)
+X_train = X_train.reshape(1, 4096,3)
 
+input_shape = (4096, 3)
 
-num_points = 4096
-latent_dim = 128
-pointcloud_input = Input(shape=(num_points, 3))
-text_input = Input(shape=(100,))
+# Define the size of the latent space
+latent_dim = 32
 
-x = keras.layers.Flatten()(pointcloud_input)
+# Define the encoder network
+encoder_input = Input(shape=input_shape)
+x = Dense(128, activation='relu')(encoder_input)
+x = Dense(64, activation='relu')(x)
+mean = Dense(latent_dim)(x)
+log_var = Dense(latent_dim)(x)
 
-x = keras.layers.Concatenate()([x, text_input])
+# Define the sampling function
+def sampling(args):
+    mean, log_var = args
+    epsilon = K.random_normal(shape=(K.shape(mean)[0], latent_dim), mean=0., stddev=1.)
+    return mean + K.exp(0.5 * log_var) * epsilon
 
-x = keras.layers.Dense(256, activation='relu')(x)
-x = keras.layers.Dense(128, activation='relu')(x)
-z_mean = keras.layers.Dense(latent_dim)(x)
-z_log_var = keras.layers.Dense(latent_dim)(x)
+# Define the latent space sampling layer
+latent = Lambda(sampling, output_shape=(latent_dim,))([mean, log_var])
 
-z = z_mean + keras.backend.exp(0.5 * z_log_var) * keras.backend.random_normal(shape=(latent_dim,))
+# Define the decoder network
+decoder_input = Input(shape=(latent_dim,))
+x = Dense(64, activation='relu')(decoder_input)
+x = Dense(128, activation='relu')(x)
+decoder_output = Dense(3)(x)
 
-x = keras.layers.Dense(128, activation='relu')(z)
-x = keras.layers.Dense(256, activation='relu')(x)
-x = keras.layers.Dense(num_points * 3)(x)
-decoder_output = keras.layers.Reshape((num_points, 3))(x)
+# Define the encoder model
+encoder = Model(encoder_input, [mean, log_var, latent])
 
-cvae_model = keras.Model(inputs=[pointcloud_input, text_input], outputs=decoder_output)
+# Define the decoder model
+decoder = Model(decoder_input, decoder_output)
 
-def vae_loss(pointcloud_input, decoder_output):
-    reconstruction_loss = keras.losses.mean_squared_error(pointcloud_input, decoder_output)
-    reconstruction_loss *= num_points * 3
-    kl_loss = 1 + z_log_var - keras.backend.square(z_mean) - keras.backend.exp(z_log_var)
-    kl_loss = keras.backend.sum(kl_loss, axis=-1)
-    kl_loss *= -0.5
-    return keras.backend.mean(reconstruction_loss + kl_loss)
+# Define the VAE model
+vae_output = decoder(latent)
+vae = Model(encoder_input, vae_output)
 
-cvae_model.compile(optimizer=keras.optimizers.Adam(lr=0.001), loss=vae_loss)
+# Define the VAE loss function
+def vae_loss(encoder_input, vae_output):
+    reconstruction_loss = mse(encoder_input, vae_output)
+    kl_loss = -0.5 * K.sum(1 + log_var - K.square(mean) - K.exp(log_var), axis=-1)
+    return K.mean(reconstruction_loss + kl_loss)
 
-cvae_model.fit([points, text_inputs], epochs=500, batch_size=1)
+# Compile the VAE model
+vae.compile(optimizer=Adam(learning_rate=0.0001), loss=vae_loss)
 
-new_text_input_encoded = np.array(["modern gaming chair"])
-new_latent_vector = np.random.normal(size=(1, latent_dim))
-new_latent_vector[0, :len(new_text_input_encoded)] = new_text_input_encoded
-generated_pointcloud = cvae_model.predict([new_latent_vector, np.array([new_text_input_encoded])])
-
-pcd = open3d.geometry.PointCloud()
-pcd.points = open3d.utility.Vector3dVector(generated_pointcloud[0])
-open3d.visualization.draw_geometries([pcd])
+# Train the VAE model
+vae.fit(X_train, X_train, epochs=10, batch_size=32)
