@@ -3,6 +3,7 @@ from keras.models import Model
 from keras.layers import Input, Dense, Lambda
 from keras import backend as K
 from keras import objectives
+import text
 
 def create_vae(latent_dim, input_shape):
 
@@ -50,9 +51,8 @@ def create_vae(latent_dim, input_shape):
     return vae, encoder
 
 # Load the 3D models and their corresponding text descriptions
-# This code assumes that you have already preprocessed the data
 x_train = # 3D models (voxels or meshes)
-y_train = # Text descriptions
+y_train = text.word_embedding(["a chair"])
 
 # Define the input shape and latent dimension
 input_shape = x_train.shape[1:]
@@ -72,7 +72,7 @@ vae.fit(x_train, y_train,
 
 def generate_3d_model(text_description, encoder):
     # Preprocess the text description
-    text_vector = # Convert the text to a vector using word embeddings
+    text_vector = text.word_embedding(text_description)
 
     # Encode the text vector to the latent space
     z = encoder.predict(text_vector)

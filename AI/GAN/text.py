@@ -20,4 +20,4 @@ def word_embedding(text_descriptions):
 
     word_embeddings = word_embedding_model.predict(padded_sequences)
 
-    return word_embedding
+    return word_embeddings
