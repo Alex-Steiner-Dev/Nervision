@@ -1,77 +1,69 @@
-from tensorflow.keras.layers import Input, Dense, Lambda
-from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.losses import mse
-from tensorflow.keras import backend as K
 import numpy as np
-
-import numpy as np
+from keras.layers import Input, Dense, Lambda, Reshape, Flatten
+from keras.models import Model
+from keras import backend as K
 import trimesh
+import keras
 
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+chair_meshes = trimesh.load("../Data/chair/train/chair_0001.off")
+chair_point_clouds = chair_meshes.sample(2048)
+chair_point_clouds = chair_point_clouds.reshape(1, 2048, 3)
 
-chair_mesh = trimesh.load('../Data/chair/train/chair_0001.off')
-X_train = chair_mesh.sample(4096)
-X_train = X_train.reshape(1, 4096,3)
+latent_dim = 2
 
-input_shape = (4096, 3)
-
-# Define the size of the latent space
-latent_dim = 32
-
-# Define the encoder network
-encoder_input = Input(shape=input_shape)
-x = Dense(128, activation='relu')(encoder_input)
-x = Dense(64, activation='relu')(x)
-mean = Dense(latent_dim)(x)
-log_var = Dense(latent_dim)(x)
-
-# Define the sampling function
 def sampling(args):
-    mean, log_var = args
-    epsilon = K.random_normal(shape=(K.shape(mean)[0], latent_dim), mean=0., stddev=1.)
-    return mean + K.exp(0.5 * log_var) * epsilon
+    """Reparameterization trick to sample from the latent space"""
+    z_mean, z_log_var = args
+    epsilon = K.random_normal(shape=(K.shape(z_mean)[0], latent_dim), mean=0., stddev=1.)
+    return z_mean + K.exp(z_log_var / 2) * epsilon
 
-# Define the latent space sampling layer
-latent = Lambda(sampling, output_shape=(latent_dim,))([mean, log_var])
+input_shape = (2048, 3)
+inputs = Input(shape=input_shape, name='encoder_input')
+x = Flatten()(inputs)
+x = Dense(512, activation='relu')(x)
+x = Dense(256, activation='relu')(x)
+z_mean = Dense(latent_dim, name='z_mean')(x)
+z_log_var = Dense(latent_dim, name='z_log_var')(x)
 
-# Define the decoder network
-decoder_input = Input(shape=(latent_dim,))
-x = Dense(64, activation='relu')(decoder_input)
-x = Dense(128, activation='relu')(x)
-decoder_output = Dense(3)(x)
+z = Lambda(sampling, output_shape=(latent_dim,), name='z')([z_mean, z_log_var])
 
-# Define the encoder model
-encoder = Model(encoder_input, [mean, log_var, latent])
+encoder = Model(inputs, [z_mean, z_log_var, z], name='encoder')
 
-# Define the decoder model
-decoder = Model(decoder_input, decoder_output)
+latent_inputs = Input(shape=(latent_dim,), name='z_sampling')
+x = Dense(256, activation='relu')(latent_inputs)
+x = Dense(512, activation='relu')(x)
+x = Dense(2048*3, activation='sigmoid')(x)
+outputs = Reshape((2048, 3))(x)
 
-<<<<<<< HEAD
-# Define the VAE model
-vae_output = decoder(latent)
-vae = Model(encoder_input, vae_output)
+decoder = Model(latent_inputs, outputs, name='decoder')
 
-# Define the VAE loss function
-def vae_loss(encoder_input, vae_output):
-    reconstruction_loss = mse(encoder_input, vae_output)
-    kl_loss = -0.5 * K.sum(1 + log_var - K.square(mean) - K.exp(log_var), axis=-1)
-    return K.mean(reconstruction_loss + kl_loss)
+outputs = decoder(encoder(inputs)[2])
+vae = Model(inputs, outputs, name='vae')
 
-# Compile the VAE model
-vae.compile(optimizer=Adam(learning_rate=0.0001), loss=vae_loss)
-=======
-# Train the VAE
-vae.compile(optimizer=keras.optimizers.Adam(lr=0.001))
-vae.fit(points, epochs=100, batch_size=1)
+reconstruction_loss = keras.losses.binary_crossentropy(Flatten()(inputs), Flatten()(outputs))
+reconstruction_loss *= 2048*3
+kl_loss = 1 + z_log_var - K.square(z_mean) - K.exp(z_log_var)
+kl_loss = K.sum(kl_loss, axis=-1)
+kl_loss *= -0.5
+vae_loss = K.mean(reconstruction_loss + kl_loss)
+vae.add_loss(vae_loss)
+vae.compile(optimizer='adam')
 
-vae.save("vae.h5")
+vae.fit(chair_point_clouds, epochs=50, batch_size=1)
 
-# Generate new point clouds from the VAE
-latent_vectors = np.random.normal(size=(5000, latent_dim))
-generated_points = decoder.predict(latent_vectors)
->>>>>>> parent of 43213b136 (Save Weights)
+# Generate new point clouds from the trained VAE model
+z_sample = np.random.normal(size=(2048, latent_dim))
+x_decoded = decoder.predict(z_sample)
 
-# Train the VAE model
-vae.fit(X_train, X_train, epochs=10, batch_size=32)
+mesh = trimesh.Trimesh(vertices=x_decoded[0], faces=None)
+mesh = mesh.fix_normals()
+#mesh = mesh.fill_holes()
+#mesh = mesh.compute_convex_hull()
+#mesh = mesh.split()[0]
+#mesh = mesh.simplify(0.01)
+#trimesh.repair.fill_holes(mesh)
+#trimesh.repair.fix_inversion(mesh)
+#trimesh.repair.fix_normals(mesh)
+
+# Export generated mesh as an OBJ file
+#trimesh.exchange.export.export_mesh(mesh, 'generated_chair_mesh.obj')
