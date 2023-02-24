@@ -1,6 +1,6 @@
 import numpy as np
 from keras.models import Model
-from keras.layers import Input, Dense, Lambda
+from keras.layers import Input, Dense, Lambda, Reshape
 from keras import backend as K
 from keras import losses
 import text
@@ -35,6 +35,8 @@ def create_vae(latent_dim, input_shape):
     decoder_mean = Dense(np.prod(input_shape), activation='sigmoid')
     h_decoded = decoder_h(z)
     x_decoded_mean = decoder_mean(h_decoded)
+    x_decoded_mean = Reshape(input_shape)(x_decoded_mean)
+    x_decoded_mean = K.clip(x_decoded_mean, 1e-8, 1 - 1e-8)
 
     # VAE model
     vae = Model(x, x_decoded_mean)
