@@ -60,3 +60,13 @@ decoder.add(Conv2DTranspose(3, (5,5), activation = "sigmoid", strides = 1, paddi
 decoder.add(BatchNormalization())
 
 decoder.summary()
+
+def reconstruction_loss(y, y_pred):
+    return tf.reduce_mean(tf.square(y - y_pred))
+
+def kl_loss(mu, log_var):
+    loss = -0.5 * tf.reduce_mean(1 + log_var - tf.square(mu) - tf.exp(log_var))
+    return loss
+
+def vae_loss(y_true, y_pred, mu, log_var):
+    return reconstruction_loss(y_true, y_pred) + (1 / (4096*3)) * kl_loss(mu, log_var)
