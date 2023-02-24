@@ -8,6 +8,7 @@ from keras import backend as K
 
 latent_dim = 4096
 
+###### Encoder ######
 encoder_input = Input(shape=(1,4096, 3))
 
 x = Conv2D(32, kernel_size=5, activation = LeakyReLU(0.02), strides = 1, padding = 'same')(encoder_input)
@@ -34,3 +35,28 @@ z = Add()([mu, z_eps])
 
 encoder = Model(encoder_input, outputs = [mu, log_var, z], name = 'encoder')
 encoder.summary()
+
+###### Decoder ######
+decoder = Sequential()
+decoder.add(Dense(1024, activation = selu, input_shape = (latent_dim, )))
+decoder.add(BatchNormalization())
+
+decoder.add(Dense(8192, activation = selu))
+decoder.add(Reshape((4,4,512)))
+
+decoder.add(Conv2DTranspose(256, (5,5), activation = LeakyReLU(0.02), strides = 2, padding = 'same'))
+decoder.add(BatchNormalization())
+
+decoder.add(Conv2DTranspose(128, (5,5), activation = LeakyReLU(0.02), strides = 2, padding = 'same'))
+decoder.add(BatchNormalization())
+
+decoder.add(Conv2DTranspose(64, (5,5), activation = LeakyReLU(0.02), strides = 2, padding = 'same'))
+decoder.add(BatchNormalization())
+
+decoder.add(Conv2DTranspose(32, (5,5), activation = LeakyReLU(0.02), strides = 2, padding = 'same'))
+decoder.add(BatchNormalization())
+
+decoder.add(Conv2DTranspose(3, (5,5), activation = "sigmoid", strides = 1, padding = 'same'))
+decoder.add(BatchNormalization())
+
+decoder.summary()
