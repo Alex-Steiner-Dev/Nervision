@@ -13,7 +13,10 @@ def create_vae(latent_dim, input_shape):
 
     # Encoder architecture
     x = Input(shape=input_shape)
-    h = Dense(512, activation='relu')(x)
+    h = Dense(4096, activation='relu')(x)
+    h = Dense(2048, activation='relu')(h)
+    h = Dense(1024, activation='relu')(h)
+    h = Dense(512, activation='relu')(h)
     h = Dense(256, activation='relu')(h)
     h = Dense(128, activation='relu')(h)
     h = Dense(64, activation='relu')(h)
@@ -31,12 +34,12 @@ def create_vae(latent_dim, input_shape):
     z = Lambda(sampling, output_shape=(latent_dim,))([z_mean, z_log_var])
 
     # Decoder architecture
-    decoder_h = Dense(64, activation='relu')
-    decoder_mean = Dense(np.prod(input_shape), activation='sigmoid')
+    decoder_h = Dense(3, activation='relu')
+    decoder_reshape = Reshape((4096, 3))
+    decoder_mean = Dense(4096*3, activation='sigmoid')
     h_decoded = decoder_h(z)
+    h_decoded = decoder_reshape(h_decoded)
     x_decoded_mean = decoder_mean(h_decoded)
-    x_decoded_mean = Reshape(input_shape)(x_decoded_mean)
-    x_decoded_mean = K.clip(x_decoded_mean, 1e-8, 1 - 1e-8)
 
     # VAE model
     vae = Model(x, x_decoded_mean)
@@ -61,8 +64,8 @@ x_train = np.array([trimesh.load_mesh("../Data/chair/train/chair_0001.off").samp
 y_train = text.word_embedding(["a chair"])
 
 # Define the input shape and latent dimension
-input_shape = x_train.shape[1:]
-latent_dim = 100
+input_shape = (4096,3)
+latent_dim = 4096
 
 # Create the VAE model
 vae, encoder = create_vae(latent_dim, input_shape)
@@ -71,7 +74,7 @@ vae, encoder = create_vae(latent_dim, input_shape)
 batch_size =1
 epochs = 100
 
-vae.fit(x_train, y_train,
+vae.fit(x_train, x_train,
         batch_size=batch_size,
         epochs=epochs,
         verbose=1)
