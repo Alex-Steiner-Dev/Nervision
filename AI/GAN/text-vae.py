@@ -2,8 +2,12 @@ import numpy as np
 from keras.models import Model
 from keras.layers import Input, Dense, Lambda
 from keras import backend as K
-from keras import objectives
+from keras import losses
 import text
+import trimesh
+
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
 def create_vae(latent_dim, input_shape):
 
@@ -39,7 +43,7 @@ def create_vae(latent_dim, input_shape):
     def vae_loss(x, x_decoded_mean):
         x = K.flatten(x)
         x_decoded_mean = K.flatten(x_decoded_mean)
-        xent_loss = objectives.binary_crossentropy(x, x_decoded_mean)
+        xent_loss = losses.binary_crossentropy(x, x_decoded_mean)
         kl_loss = -0.5 * K.mean(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1)
         return xent_loss + kl_loss
 
@@ -51,7 +55,7 @@ def create_vae(latent_dim, input_shape):
     return vae, encoder
 
 # Load the 3D models and their corresponding text descriptions
-x_train = # 3D models (voxels or meshes)
+x_train = np.array([trimesh.load_mesh("../Data/chair/train/chair_0001.off").sample(4096)])
 y_train = text.word_embedding(["a chair"])
 
 # Define the input shape and latent dimension
@@ -62,7 +66,7 @@ latent_dim = 100
 vae, encoder = create_vae(latent_dim, input_shape)
 
 # Train the model
-batch_size = x_train.shape()[0]
+batch_size =1
 epochs = 100
 
 vae.fit(x_train, y_train,
