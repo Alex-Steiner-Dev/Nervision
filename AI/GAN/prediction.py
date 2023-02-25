@@ -6,11 +6,11 @@ from dataset import parse_dataset
 
 autoencoder = load_model('autoencoder.h5')
 
-z = np.random.normal(size=(64, 64,64))
-z = z.reshape([-1, 64, 64, 64, 1])
+z = parse_dataset()[0]
+z = z.reshape([-1, 32, 32, 32, 1])
 
 voxels = autoencoder.predict(z)
-voxels = voxels.reshape(64, 64, 64)
+voxels = voxels.reshape(32, 32, 32)
 
 
 def saveFromVoxels(voxels):
