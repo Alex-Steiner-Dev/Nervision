@@ -17,13 +17,13 @@ class VAE:
             x = Convolution3D(i, (3, 3, 3), activation='relu', padding='same')(x)
             x = MaxPooling3D((2, 2, 2), padding='same')(x)
 
-        x = Convolution3D(4096, (3, 3, 3), activation='relu', padding='same')(x)
+        x = Convolution3D(1024, (3, 3, 3), activation='relu', padding='same')(x)
         encoder = MaxPooling3D((2, 2, 2), padding='same')(x)
 
         #Decoder
         self.resolutions.reverse()
 
-        x = Convolution3D(4096, (3, 3, 3), activation='relu', padding='same')(encoder)
+        x = Convolution3D(1024, (3, 3, 3), activation='relu', padding='same')(encoder)
         x = UpSampling3D((2, 2, 2))(x)
 
         for i in self.resolutions:

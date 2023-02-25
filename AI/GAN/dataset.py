@@ -14,19 +14,14 @@ def parse_dataset():
     for i, folder in enumerate(folders):
         train_files = glob.glob(folder + "/train/*.off")
 
-        point_cloud = trimesh.load(train_files[0]).sample(32)
+        point_cloud = trimesh.load(train_files[0]).sample(1024)
 
-        x, y, z = np.meshgrid(np.linspace(0, 1, 32),
-                      np.linspace(0, 1, 32),
-                      np.linspace(0, 1, 32))
-        grid = np.stack([x, y, z], axis=-1)
+        voxel = np.zeros((1024, 1024, 1024), dtype=np.float16)
 
-        # Compute the Euclidean distances between each point and each voxel
-        distances = np.linalg.norm(point_cloud[:, None, None, :] - grid[None, :, :, :], axis=-1)
+        for i in range(1024):
+            x, y, z = tuple(map(int, point_cloud[i]))
+            voxel[x][y][z] = i   
 
-        # Assign each point to the closest voxel
-        voxels = np.argmin(distances, axis=1)
-
-        objects.append(voxels)
+        objects.append(voxel)
 
     return objects
