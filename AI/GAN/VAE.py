@@ -35,6 +35,6 @@ class VAE:
 
         autoencoder = Model(input_img, decoder)
 
-        autoencoder.compile(optimizer='adam', loss='mse')
+        autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
 
         return (autoencoder)
