@@ -1,55 +1,49 @@
-import numpy as np
-import tensorflow as tf
-from keras.activations import sigmoid
-from keras.optimizers import SGD
-from keras.callbacks import LearningRateScheduler
-from keras import backend as K
-
-from VAE import *
+from keras.layers import Input
+from keras.models import Model
+from keras.layers.convolutional import Convolution3D, MaxPooling3D, UpSampling3D
+import matplotlib.pyplot as plt
 from dataset import parse_dataset
 
-learning_rate_1 = 0.0001
-learning_rate_2 = 0.005
-momentum = 0.9
-batch_size = 10
-epoch_num = 150
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
-def weighted_binary_crossentropy(target, output):
-    loss = -(98.0 * target * K.log(output) + 2.0 * (1.0 - target) * K.log(1.0 - output)) / 100.0
-    return loss
+from keras import backend as K
+K.clear_session()
 
-def learning_rate_scheduler(epoch, lr):
-    if epoch >= 1:
-        lr = learning_rate_2
-    return lr
+train_data = parse_dataset()[0]
 
-if __name__ == '__main__':
-    model = get_model()
+box_size = 32
 
-    inputs = model['inputs']
-    outputs = model['outputs']
-    mu = model['mu']
-    sigma = model['sigma']
-    z = model['z']
+train_data = train_data.reshape([-1, box_size, box_size, box_size, 1])
 
-    encoder = model['encoder']
-    decoder = model['decoder']
+input_img = Input(shape=(box_size, box_size, box_size, 1))
 
-    vae = model['vae']
+x = Convolution3D(32, (3, 3, 3), activation='relu', padding='same')(input_img)
+x = MaxPooling3D((2, 2, 2), padding='same')(x)
+x = Convolution3D(64, (3, 3, 3), activation='relu', padding='same')(x)
+x = MaxPooling3D((2, 2, 2), padding='same')(x)
+x = Convolution3D(128, (3, 3, 3), activation='relu', padding='same')(x)
+encoder = MaxPooling3D((2, 2, 2), padding='same')(x)
 
-    # kl_div = -0.5 * K.mean(1 + 2 * sigma - K.square(mu) - K.exp(2 * sigma))
-    voxel_loss = K.cast(K.mean(weighted_binary_crossentropy(inputs, K.clip(sigmoid(outputs), 1e-7, 1.0 - 1e-7))), 'float32') # + kl_div
-    vae.add_loss(voxel_loss)
+x = Convolution3D(128, (3, 3, 3), activation='relu', padding='same')(encoder)
+x = UpSampling3D((2, 2, 2))(x)
+x = Convolution3D(64, (3, 3, 3), activation='relu', padding='same')(x)
+x = UpSampling3D((2, 2, 2))(x)
+x = Convolution3D(32, (3, 3, 3), activation='relu', padding='same')(x)
+decoder = Convolution3D(1, (3, 3, 3), activation='sigmoid', padding='same')(x)
 
-    sgd = SGD(lr = learning_rate_1, momentum = momentum, nesterov = True)
-    vae.compile(optimizer = sgd, metrics = ['accuracy'])
+autoencoder = Model(input_img, decoder)
 
-    data_train = parse_dataset()[0]
+autoencoder.compile(optimizer='adam', loss='mse')
 
-    vae.fit(
-        data_train,
-        epochs = epoch_num,
-        batch_size = batch_size,
-    )
+history = autoencoder.fit(train_data, train_data, epochs=100, batch_size=32, validation_split=0.1)
 
-    vae.save_weights('vae.h5')
+decoder.save('autoencoder.h5')
+
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Model loss')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Validation'], loc='upper right')
+plt.show()
