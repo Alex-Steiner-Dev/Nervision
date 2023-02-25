@@ -8,9 +8,9 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from keras import backend as K
 K.clear_session()
 
-train_data = parse_dataset()[0].reshape(1,1024,1024,1024)
-resolutions = [64, 128, 256, 512]
-box_size = 1024
+train_data = parse_dataset()[0].reshape(1,512,512,512)
+resolutions = [64, 128, 256]
+box_size = 512
 
 train_data = train_data.reshape([-1, box_size, box_size, box_size, 1])
 

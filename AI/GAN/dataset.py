@@ -14,11 +14,11 @@ def parse_dataset():
     for i, folder in enumerate(folders):
         train_files = glob.glob(folder + "/train/*.off")
 
-        point_cloud = trimesh.load(train_files[0]).sample(1024)
+        point_cloud = trimesh.load(train_files[0]).sample(512)
 
-        voxel = np.zeros((1024, 1024, 1024), dtype=np.float16)
+        voxel = np.zeros((512, 512, 512), dtype=np.float16)
 
-        for i in range(1024):
+        for i in range(512):
             x, y, z = tuple(map(int, point_cloud[i]))
             voxel[x][y][z] = i   
 

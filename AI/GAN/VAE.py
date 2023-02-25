@@ -17,7 +17,7 @@ class VAE:
             x = Convolution3D(i, (5, 5, 5), activation='relu', padding='same')(x)
             x = MaxPooling3D((2, 2, 2), padding='same')(x)
 
-        x = Convolution3D(1024, (5, 5, 5), activation='relu', padding='same')(x)
+        x = Convolution3D(512, (5, 5, 5), activation='relu', padding='same')(x)
         encoder = MaxPooling3D((2, 2, 2), padding='same', name='encoder')(x)
 
         #Decoder
@@ -25,7 +25,7 @@ class VAE:
         self.resolutions.append(32)
         print(self.resolutions)
 
-        x = Convolution3D(1024, (5, 5, 5), activation='relu', padding='same')(encoder)
+        x = Convolution3D(512, (5, 5, 5), activation='relu', padding='same')(encoder)
         x = UpSampling3D((2, 2, 2))(x)
 
         for i in self.resolutions:
