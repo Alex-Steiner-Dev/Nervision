@@ -1,8 +1,6 @@
-from keras.layers import Input
-from keras.models import Model
-from keras.layers.convolutional import Convolution3D, MaxPooling3D, UpSampling3D
 import matplotlib.pyplot as plt
 from dataset import parse_dataset
+from VAE import *
 
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
@@ -11,32 +9,16 @@ from keras import backend as K
 K.clear_session()
 
 train_data = parse_dataset()[0]
-
-box_size = 32
+resolutions = [64, 128, 256, 512, 1024, 2048]
+box_size = 4096
 
 train_data = train_data.reshape([-1, box_size, box_size, box_size, 1])
 
-input_img = Input(shape=(box_size, box_size, box_size, 1))
-
-x = Convolution3D(32, (3, 3, 3), activation='relu', padding='same')(input_img)
-x = MaxPooling3D((2, 2, 2), padding='same')(x)
-x = Convolution3D(64, (3, 3, 3), activation='relu', padding='same')(x)
-x = MaxPooling3D((2, 2, 2), padding='same')(x)
-x = Convolution3D(128, (3, 3, 3), activation='relu', padding='same')(x)
-encoder = MaxPooling3D((2, 2, 2), padding='same')(x)
-
-x = Convolution3D(128, (3, 3, 3), activation='relu', padding='same')(encoder)
-x = UpSampling3D((2, 2, 2))(x)
-x = Convolution3D(64, (3, 3, 3), activation='relu', padding='same')(x)
-x = UpSampling3D((2, 2, 2))(x)
-x = Convolution3D(32, (3, 3, 3), activation='relu', padding='same')(x)
-decoder = Convolution3D(1, (3, 3, 3), activation='sigmoid', padding='same')(x)
-
-autoencoder = Model(input_img, decoder)
+autoencoder, encoder, decoder = VAE(box_size=box_size, resolutions=resolutions)
 
 autoencoder.compile(optimizer='adam', loss='mse')
 
-history = autoencoder.fit(train_data, train_data, epochs=100, batch_size=32, validation_split=0.1)
+history = autoencoder.fit(train_data, train_data, epochs=200, batch_size=32, validation_split=0.1)
 
 decoder.save('autoencoder.h5')
 
