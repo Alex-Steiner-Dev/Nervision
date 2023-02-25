@@ -6,13 +6,15 @@ import matplotlib.pyplot as plt
 
 autoencoder = load_model('autoencoder.h5')
 
-z = np.random.normal(size=(32, 32,32))
-z = z.reshape([-1, 32, 32, 32, 1])
+z = np.random.normal(size=(64, 64,64))
+z = z.reshape([-1, 64, 64, 64, 1])
 
-voxels = autoencoder.predict(z, batch_size=1)
-voxels = voxels.reshape(32, 32, 32)
+voxels = autoencoder.predict(z)
+voxels = voxels.reshape(64, 64, 64)
 
-x, y, z = np.indices((32, 32, 32))
+print(voxels)
+
+x, y, z = np.indices((64, 64, 64))
 fig = plt.figure()
 ax = fig.add_subplot(111,projection='3d')
 ax.voxels(voxels, facecolors='#5DADE2', edgecolors='#34495E')

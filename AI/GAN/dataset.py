@@ -1,8 +1,17 @@
 import trimesh
 import glob
 import numpy as np
+import scipy.io as io
+import scipy.ndimage as nd
 
-DATA_DIR = "../Data/*"
+DATA_DIR = "volumetric_data/*"
+
+def getVoxelsFromMat(path, cube_len=64):
+    voxels = io.loadmat(path)['instance']
+    voxels = np.pad(voxels, (1, 1), 'constant', constant_values=(0, 0))
+    if cube_len != 32 and cube_len == 64:
+        voxels = nd.zoom(voxels, (2, 2, 2), mode='constant', order=0)
+    return voxels
 
 def parse_dataset():
     print("Loading dataset...")
@@ -12,16 +21,10 @@ def parse_dataset():
     folders = glob.glob(DATA_DIR)
 
     for i, folder in enumerate(folders):
-        train_files = glob.glob(folder + "/train/*.off")
+        train_files = glob.glob(folder + "/30/train/*.mat")
 
-        point_cloud = trimesh.load(train_files[0]).sample(512)
+        voxels = getVoxelsFromMat(train_files[0])
 
-        voxel = np.zeros((512, 512, 512), dtype=np.float16)
-
-        for i in range(512):
-            x, y, z = tuple(map(int, point_cloud[i]))
-            voxel[x][y][z] = i   
-
-        objects.append(voxel)
+        objects.append(voxels)
 
     return objects
