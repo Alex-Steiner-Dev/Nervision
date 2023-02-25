@@ -12,12 +12,10 @@ z = z.reshape([-1, 32, 32, 32, 1])
 voxels = autoencoder.predict(z)
 voxels = voxels.reshape(32, 32, 32)
 
-
 def saveFromVoxels(voxels):
-    z, x, y = voxels.nonzero()
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(x, y, -z, zdir='z', c='blue')
+    ax = fig.add_subplot(projection='3d')
+    ax.voxels(voxels, facecolors='#5DADE2', edgecolors='#34495E')
     plt.show()
 
 saveFromVoxels(voxels)
