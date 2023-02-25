@@ -1,4 +1,4 @@
-import trimesh
+import numpy as np
 import glob
 import numpy as np
 import scipy.io as io
@@ -13,7 +13,7 @@ def getVoxelsFromMat(path):
 
     return voxels
 
-def parse_dataset():
+def parse_dataset(box_size=32):
     print("Loading dataset...")
     
     objects = []
@@ -21,11 +21,14 @@ def parse_dataset():
     folders = glob.glob(DATA_DIR)
 
     for i, folder in enumerate(folders):
+        train_files = glob.glob(folder + "/30/train/*.mat")
+
         if folder == "volumetric_data\chair":
-            train_files = glob.glob(folder + "/30/train/*.mat")
+            for f in train_files:
+                voxels = getVoxelsFromMat(f)
 
-            voxels = getVoxelsFromMat(train_files[0])
+                objects.append(voxels)
 
-            objects.append(voxels)
+    print("Done!")
 
     return objects
