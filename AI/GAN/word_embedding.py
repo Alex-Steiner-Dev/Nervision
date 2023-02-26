@@ -4,7 +4,7 @@ import os
 
 class WordEmbedding:
     def __init__(self):
-        self.sentences_path = "../Data/Text/wiki.txt" 
+        self.sentences_path = "../Data/Text/sentences.txt" 
         self.model_path = "../Trained Models/Text/text_model.bin"
 
     def generate_model(self):

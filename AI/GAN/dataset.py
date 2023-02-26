@@ -4,7 +4,7 @@ import numpy as np
 import scipy.io as io
 import scipy.ndimage as nd
 
-DATA_DIR = "volumetric_data/*"
+DATA_DIR = "../Data/VolumetricData/*"
 
 def getVoxelsFromMat(path):
     voxels = io.loadmat(path)['instance']
@@ -16,19 +16,24 @@ def getVoxelsFromMat(path):
 def parse_dataset(box_size=32):
     print("Loading dataset...")
     
-    objects = []
-
+    voxels = []
+    labels = []
+    
     folders = glob.glob(DATA_DIR)
 
     for i, folder in enumerate(folders):
-        train_files = glob.glob(folder + "/30/train/*.mat")
+        voxels_files = glob.glob(folder + "/30/train/*.mat")
+        label_files = glob.glob(folder + "/30/train/*.txt")
 
-        if folder == "volumetric_data\chair":
-            for f in train_files:
-                voxels = getVoxelsFromMat(f)
+        if folder == "../Data/VolumetricData\chair":
+            for f in voxels_files:
+                voxel = getVoxelsFromMat(f)
+                voxels.append(voxel)
 
-                objects.append(voxels)
+            for f in label_files:
+                with open(label_files) as text_file:
+                    labels.append(text_file.readlines())
 
     print("Done!")
 
-    return objects
+    return labels
