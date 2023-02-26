@@ -13,7 +13,7 @@ def getVoxelsFromMat(path):
 
     return voxels
 
-def parse_dataset(box_size=32):
+def parse_dataset():
     print("Loading dataset...")
     
     voxels = []
@@ -36,4 +36,4 @@ def parse_dataset(box_size=32):
 
     print("Done!")
 
-    return labels
+    return voxels,labels

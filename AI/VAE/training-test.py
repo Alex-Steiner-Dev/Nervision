@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 from dataset import parse_dataset
 from VAE import *
 from word_embedding import *
@@ -6,12 +5,15 @@ import numpy as np
 
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+os.environ['TF_Metal_DEBUG'] = '0'
 
 from keras import backend as K
 K.clear_session()
 
-train_data = parse_dataset()
-train_data = np.array(train_data)
+x_train, y_train = parse_dataset()
+
+x_train = np.array(x_train)
+y_train = np.array(y_train)
 
 box_size = 32
 
@@ -19,7 +21,7 @@ print("Training...")
 
 autoencoder = VAE(box_size=box_size).build_vae()
 
-history = autoencoder.fit(train_data, train_data, epochs=1000, batch_size=100)
+history = autoencoder.fit(x_train, x_train, epochs=1000, batch_size=100)
 
 autoencoder.save('autoencoder.h5')
 
