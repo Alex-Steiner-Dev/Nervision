@@ -1,84 +1,68 @@
-/* Nav bar styling */
-nav {
-  background-color: #333;
-  color: #fff;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-}
-
-nav h1 {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 400;
-  letter-spacing: 1px;
-}
-
-nav ul {
-  list-style: none;
-  display: flex;
-  align-items: center;
+body {
   margin: 0;
   padding: 0;
+  background-color: #111;
+  color: #eee;
+  font-family: 'Montserrat', sans-serif;
 }
 
-nav ul li {
-  margin-left: 20px;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-nav ul li a {
-  color: #fff;
-  text-decoration: none;
-}
-
-/* Latest creations section styling */
-#latest-creations {
-  margin-top: 50px;
+.chat-container {
+  width: 100vw;
+  height: 100vh;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
 }
 
-.latest-creation {
-  width: calc(33.33% - 20px);
-  margin-bottom: 40px;
-  background-color: #f4f4f4;
-  border-radius: 5px;
-  overflow: hidden;
-  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
-}
-
-.latest-creation img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-}
-
-.latest-creation h2 {
-  margin: 20px;
-  font-size: 20px;
-  font-weight: 500;
-  color: #333;
-}
-
-/* Footer styling */
-footer {
-  background-color: #333;
-  color: #fff;
+.search-container {
+  width: 80%;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 50px;
-  position: absolute;
-  bottom: 0;
+  margin-top: 20px;
+  margin-bottom: 60px;
 }
 
-footer p {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 300;
-  letter-spacing: 1px;
+.search-container input[type="text"] {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #444;
+  color: #eee;
+  font-size: 1.2rem;
+  font-weight: 400;
+  font-family: inherit;
+}
+
+.search-container button {
+  padding: 10px;
+  background-color: #4CAF50;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  margin-left: 10px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 400;
+  font-family: inherit;
+}
+
+.search-container button:hover {
+  background-color: #3e8e41;
+}
+
+.canvas-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+canvas {
+  width: 80%;
+  height: 80%;
+  background-color: #333;
 }

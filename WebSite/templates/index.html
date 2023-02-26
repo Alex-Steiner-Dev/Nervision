@@ -5,40 +5,21 @@
 	<link type="text/css" href="/static/css/index.css" rel="stylesheet"/>
 </head>
 <body>
-	<!-- Nav bar -->
-	<nav>
-		<h1>Nerve Vision</h1>
-		<ul>
-			<li><a href="#">Home</a></li>
-			<li><a href="#">Latest</a></li>
-			<li><a href="#">My Account</a></li>
-		</ul>
-	</nav>
-	
-	<!-- Latest creations section -->
-	<section id="latest-creations">
-		<div class="latest-creation">
-			<img src="https://via.placeholder.com/300x200" alt="Latest creation">
-			<h2>Model 1</h2>
-		</div>
-		<div class="latest-creation">
-			<img src="https://via.placeholder.com/300x200" alt="Latest creation">
-			<h2>Model 2</h2>
-		</div>
-		<div class="latest-creation">
-			<img src="https://via.placeholder.com/300x200" alt="Latest creation">
-			<h2>Model 3</h2>
-		</div>
-	</section>
-	 
-	<!-- User sections -->
-	<section id="user-sections">
-		<!-- Add user sections here -->
-	</section>
+	<div class="chat-container">
 
-	<!-- Footer -->
-	<footer>
-		<p>&copy; Copyright 2023, Nerve Vision</p>
-	</footer>
-</body>
+		<div class="canvas-container">
+			<canvas id="model-canvas"></canvas>
+		</div>
+
+	  	<div class="search-container">
+			<input type="text" placeholder="Type your message...">
+			<button>Send</button>
+	  	</div>
+		
+	</div>
+  
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+	<script src="script.js"></script>
+
+  </body>
 </html>
