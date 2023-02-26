@@ -2,18 +2,34 @@ from gensim.models import Word2Vec
 import numpy as np
 import os
 
-sentences_path = "../Data/Text/sentences.txt"
-sentences = []
+class WordEmbedding:
+    def __init__(self):
+        self.sentences_path = "../Data/Text/wiki.txt" 
+        self.model_path = "../Trained Models/Text/text_model.bin"
 
-with open(sentences_path, "r") as f:
-    for line in f:
-        new_sentence = []
-        for i in line.split():
-            if not i == "\n":
-                new_sentence.append(i)
-        sentences.append(new_sentence)
+    def generate_model(self):
+        sentences = []
 
-print(sentences)
-model = Word2Vec(sentences, min_count=1)
+        with open(self.sentences_path, "r") as f:
+            for line in f:
+                new_sentence = []
+                for i in line.split():
+                    if not i == "\n":
+                        new_sentence.append(i)
+                sentences.append(new_sentence)
 
-model.save("text_model.bin")
+        model = Word2Vec(sentences, min_count=1)
+
+        model.save(self.model_path)
+
+    def generate_word_embedding(self, text):
+        try:
+            model = Word2Vec.load(self.model_path)
+
+            words = text.split()
+            word_embeddings = [model.wv[w] for w in words]
+
+            return word_embeddings
+        
+        except:
+            return "I am sorry, your requested model wasn't trained on our dataset!"

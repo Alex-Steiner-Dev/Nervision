@@ -3,9 +3,8 @@ from keras.models import Model
 from keras.layers.convolutional import Convolution3D, MaxPooling3D, UpSampling3D
 
 class VAE:
-    def __init__(self, box_size, resolutions):
+    def __init__(self, box_size):
         self.box_size = box_size
-        self.resolutions = resolutions
 
     def build_vae(self):
         input_img = Input(shape=(self.box_size, self.box_size, self.box_size, 1))
