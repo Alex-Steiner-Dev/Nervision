@@ -90,4 +90,4 @@ class GAN:
 
             print(f"{epoch+1} [D loss: {d_loss[0]}, acc.: {100*d_loss[1]:.2f}%] [G loss: {g_loss}]")
 
-        self.generator.save("generator.")
+        self.generator.save("generator.h5")

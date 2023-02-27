@@ -9,7 +9,7 @@ DATA_DIR = "../Data/VolumetricData/*"
 def getVoxelsFromMat(path):
     voxels = io.loadmat(path)['instance']
     voxels = np.pad(voxels, (1, 1), 'constant', constant_values=(0, 0))
-    voxels = nd.zoom(voxels, (1, 1, 1), mode='constant', order=0)
+    voxels = nd.zoom(voxels, (2, 2, 2), mode='constant', order=0)
 
     return voxels
 
@@ -25,7 +25,7 @@ def parse_dataset():
         voxels_files = glob.glob(folder + "/30/train/*.mat")
         label_files = glob.glob(folder + "/30/train/*.txt")
 
-        if folder == "../Data/VolumetricData\chair":
+        if folder == "../Data/VolumetricData/chair":
             for f in voxels_files:
                 voxel = getVoxelsFromMat(f)
                 voxels.append(voxel)
