@@ -36,4 +36,4 @@ def parse_dataset():
 
     print("Done!")
 
-    return voxels,labels
+    return voxels
