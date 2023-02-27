@@ -1,6 +1,5 @@
 from dataset import parse_dataset
 from GAN import *
-from word_embedding import *
 import numpy as np
 
 import os
