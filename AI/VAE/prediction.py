@@ -4,14 +4,14 @@ from keras.models import load_model
 import matplotlib.pyplot as plt
 from dataset import parse_dataset
 
-autoencoder = load_model('../Trained Models/autoencoder.h5')
+autoencoder = load_model('autoencoder.h5')
 
 z = parse_dataset()[0]
 z = np.array(z)
 z = z.reshape([-1, 32, 32, 32, 1])
 
 voxels = autoencoder.predict(z)
-voxels = voxels[10]
+voxels = voxels[0]
 voxels = voxels.reshape(32, 32, 32)
 
 def plotVoxel(voxels):
