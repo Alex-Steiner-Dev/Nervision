@@ -1,0 +1,45 @@
+.login{
+    width: auto;
+    height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;   
+    text-align: center;
+}
+
+.title{
+    margin-top: -50px;
+}
+
+.logo{
+    margin-top: 7%;
+    width: 45%;
+    height: auto;
+}
+
+.login-form{
+    border: 2px solid black;
+    border-radius: 5px;
+    width: 20%;
+
+    margin-left: auto;
+    margin-right: auto; 
+}
+
+.mail-form-input{
+    margin-top: 20px;
+
+    width: 200px;
+    font-size: medium;
+    border: 2px solid black;
+    border-radius: 5px;
+}
+
+.psw-form-input{
+    margin-bottom: 20px;
+
+    width: 200px;
+    font-size: medium;
+    border: 2px solid black;
+    border-radius: 5px;
+}
