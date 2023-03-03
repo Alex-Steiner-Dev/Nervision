@@ -1,111 +1,125 @@
-from keras.layers import Input, Dense, Reshape, Flatten, Dropout, LeakyReLU, ReLU
-from keras.models import Model, Sequential
-from keras.optimizers import Adam
-from keras.layers.convolutional import Conv2D, Conv2DTranspose
+import tensorflow as tf
+from tensorflow import keras
+from keras import layers
 import numpy as np
+import matplotlib.pyplot as plt
 
-class GAN:
-    def __init__(self, latent_dim, x_train, y_train):
+class PointGAN:
+    def __init__(self, input_shape, latent_dim):
+        self.input_shape = input_shape
         self.latent_dim = latent_dim
 
-        self.discriminator = self.build_discriminator()
+        # Build the generator
         self.generator = self.build_generator()
-        self.gan = self.build_gan()
+        self.generator.summary()
 
-        self.x_train = x_train
-        self.y_train = y_train
+        # Build the discriminator
+        self.discriminator = self.build_discriminator()
+        self.discriminator.summary()
+
+        # Compile the discriminator
+        self.discriminator.compile(loss="binary_crossentropy", optimizer=keras.optimizers.Adam(0.0002, 0.5), metrics=["accuracy"])
+
+        # The generator takes noise as input and generates point clouds
+        z = layers.Input(shape=(self.latent_dim,))
+        point_cloud = self.generator(z)
+
+        # For the combined model we will only train the generator
+        self.discriminator.trainable = False
+
+        # The discriminator takes generated point clouds as input and determines validity
+        validity = self.discriminator(point_cloud)
+
+        # The combined model (generator and discriminator)
+        self.combined = keras.models.Model(z, validity)
+        self.combined.compile(loss="binary_crossentropy", optimizer=keras.optimizers.Adam(0.0002, 0.5))
 
     def build_generator(self):
-        model = Sequential(name="Generator") 
+        model = keras.models.Sequential()
+        model.add(layers.Dense(256, input_dim=self.latent_dim, activation="relu"))
+        model.add(layers.BatchNormalization())
+        model.add(layers.Dense(512, activation="relu"))
+        model.add(layers.BatchNormalization())
+        model.add(layers.Dense(1024, activation="relu"))
+        model.add(layers.BatchNormalization())
+        model.add(layers.Dense(self.input_shape[0]*self.input_shape[1]*self.input_shape[2], activation="relu"))
+        model.add(layers.Reshape(self.input_shape))
+        model.add(layers.Conv1D(64, kernel_size=1, strides=1, padding="same", activation="relu"))
+        model.add(layers.BatchNormalization())
+        model.add(layers.Conv1D(128, kernel_size=1, strides=1, padding="same", activation="relu"))
+        model.add(layers.BatchNormalization())
+        model.add(layers.Conv1D(1024, kernel_size=1, strides=1, padding="same", activation="relu"))
+        model.add(layers.BatchNormalization())
+        model.add(layers.Conv1DTranspose(512, kernel_size=2, strides=2, padding="same", activation="relu"))
+        model.add(layers.BatchNormalization())
+        model.add(layers.Conv1DTranspose(256, kernel_size=2, strides=2, padding="same", activation="relu"))
+        model.add(layers.BatchNormalization())
+        model.add(layers.Conv1DTranspose(self.input_shape[2], kernel_size=2, strides=2, padding="same", activation="tanh"))
+        z = layers.Input(shape=(self.latent_dim,))
+        point_cloud = model(z)
+        return keras.models.Model(z, point_cloud)
 
-        n_nodes = 256 * 3
-        model.add(Dense(n_nodes, input_dim=self.latent_dim,))
-        model.add(Reshape((256, 3)))
-        
-        model.add(Conv2DTranspose(filters=512, kernel_size=(4,4), strides=(2,2), padding='same'))
-        model.add(ReLU())
-                                
-        model.add(Conv2DTranspose(filters=1025, kernel_size=(4,4), strides=(2,2), padding='same'))
-        model.add(ReLU())
-        
-        model.add(Conv2DTranspose(filters=2048, kernel_size=(4,4), strides=(2,2), padding='same'))
-        model.add(ReLU())
-        
-        model.add(Conv2D(filters=3, kernel_size=(5,5), activation='tanh', padding='same'))
+    def build_discriminator(self):
+        model = keras.models.Sequential()
+        model.add(layers.Conv1D(64, kernel_size=1, strides=1, input_shape=self.input_shape, padding="same", activation="relu"))
+        model.add(layers.BatchNormalization())
+        model.add(layers.Conv1D(128, kernel_size=1, strides=1, padding="same", activation="relu"))
+        model.add(layers.BatchNormalization())
+        model.add(layers.Conv1D(1024, kernel_size=1, strides=1, padding="same", activation="relu"))
+        model.add(layers.BatchNormalization())
+        model.add(layers.MaxPooling1D(pool_size=(2)))
+        model.add(layers.Flatten())
+        model.add(layers.Dense(512, activation="relu"))
+        model.add(layers.Dense(1, activation="sigmoid"))
+        point_cloud = layers.Input(shape=self.input_shape)
+        validity = model(point_cloud)
+        return keras.models.Model(point_cloud, validity)
 
-        return model
-    
-    def build_discriminator(in_shape=(2048,3)):
-        model = Sequential(name="Discriminator") 
+    def train(self, X_train, epochs, batch_size, sample_interval):
+        # Adversarial ground truths
+        valid = np.ones((batch_size, 1))
+        fake = np.zeros((batch_size, 1))
 
-        model.add(Conv2D(filters=2048*2, kernel_size=(4,4), strides=(2, 2), padding='same', input_shape=in_shape))
-        model.add(LeakyReLU(alpha=0.2))
-        
-        model.add(Conv2D(filters=2048*4, kernel_size=(4,4), strides=(2, 2), padding='same', input_shape=in_shape))
-        model.add(LeakyReLU(alpha=0.2))
-        
-        model.add(Conv2D(filters=2048*6, kernel_size=(4,4), strides=(2, 2), padding='same', input_shape=in_shape))
-        model.add(LeakyReLU(alpha=0.2))
-        
-        model.add(Flatten())
-        model.add(Dropout(0.3)) 
-        model.add(Dense(1, activation='sigmoid')) 
-        
-        model.compile(loss='binary_crossentropy', optimizer=Adam(learning_rate=0.0002, beta_1=0.5), metrics=['accuracy'])
-        
-        return model
-    
-    def build_gan(self):
-        self.discriminator.trainable = False
-        
-        model = Sequential(name="DCGAN")
-        model.add(self.generator) 
-        model.add(self.discriminator)
-        
-        model.compile(loss='binary_crossentropy', optimizer=Adam(learning_rate=0.0002, beta_1=0.5))
+        for epoch in range(epochs):
+            # Select a random batch of point clouds
+            idx = np.random.randint(0, X_train.shape[0], batch_size)
+            point_clouds = X_train[idx]
 
-        return model
-    
-    def latent_vector(latent_dim):
-        latent_input = np.random.randn(latent_dim)
-        latent_input = latent_input.reshape(1, latent_dim)
+            # Sample noise and generate a batch of new point clouds
+            noise = np.random.normal(0, 1, (batch_size, self.latent_dim))
+            gen_point_clouds = self.generator.predict(noise)
 
-        return latent_input
+            # Train the discriminator
+            d_loss_real = self.discriminator.train_on_batch(point_clouds, valid)
+            d_loss_fake = self.discriminator.train_on_batch(gen_point_clouds, fake)
+            d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
 
-    def fake_samples(self):
-        latent_output = self.latent_vector(self.latent_dim, 1)
-        
-        X = self.generator.predict(latent_output)
-        
-        y = self.y_train[np.random.randint(0, len(self.y_train) - 1)]
+            # ---------------------
+            #  Train Generator
+            # ---------------------
 
-        return X, y
-    
-    def real_samples(self):
-        random = np.random.randint(0, len(self.y_train) - 1)
+            # Sample noise and generate a batch of new point clouds
+            noise = np.random.normal(0, 1, (batch_size, self.latent_dim))
 
-        X = self.x_train[random]
+            # Train the generator
+            g_loss = self.combined.train_on_batch(noise, valid)
 
-        y = np.ones((1, 1))
+            # If at sample interval, print metrics and generate point cloud samples
+            if epoch % sample_interval == 0:
+                print(f"Epoch {epoch}, Discriminator Loss: {d_loss[0]}, Discriminator Accuracy: {100*d_loss[1]}, Generator Loss: {g_loss}")
+                self.sample_point_clouds(epoch)
 
-        return X, y
-    
-    def train(self, epochs):
-        for i in range(epochs):
-            x_real, y_real = self.real_samples(self.x_train, self.y_train)
-            x_fake, y_fake = self.fake_samples(self.generator, self.latent_dim)
-            
-    
-            X, y = np.vstack((x_real, x_fake)), np.vstack((y_real, y_fake))
-            discriminator_loss, _ = self.discriminator.train_on_batch(X, y)
-        
-            x_gan = self.latent_vector(self.latent_dim)
-            y_gan = np.ones((1, 1))
-            
-            generator_loss = self.gan_model.train_on_batch(x_gan, y_gan)
-            
-            if i % 100 == 0:
-                print("Epoch number: ", i)
-                print("*** Training ***")
-                print("Discriminator Loss ", discriminator_loss)
-                print("Generator Loss: ", generator_loss)
+    def sample_point_clouds(self, epoch):
+        r, c = 2, 2
+        noise = np.random.normal(0, 1, (r*c, self.latent_dim))
+        gen_point_clouds = self.generator.predict(noise)
+        gen_point_clouds = 0.5 * gen_point_clouds + 0.5
+
+        fig = plt.figure(figsize=(10, 10))
+        for i in range(r*c):
+            ax = fig.add_subplot(r, c, i+1, projection='3d')
+            ax.scatter(gen_point_clouds[i, :, 0], gen_point_clouds[i, :, 1], gen_point_clouds[i, :, 2])
+            ax.axis('off')
+        plt.savefig(f"epoch_{epoch}.png")
+        plt.close()
+

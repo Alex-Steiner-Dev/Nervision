@@ -21,7 +21,7 @@ def parse_dataset():
     label_files = glob.glob(DATA_DIR + "/*.txt")
         
     for i in tqdm(range(len(meshes))):
-        point_cloud = trimesh.load(meshes[i], force='mesh').sample(4096)
+        point_cloud = trimesh.load(meshes[i], force='mesh').sample(2048)
         point_clouds.append(point_cloud)
 
     for i in tqdm(range(len(label_files))):
