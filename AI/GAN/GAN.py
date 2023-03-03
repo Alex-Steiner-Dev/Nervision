@@ -1,93 +1,111 @@
-from keras.layers import Input, Dense, Reshape, Flatten, Dropout, LeakyReLU
+from keras.layers import Input, Dense, Reshape, Flatten, Dropout, LeakyReLU, ReLU
 from keras.models import Model, Sequential
 from keras.optimizers import Adam
-from keras.layers.convolutional import Convolution3D, UpSampling3D
+from keras.layers.convolutional import Conv2D, Conv2DTranspose
 import numpy as np
 
 class GAN:
-    def __init__(self, box_size):
-        self.box_size = box_size
+    def __init__(self, latent_dim, x_train, y_train):
+        self.latent_dim = latent_dim
 
-        self.optimizer = Adam(0.0002, 0.5)
-
-        # Build and compile the discriminator
         self.discriminator = self.build_discriminator()
-        self.discriminator.compile(loss='binary_crossentropy',
-                                   optimizer=self.optimizer,
-                                   metrics=['accuracy'])
-
-        # Build the generator
         self.generator = self.build_generator()
+        self.gan = self.build_gan()
 
-        # The generator takes noise as input and generates images
-        z = Input(shape=(100,))
-        img = self.generator(z)
-
-        # Only train the generator for the combined model
-        self.discriminator.trainable = False
-
-        # The discriminator takes generated images as input and determines validity
-        validity = self.discriminator(img)
-
-        # The combined model (stacked generator and discriminator)
-        # Trains the generator to fool the discriminator
-        self.combined = Model(z, validity)
-        self.combined.compile(loss='binary_crossentropy', optimizer=self.optimizer)
+        self.x_train = x_train
+        self.y_train = y_train
 
     def build_generator(self):
-        model = Sequential()
+        model = Sequential(name="Generator") 
 
-        model.add(Dense(128 * 16 * 16 * 16, activation='relu', input_dim=100))
-        model.add(Reshape((16, 16, 16, 128)))
-        model.add(UpSampling3D(size=(2, 2, 2)))
-        model.add(Convolution3D(64, (5, 5, 5), activation='relu', padding='same'))
-        model.add(UpSampling3D(size=(2, 2, 2)))
-        model.add(Convolution3D(1, (5, 5, 5), activation='sigmoid', padding='same'))
+        n_nodes = 256 * 3
+        model.add(Dense(n_nodes, input_dim=self.latent_dim,))
+        model.add(Reshape((256, 3)))
+        
+        model.add(Conv2DTranspose(filters=512, kernel_size=(4,4), strides=(2,2), padding='same'))
+        model.add(ReLU())
+                                
+        model.add(Conv2DTranspose(filters=1025, kernel_size=(4,4), strides=(2,2), padding='same'))
+        model.add(ReLU())
+        
+        model.add(Conv2DTranspose(filters=2048, kernel_size=(4,4), strides=(2,2), padding='same'))
+        model.add(ReLU())
+        
+        model.add(Conv2D(filters=3, kernel_size=(5,5), activation='tanh', padding='same'))
 
-        noise = Input(shape=(100,))
-        img = model(noise)
+        return model
+    
+    def build_discriminator(in_shape=(2048,3)):
+        model = Sequential(name="Discriminator") 
 
-        return Model(noise, img)
-
-    def build_discriminator(self):
-        model = Sequential()
-
-        model.add(Convolution3D(32, (5, 5, 5), strides=(2, 2, 2), padding='same', input_shape=(self.box_size, self.box_size, self.box_size, 1)))
+        model.add(Conv2D(filters=2048*2, kernel_size=(4,4), strides=(2, 2), padding='same', input_shape=in_shape))
         model.add(LeakyReLU(alpha=0.2))
-        model.add(Dropout(0.25))
-        model.add(Convolution3D(64, (5, 5, 5), strides=(2, 2, 2), padding='same'))
+        
+        model.add(Conv2D(filters=2048*4, kernel_size=(4,4), strides=(2, 2), padding='same', input_shape=in_shape))
         model.add(LeakyReLU(alpha=0.2))
-        model.add(Dropout(0.25))
-        model.add(Convolution3D(128, (5, 5, 5), strides=(2, 2, 2), padding='same'))
+        
+        model.add(Conv2D(filters=2048*6, kernel_size=(4,4), strides=(2, 2), padding='same', input_shape=in_shape))
         model.add(LeakyReLU(alpha=0.2))
-        model.add(Dropout(0.25))
+        
         model.add(Flatten())
-        model.add(Dense(1, activation='sigmoid'))
+        model.add(Dropout(0.3)) 
+        model.add(Dense(1, activation='sigmoid')) 
+        
+        model.compile(loss='binary_crossentropy', optimizer=Adam(learning_rate=0.0002, beta_1=0.5), metrics=['accuracy'])
+        
+        return model
+    
+    def build_gan(self):
+        self.discriminator.trainable = False
+        
+        model = Sequential(name="DCGAN")
+        model.add(self.generator) 
+        model.add(self.discriminator)
+        
+        model.compile(loss='binary_crossentropy', optimizer=Adam(learning_rate=0.0002, beta_1=0.5))
 
-        img = Input(shape=(self.box_size, self.box_size, self.box_size, 1))
-        validity = model(img)
+        return model
+    
+    def latent_vector(latent_dim):
+        latent_input = np.random.randn(latent_dim)
+        latent_input = latent_input.reshape(1, latent_dim)
 
-        return Model(img, validity)
+        return latent_input
 
-    def train(self, x_train, epochs, batch_size=32):
-        valid = np.ones((batch_size, 1))
-        fake = np.zeros((batch_size, 1))
+    def fake_samples(self):
+        latent_output = self.latent_vector(self.latent_dim, 1)
+        
+        X = self.generator.predict(latent_output)
+        
+        y = self.y_train[np.random.randint(0, len(self.y_train) - 1)]
 
-        for epoch in range(epochs):
+        return X, y
+    
+    def real_samples(self):
+        random = np.random.randint(0, len(self.y_train) - 1)
 
-            idx = np.random.randint(0, x_train.shape[0], batch_size)
-            imgs = x_train[idx]
+        X = self.x_train[random]
 
-            noise = np.random.normal(0, 1, (batch_size, 100))
-            gen_imgs = self.generator.predict(noise)
+        y = np.ones((1, 1))
 
-            d_loss_real = self.discriminator.train_on_batch(imgs, valid)
-            d_loss_fake = self.discriminator.train_on_batch(gen_imgs, fake)
-            d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
-
-            noise = np.random.normal(0, 1, (batch_size, 100))
-            g_loss = self.combined.train_on_batch(noise, valid)
-
-            print(f"{epoch+1} [D loss: {d_loss[0]}, acc.: {100*d_loss[1]:.2f}%] [G loss: {g_loss}]")
-
-        self.generator.save("generator.h5")
+        return X, y
+    
+    def train(self, epochs):
+        for i in range(epochs):
+            x_real, y_real = self.real_samples(self.x_train, self.y_train)
+            x_fake, y_fake = self.fake_samples(self.generator, self.latent_dim)
+            
+    
+            X, y = np.vstack((x_real, x_fake)), np.vstack((y_real, y_fake))
+            discriminator_loss, _ = self.discriminator.train_on_batch(X, y)
+        
+            x_gan = self.latent_vector(self.latent_dim)
+            y_gan = np.ones((1, 1))
+            
+            generator_loss = self.gan_model.train_on_batch(x_gan, y_gan)
+            
+            if i % 100 == 0:
+                print("Epoch number: ", i)
+                print("*** Training ***")
+                print("Discriminator Loss ", discriminator_loss)
+                print("Generator Loss: ", generator_loss)

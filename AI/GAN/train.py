@@ -8,4 +8,7 @@ y_train = np.array(y_train)
 
 print("Training...")
 
+gan = GAN(latent_dim=100, x_train=x_train, y_train=y_train)
+gan.train(epochs=1000)
+
 print("Done!")
