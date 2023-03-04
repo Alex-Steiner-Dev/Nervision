@@ -1,32 +1,39 @@
+import numpy as np
 import glob
 import numpy as np
-import logging
-import trimesh
+import scipy.io as io
+import scipy.ndimage as nd
 
-from tqdm import tqdm
+DATA_DIR = "../Data/VolumetricData/*"
 
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
-logging.getLogger("trimesh").setLevel(logging.ERROR)
+def getVoxelsFromMat(path):
+    voxels = io.loadmat(path)['instance']
+    voxels = np.pad(voxels, (1, 1), 'constant', constant_values=(0, 0))
+    voxels = nd.zoom(voxels, (1, 1, 1), mode='constant', order=0)
 
-DATA_DIR = "../Data/ShapeNet"
+    return voxels
 
 def parse_dataset():
     print("Loading dataset...")
     
-    point_clouds = []
+    voxels = []
     labels = []
+    
+    folders = glob.glob(DATA_DIR)
 
-    meshes = glob.glob(DATA_DIR + "/*.obj")
-    label_files = glob.glob(DATA_DIR + "/*.txt")
-        
-    for i in tqdm(range(len(meshes))):
-        point_cloud = trimesh.load(meshes[i], force='mesh').sample(2048)
-        point_clouds.append(point_cloud)
+    for i, folder in enumerate(folders):
+        voxels_files = glob.glob(folder + "/30/train/*.mat")
+        label_files = glob.glob(folder + "/30/train/*.txt")
 
-    for i in tqdm(range(len(label_files))):
-        label_files.append(open(label_files[i], 'r').readlines())
+        if folder == "../Data/VolumetricData\chair":
+            for f in voxels_files:
+                voxel = getVoxelsFromMat(f)
+                voxels.append(voxel)
+
+            for f in label_files:
+                with open(label_files) as text_file:
+                    labels.append(text_file.readlines())
 
     print("Done!")
 
-    return point_clouds, labels
+    return voxels,labels
