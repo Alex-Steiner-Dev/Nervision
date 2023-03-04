@@ -1,12 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from keras.models import load_model
+from GAN import *
 
-# Load the point cloud from the .npy file
-point_cloud = np.load('generated_point_clouds_78000.npy') # Replace with the path to your .npy file
+vae = VAE(box_size=32)
 
-# Plot the point cloud
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-ax.scatter(point_cloud[:, 0], point_cloud[:, 1], point_cloud[:, 2])
-plt.show()
+autoencoder, decoder = vae.build_vae()
+
+autoencoder.load_weights("vae.h5")
+
+z = np.random.normal(size=(1, 8, 8, 8, 120))
+generated_sample = decoder.predict(z)
+
+prediction = generated_sample.reshape(32, 32, 32)
+
+def plotVoxel(voxels):
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+    ax.voxels(voxels, facecolors='#5DADE2', edgecolors='#34495E')
+    plt.show()
+
+plotVoxel(prediction)
