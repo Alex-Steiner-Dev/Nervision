@@ -1,71 +1,130 @@
-import matplotlib.pyplot as plt
-from keras.optimizers import Adam
-from dataset import parse_dataset
 from GAN import *
-import numpy as np
+from dataset import parse_dataset
 
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+def trainer():
+    x_train = parse_dataset()[0][0]
+    
+    dset_len = {"train": len(train_dsets)}
+    dset_loaders = {"train": train_dset_loaders}
+    # print (dset_len["train"])
 
-from keras import backend as K
-K.clear_session()
+    # model define
+    D = net_D(args)
+    G = net_G(args)
 
-train_data = parse_dataset()[0][0]
 
-def plotVoxel(voxels):
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
-    ax.voxels(voxels, facecolors='#5DADE2', edgecolors='#34495E')
-    plt.savefig("generation.png")
+    D_solver = optim.Adam(D.parameters(), lr=params.d_lr, betas=params.beta)
+    # D_solver = optim.SGD(D.parameters(), lr=args.d_lr, momentum=0.9)
+    G_solver = optim.Adam(G.parameters(), lr=params.g_lr, betas=params.beta)
 
-x_train = np.array(train_data).reshape(1,32,32,32,1)
+    D.to(params.device)
+    G.to(params.device)
 
-loss_fn = 'binary_crossentropy'
-optimizer = Adam(lr=0.0002, beta_1=0.5)
+    # criterion_D = nn.BCELoss()
+    criterion_D = nn.MSELoss()
 
-G = build_generator()
-D = build_discriminator()
+    criterion_G = nn.L1Loss()
 
-# Compile the discriminator
-D.compile(loss=loss_fn, optimizer=optimizer, metrics=['accuracy'])
+    itr_val = -1
+    itr_train = -1
 
-# Compile the generator
-G.compile(loss=loss_fn, optimizer=optimizer)
+    for epoch in range(params.epochs):
 
-epochs = 1000
-z_size = 200
-batch_size = 1
+        start = time.time()
 
-for epoch in range(epochs):
-    Z = np.random.normal(0, 0.33, (1, 1, 1, 1, 200))
+        for phase in ['train']:
+            if phase == 'train':
+                # if args.lrsh:
+                #     D_scheduler.step()
+                D.train()
+                G.train()
+            else:
+                D.eval()
+                G.eval()
 
-    real_labels = np.ones((batch_size, 1, 1, 1, 1))
-    fake_labels = np.zeros((batch_size, 1, 1, 1, 1))
+            running_loss_G = 0.0
+            running_loss_D = 0.0
+            running_loss_adv_G = 0.0
 
-    d_real_loss = D.train_on_batch(x_train, real_labels)
+            for i, X in enumerate(tqdm(dset_loaders[phase])):
 
-    fake = G.predict(Z)
+                # if phase == 'val':
+                #     itr_val += 1
 
-    d_fake_loss = D.train_on_batch(fake, fake_labels)
+                if phase == 'train':
+                    itr_train += 1
+
+                X = X.to(params.device)
+                # print (X)
+                # print (X.size())
+
+                batch = X.size()[0]
+                # print (batch)
+
+                Z = generateZ(args, batch)
+                # print (Z.size())
+
+                # ============= Train the discriminator =============#
+                d_real = D(X)
+
+                fake = G(Z)
+                d_fake = D(fake)
+
+                real_labels = torch.ones_like(d_real).to(params.device)
+                fake_labels = torch.zeros_like(d_fake).to(params.device)
+                # print (d_fake.size(), fake_labels.size())
+
+                if params.soft_label:
+                    real_labels = torch.Tensor(batch).uniform_(0.7, 1.2).to(params.device)
+                    fake_labels = torch.Tensor(batch).uniform_(0, 0.3).to(params.device)
+
+                # print (d_real.size(), real_labels.size())
+                d_real_loss = criterion_D(d_real, real_labels)
+
+                d_fake_loss = criterion_D(d_fake, fake_labels)
+
+                d_loss = d_real_loss + d_fake_loss
+
+                # no deleted
+                d_real_acu = torch.ge(d_real.squeeze(), 0.5).float()
+                d_fake_acu = torch.le(d_fake.squeeze(), 0.5).float()
+                d_total_acu = torch.mean(torch.cat((d_real_acu, d_fake_acu), 0))
+
+                if d_total_acu < params.d_thresh:
+                    D.zero_grad()
+                    d_loss.backward()
+                    D_solver.step()
+
+                # =============== Train the generator ===============#
+
+                Z = generateZ(args, batch)
+
+                # print (X)
+                fake = G(Z)  # generated fake: 0-1, X: 0/1
+                d_fake = D(fake)
+
+                adv_g_loss = criterion_D(d_fake, real_labels)
+                # print (fake.size(), X.size())
+
+                # recon_g_loss = criterion_D(fake, X)
+                recon_g_loss = criterion_G(fake, X)
+                # g_loss = recon_g_loss + params.adv_weight * adv_g_loss
+                g_loss = adv_g_loss
+
         
-    d_loss = d_real_loss[0] + d_fake_loss[0]
+                D.zero_grad()
+                G.zero_grad()
+                g_loss.backward()
+                G_solver.step()
 
-    d_real_acu = (d_real_loss[1] >= 0.5)
-    d_fake_acu = (d_fake_loss[1] <= 0.5)
-    d_total_acu = (d_real_acu + d_fake_acu) / 2
+                # =============== logging each 10 iterations ===============#
 
-    if d_total_acu <= 0.8:
-        D.trainable = True
-        D.train_on_batch(x_train, real_labels)
-        D.train_on_batch(fake, fake_labels)
+                running_loss_G += recon_g_loss.item() * X.size(0)
+                running_loss_D += d_loss.item() * X.size(0)
+                running_loss_adv_G += adv_g_loss.item() * X.size(0)
 
-    # Train the generator
-    Z = np.random.normal(0, 0.33, (1, 1, 1, 1, 200))
-    real_labels = np.ones((batch_size, 1, 1, 1, 1))
-    g_loss = G.train_on_batch(Z, real_labels)
 
-    # Update learning rates
-    G_lr = max(0.0025 * (epochs - epoch) / epochs, 0)
-    D_lr = max(0.01 * (epochs - epoch) / epochs, 0)
-    K.set_value(G.optimizer.lr, G_lr)
-    K.set_value(D.optimizer.lr, D_lr)
+            epoch_loss_D = running_loss_D / dset_len[phase]
+            epoch_loss_adv_G = running_loss_adv_G / dset_len[phase]
+
+            print('Epochs-{} ({}) , D(x) : {:.4}, D(G(x)) : {:.4}'.format(epoch, phase, epoch_loss_D, epoch_loss_adv_G))
