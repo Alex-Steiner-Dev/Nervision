@@ -9,7 +9,7 @@ autoencoder, decoder = vae.build_vae()
 
 autoencoder.load_weights("vae.h5")
 
-z = np.random.normal(size=(1, 8, 8, 8, 120))
+z = np.random.normal(size=(1, 50))
 generated_sample = decoder.predict(z)
 
 prediction = generated_sample.reshape(32, 32, 32)

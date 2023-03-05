@@ -26,9 +26,8 @@ def parse_dataset():
         label_files = glob.glob(folder + "/30/train/*.txt")
 
         if folder == "../Data/VolumetricData\chair":
-            for f in voxels_files:
-                voxel = getVoxelsFromMat(f)
-                voxels.append(voxel)
+            voxel = getVoxelsFromMat(voxels_files[0])
+            voxels.append(voxel)
 
             for f in label_files:
                 with open(label_files) as text_file:
