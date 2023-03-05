@@ -16,9 +16,6 @@ leak_value = 0.2
 bias = False
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-data_dir = '../Data/VolumetricData/'
-model_dir = 'chair/'
-output_dir = '../outputs'
 
 def print_params():
     l = 16
@@ -32,7 +29,6 @@ def print_params():
     print('z_dim =', z_dim)
     print('z_dis =', z_dis)
     print('model_images_save_step =', model_save_step)
-    print('data =', model_dir)
     print('device =', device)
     print('g_lr =', g_lr)
     print('d_lr =', d_lr)

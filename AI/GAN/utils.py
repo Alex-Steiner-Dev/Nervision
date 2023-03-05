@@ -1,4 +1,3 @@
-
 import scipy.ndimage as nd
 import scipy.io as io
 import matplotlib
@@ -8,6 +7,7 @@ if params.device.type != 'cpu':
     matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
+from mpl_toolkits import mplot3d
 import matplotlib.gridspec as gridspec
 import numpy as np
 from torch.utils import data
@@ -17,7 +17,7 @@ import os
 
 def getVoxelFromMat(path, cube_len=64):
     if cube_len == 32:
-        voxels = io.loadmat(path)['instance'] 
+        voxels = io.loadmat(path)['instance']
         voxels = np.pad(voxels, (1, 1), 'constant', constant_values=(0, 0))
 
     return voxels
@@ -41,25 +41,31 @@ def SavePloat_Voxels(voxels, path, iteration):
 
 
 class ShapeNetDataset(data.Dataset):
-    def __init__(self, root, train_or_val="train"):
+    def __init__(self, root):
         self.root = root
         self.listdir = os.listdir(self.root)
 
         data_size = len(self.listdir)
         self.listdir = self.listdir[0:int(data_size)]
         
-        print ('data_size =', len(self.listdir))
+        print ('data_size =', len(self.listdir)) 
 
     def __getitem__(self, index):
         with open(self.root + self.listdir[index], "rb") as f:
             volume = np.asarray(getVoxelFromMat(f, params.cube_len), dtype=np.float32)
-  
+
         return torch.FloatTensor(volume)
 
     def __len__(self):
         return len(self.listdir)
 
+
 def generateZ(batch):
-    Z = torch.Tensor(batch, params.z_dim).normal_(0, 0.33).to(params.device)
+    if params.z_dis == "norm":
+        Z = torch.Tensor(batch, params.z_dim).normal_(0, 0.33).to(params.device)
+    elif params.z_dis == "uni":
+        Z = torch.randn(batch, params.z_dim).to(params.device).to(params.device)
+    else:
+        print("z_dist is not normal or uniform")
 
     return Z

@@ -4,20 +4,17 @@ from torch import nn
 from utils import *
 
 from model import net_G, net_D
+
+import time
+import numpy as np
 import params
 from tqdm import tqdm
 
 def trainer():
-    image_saved_path = "images/"
-    model_saved_path = "models/"
-
-    dsets_path = params.data_dir + params.model_dir + "30/train/"
-
-    train_dsets = ShapeNetDataset(dsets_path, "train")
-
-    train_dset_loaders = torch.utils.data.DataLoader(train_dsets, batch_size=params.batch_size, shuffle=True,
-                                                     num_workers=1)
- 
+    dsets_path = "../Data/VolumetricData/chair/30/train/"
+    train_dsets = ShapeNetDataset(dsets_path)
+    train_dset_loaders = torch.utils.data.DataLoader(train_dsets, batch_size=params.batch_size, shuffle=True, num_workers=1)
+    
     dset_len = {"train": len(train_dsets)}
     dset_loaders = {"train": train_dset_loaders}
 
@@ -35,6 +32,8 @@ def trainer():
     criterion_G = nn.L1Loss()
 
     for epoch in range(params.epochs):
+        start = time.time()
+
         for phase in ['train']:
             if phase == 'train':
                 D.train()
@@ -48,11 +47,11 @@ def trainer():
             running_loss_adv_G = 0.0
 
             for i, X in enumerate(tqdm(dset_loaders[phase])):
+
                 X = X.to(params.device)
                 batch = X.size()[0]
-
                 Z = generateZ(batch)
-         
+
                 d_real = D(X)
 
                 fake = G(Z)
@@ -60,7 +59,7 @@ def trainer():
 
                 real_labels = torch.ones_like(d_real).to(params.device)
                 fake_labels = torch.zeros_like(d_fake).to(params.device)
-
+ 
                 d_real_loss = criterion_D(d_real, real_labels)
 
                 d_fake_loss = criterion_D(d_fake, fake_labels)
@@ -78,12 +77,12 @@ def trainer():
 
                 Z = generateZ(batch)
 
-                fake = G(Z) 
+                fake = G(Z)
                 d_fake = D(fake)
 
                 adv_g_loss = criterion_D(d_fake, real_labels)
-        
                 recon_g_loss = criterion_G(fake, X)
+
                 g_loss = adv_g_loss
 
                 D.zero_grad()
@@ -98,13 +97,16 @@ def trainer():
             epoch_loss_D = running_loss_D / dset_len[phase]
             epoch_loss_adv_G = running_loss_adv_G / dset_len[phase]
 
+            end = time.time()
+            epoch_time = end - start
+
             print('Epochs-{} ({}) , D(x) : {:.4}, D(G(x)) : {:.4}'.format(epoch, phase, epoch_loss_D, epoch_loss_adv_G))
+            print('Elapsed Time: {:.4} min'.format(epoch_time / 60.0))
 
             if (epoch + 1) % params.model_save_step == 0:
-                torch.save(G.state_dict(), model_saved_path + '/G.pth')
-                torch.save(D.state_dict(), model_saved_path + '/D.pth')
+                torch.save(G.state_dict(), "models" + '/G.pth')
+                torch.save(D.state_dict(), "models" + '/D.pth')
 
                 samples = fake.cpu().data[:8].squeeze().numpy()
-                SavePloat_Voxels(samples, image_saved_path, epoch)
 
-trainer()
+                SavePloat_Voxels(samples, "images", epoch)

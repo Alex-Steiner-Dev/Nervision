@@ -39,8 +39,8 @@ class net_G(torch.nn.Module):
         out = self.layer4(out)
         out = self.layer5(out)
         out = torch.squeeze(out)
+        
         return out
-
 
 class net_D(torch.nn.Module):
     def __init__(self):
