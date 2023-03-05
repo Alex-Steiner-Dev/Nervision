@@ -3,128 +3,92 @@ from dataset import parse_dataset
 
 def trainer():
     x_train = parse_dataset()[0][0]
-    
-    dset_len = {"train": len(train_dsets)}
-    dset_loaders = {"train": train_dset_loaders}
-    # print (dset_len["train"])
 
-    # model define
-    D = net_D(args)
-    G = net_G(args)
+    batch_size = 64
+    epochs = 100
+    d_lr = 0.0002
+    g_lr = 0.0002
+    beta_1 = 0.5
+    d_thresh = 0.8
+    soft_label = False
+    adv_weight = 1
 
+    # Build and compile discriminator and generator models
 
-    D_solver = optim.Adam(D.parameters(), lr=params.d_lr, betas=params.beta)
-    # D_solver = optim.SGD(D.parameters(), lr=args.d_lr, momentum=0.9)
-    G_solver = optim.Adam(G.parameters(), lr=params.g_lr, betas=params.beta)
+    d_loss_fn = keras.losses.BinaryCrossentropy(from_logits=True)
+    g_loss_fn = keras.losses.MeanAbsoluteError()
 
-    D.to(params.device)
-    G.to(params.device)
+    d_optimizer = keras.optimizers.Adam(learning_rate=d_lr, beta_1=beta_1)
+    g_optimizer = keras.optimizers.Adam(learning_rate=g_lr, beta_1=beta_1)
 
-    # criterion_D = nn.BCELoss()
-    criterion_D = nn.MSELoss()
+    # Define accuracy metric for discriminator
+    def discriminator_accuracy(y_true, y_pred):
+        return keras.metrics.binary_accuracy(tf.round(y_true), tf.round(y_pred))
 
-    criterion_G = nn.L1Loss()
-
-    itr_val = -1
-    itr_train = -1
-
-    for epoch in range(params.epochs):
-
-        start = time.time()
-
+    # Define training loop
+    for epoch in range(epochs):
+        print("Epoch {}/{}".format(epoch+1, epochs))
+        
         for phase in ['train']:
             if phase == 'train':
-                # if args.lrsh:
-                #     D_scheduler.step()
-                D.train()
-                G.train()
+                D.trainable = True
+                G.trainable = True
             else:
-                D.eval()
-                G.eval()
-
+                D.trainable = False
+                G.trainable = False
+            
             running_loss_G = 0.0
             running_loss_D = 0.0
             running_loss_adv_G = 0.0
-
+            running_acc_D = 0.0
+            
             for i, X in enumerate(tqdm(dset_loaders[phase])):
-
-                # if phase == 'val':
-                #     itr_val += 1
-
-                if phase == 'train':
-                    itr_train += 1
-
-                X = X.to(params.device)
-                # print (X)
-                # print (X.size())
-
-                batch = X.size()[0]
-                # print (batch)
-
-                Z = generateZ(args, batch)
-                # print (Z.size())
-
-                # ============= Train the discriminator =============#
-                d_real = D(X)
-
-                fake = G(Z)
-                d_fake = D(fake)
-
-                real_labels = torch.ones_like(d_real).to(params.device)
-                fake_labels = torch.zeros_like(d_fake).to(params.device)
-                # print (d_fake.size(), fake_labels.size())
-
-                if params.soft_label:
-                    real_labels = torch.Tensor(batch).uniform_(0.7, 1.2).to(params.device)
-                    fake_labels = torch.Tensor(batch).uniform_(0, 0.3).to(params.device)
-
-                # print (d_real.size(), real_labels.size())
-                d_real_loss = criterion_D(d_real, real_labels)
-
-                d_fake_loss = criterion_D(d_fake, fake_labels)
-
-                d_loss = d_real_loss + d_fake_loss
-
-                # no deleted
-                d_real_acu = torch.ge(d_real.squeeze(), 0.5).float()
-                d_fake_acu = torch.le(d_fake.squeeze(), 0.5).float()
-                d_total_acu = torch.mean(torch.cat((d_real_acu, d_fake_acu), 0))
-
-                if d_total_acu < params.d_thresh:
-                    D.zero_grad()
-                    d_loss.backward()
-                    D_solver.step()
-
-                # =============== Train the generator ===============#
-
-                Z = generateZ(args, batch)
-
-                # print (X)
-                fake = G(Z)  # generated fake: 0-1, X: 0/1
-                d_fake = D(fake)
-
-                adv_g_loss = criterion_D(d_fake, real_labels)
-                # print (fake.size(), X.size())
-
-                # recon_g_loss = criterion_D(fake, X)
-                recon_g_loss = criterion_G(fake, X)
-                # g_loss = recon_g_loss + params.adv_weight * adv_g_loss
-                g_loss = adv_g_loss
-
-        
-                D.zero_grad()
-                G.zero_grad()
-                g_loss.backward()
-                G_solver.step()
-
-                # =============== logging each 10 iterations ===============#
-
-                running_loss_G += recon_g_loss.item() * X.size(0)
-                running_loss_D += d_loss.item() * X.size(0)
-                running_loss_adv_G += adv_g_loss.item() * X.size(0)
-
-
-            epoch_loss_D = running_loss_D / dset_len[phase]
-            epoch_loss_adv_G = running_loss_adv_G / dset_len[phase]
-
-            print('Epochs-{} ({}) , D(x) : {:.4}, D(G(x)) : {:.4}'.format(epoch, phase, epoch_loss_D, epoch_loss_adv_G))
+                
+                X = X.astype('float32')
+                batch = X.shape[0]
+                
+                # Train discriminator
+                with tf.GradientTape() as tape:
+                    d_real = D(X)
+                    
+                    Z = np.random.normal(size=(batch, 100))
+                    fake = G(Z)
+                    d_fake = D(fake)
+                    
+                    real_labels = tf.ones_like(d_real)
+                    fake_labels = tf.zeros_like(d_fake)
+                    
+                    if soft_label:
+                        real_labels = tf.random.uniform(shape=(batch,), minval=0.7, maxval=1.2)
+                        fake_labels = tf.random.uniform(shape=(batch,), minval=0.0, maxval=0.3)
+                    
+                    d_real_loss = d_loss_fn(real_labels, d_real)
+                    d_fake_loss = d_loss_fn(fake_labels, d_fake)
+                    d_loss = d_real_loss + d_fake_loss
+                    
+                    d_real_acc = discriminator_accuracy(real_labels, d_real)
+                    d_fake_acc = discriminator_accuracy(fake_labels, d_fake)
+                    d_acc = 0.5 * (d_real_acc + d_fake_acc)
+                    
+                    if d_acc < d_thresh:
+                        grads = tape.gradient(d_loss, D.trainable_weights)
+                        d_optimizer.apply_gradients(zip(grads, D.trainable_weights))
+                    
+                    running_loss_D += d_loss.numpy() * batch
+                    running_acc_D += d_acc.numpy() * batch
+                
+                # Train generator
+                with tf.GradientTape() as tape:
+                    Z = np.random.normal(size=(batch, 100))
+                    fake = G(Z)
+                    d_fake = D(fake)
+                    
+                    adv_g_loss = d_loss_fn(tf.ones_like(d_fake), d_fake)
+                    recon_g_loss = g_loss_fn(X, fake)
+                    g_loss = recon_g_loss + adv_weight * adv_g_loss
+                    
+                    grads = tape.gradient(g_loss, G.trainable_weights)
+                    g_optimizer.apply_gradients(zip(grads, G.trainable_weights))
+                    
+                    running_loss_G += recon_g_loss.numpy() * batch
+                    running_loss_adv_G += adv_g_loss.numpy() * batch
