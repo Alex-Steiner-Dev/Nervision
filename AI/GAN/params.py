@@ -1,6 +1,6 @@
 import torch
 
-epochs = 500
+epochs = 336
 batch_size = 32
 soft_label = False
 adv_weight = 0

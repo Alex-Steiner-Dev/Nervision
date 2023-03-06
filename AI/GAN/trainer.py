@@ -14,7 +14,7 @@ def trainer():
     dsets_path = "../Data/VolumetricData/chair/30/train/"
     train_dsets = ShapeNetDataset(dsets_path)
     train_dset_loaders = torch.utils.data.DataLoader(train_dsets, batch_size=params.batch_size, shuffle=True, num_workers=1)
-    
+
     dset_len = {"train": len(train_dsets)}
     dset_loaders = {"train": train_dset_loaders}
 
@@ -104,9 +104,8 @@ def trainer():
             print('Elapsed Time: {:.4} min'.format(epoch_time / 60.0))
 
             if (epoch + 1) % params.model_save_step == 0:
-                torch.save(G.state_dict(), "models" + '/G.pth')
-                torch.save(D.state_dict(), "models" + '/D.pth')
-
                 samples = fake.cpu().data[:8].squeeze().numpy()
-
                 SavePloat_Voxels(samples, "images", epoch)
+
+    torch.save(G.state_dict(), "models" + '/G.pth')
+    torch.save(D.state_dict(), "models" + '/D.pth')

@@ -22,7 +22,6 @@ def getVoxelFromMat(path, cube_len=64):
 
     return voxels
 
-
 def SavePloat_Voxels(voxels, path, iteration):
     voxels = voxels[:8].__ge__(0.5)
     fig = plt.figure(figsize=(32, 16))
