@@ -11,7 +11,7 @@ model_save_step = 1
 g_lr = 0.0025
 d_lr = 0.00001
 beta = (0.5, 0.999)
-cube_len = 32
+cube_len = 64
 leak_value = 0.2
 bias = False
 

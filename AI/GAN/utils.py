@@ -19,6 +19,10 @@ def getVoxelFromMat(path, cube_len=64):
     if cube_len == 32:
         voxels = io.loadmat(path)['instance']
         voxels = np.pad(voxels, (1, 1), 'constant', constant_values=(0, 0))
+    elif cube_len == 64:
+        voxels = io.loadmat(path)['instance'] 
+        voxels = np.pad(voxels, (1, 1), 'constant', constant_values=(0, 0))
+        voxels = nd.zoom(voxels, (2, 2, 2), mode='constant', order=0)
 
     return voxels
 
@@ -36,7 +40,7 @@ def SavePloat_Voxels(voxels, path, iteration):
         ax.set_yticklabels([])
 
     plt.savefig(path + '/{}.png'.format(str(iteration).zfill(3)), bbox_inches='tight')
-    plt.close()
+    plt.show()
 
 
 class ShapeNetDataset(data.Dataset):

@@ -1,7 +1,7 @@
 import torch
 from utils import *
 from model import net_G
-
+import pyvista as pv
 import numpy as np
 import params
 
@@ -21,6 +21,7 @@ def test():
 
     fake = G(z)
     samples = fake.unsqueeze(dim=0).detach().cpu().numpy()
+    
     SavePloat_Voxels(samples, "models/", 'tester_' + str(0))  
 
 test()
