@@ -40,8 +40,6 @@ def SavePloat_Voxels(voxels, path, iteration):
         ax.set_yticklabels([])
 
     plt.savefig(path + '/{}.png'.format(str(iteration).zfill(3)), bbox_inches='tight')
-    plt.show()
-
 
 class ShapeNetDataset(data.Dataset):
     def __init__(self, root):
