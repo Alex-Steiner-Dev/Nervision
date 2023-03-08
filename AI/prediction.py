@@ -13,13 +13,12 @@ from keras.models import load_model
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
-def predict():
+def load_models():
     generator_path =  'TrainedModels/G.pth'
     ae_path = 'TrainedModels/autoencoder.h5'
 
     ae = load_model(ae_path)
     generator = net_G()
-
 
     if not torch.cuda.is_available():
         generator.load_state_dict(torch.load(generator_path, map_location={'cuda:0': 'cpu'}))
@@ -27,6 +26,20 @@ def predict():
         generator.load_state_dict(torch.load(generator_path))
 
     generator.to(params.device)
+
+    return ae, generator
+
+def predict_noisy():
+    generator = load_models()[1]
+    
+    z = generateZ(1)
+    fake = generator(z)
+    noisy = fake.unsqueeze(dim=0).detach().cpu().numpy()
+
+    return noisy
+
+def predict():
+    ae, generator = load_models()
 
     os.system("clear")
 
