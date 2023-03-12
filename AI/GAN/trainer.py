@@ -1,111 +1,190 @@
-import torch
-from torch import optim
-from torch import nn
-from utils import *
-
-from model import net_G, net_D
-
-import time
+import os
 import numpy as np
-import params
-from tqdm import tqdm
+from torch.autograd import Variable
+import torch.nn.functional as F
+import torch.nn as nn
+import torch
+from torchvision import transforms
+from dataset import *
+import matplotlib.pyplot as plt
 
-def trainer():
-    dsets_path = "../Data/VolumetricData/chair/30/train/"
-    train_dsets = ShapeNetDataset(dsets_path)
-    train_dset_loaders = torch.utils.data.DataLoader(train_dsets, batch_size=params.batch_size, shuffle=True, num_workers=1)
+n_epochs = 1000
+batch_size = 1
+lr = 0.0002
+b1 = 0.5
+b2 = 0.99
+latent_dim = 100
+img_size = 32
+sample_interval = 400
 
-    dset_len = {"train": len(train_dsets)}
-    dset_loaders = {"train": train_dset_loaders}
+class Generator( nn.Module ):
+    def __init__( self, d=64 ):
+        super( Generator, self ).__init__()
+        self.deconv1 = nn.ConvTranspose3d( latent_dim, d * 8, 4, 1, 1 )
+        self.deconv1_bn = nn.BatchNorm3d( d * 8 )
+        self.deconv2 = nn.ConvTranspose3d( d * 8, d * 4, 4, 2, 1 )
+        self.deconv2_bn = nn.BatchNorm3d( d * 4 )
+        self.deconv3 = nn.ConvTranspose3d( d * 4, d * 2, 4, 2, 1 )
+        self.deconv3_bn = nn.BatchNorm3d( d * 2 )
+        self.deconv4 = nn.ConvTranspose3d( d * 2, d, 4, 2, 1 )
+        self.deconv4_bn = nn.BatchNorm3d( d )
+        self.deconv5 = nn.ConvTranspose3d( d, 1, 4, 2, 1 )
 
-    D = net_D()
-    G = net_G()
 
-    D_solver = optim.Adam(D.parameters(), lr=params.d_lr, betas=params.beta)
-    G_solver = optim.Adam(G.parameters(), lr=params.g_lr, betas=params.beta)
+    
+    def weight_init( self, mean, std ):
+        for m in self._modules:
+            normal_init( self._modules[ m ], mean, std )
 
-    D.to(params.device)
-    G.to(params.device)
+    
+    def forward( self, input ):
+        
+        x = input.view( -1, 100, 1, 1,1 )
+        x = F.relu( self.deconv1_bn( self.deconv1( x ) ) )
+        x = F.relu( self.deconv2_bn( self.deconv2( x ) ) )
+        x = F.relu( self.deconv3_bn( self.deconv3( x ) ) )
+        x = F.relu( self.deconv4_bn( self.deconv4( x ) ) )
+        x = F.tanh( self.deconv5( x ) )
+        return x
 
-    criterion_D = nn.MSELoss()
+class Discriminator( nn.Module ):
+    
+    def __init__( self, d=64 ):
+        super( Discriminator, self ).__init__()
+        self.conv1 = nn.Conv3d( 1, d, 4, 2, 1 )
+        self.conv2 = nn.Conv3d( d, d * 2, 4, 2, 1 )
+        self.conv2_bn = nn.BatchNorm3d( d * 2 )
+        self.conv3 = nn.Conv3d( d * 2, d * 4, 4, 2, 1)
+        self.conv3_bn = nn.BatchNorm3d( d * 4 )
+        self.conv4 = nn.Conv3d( d * 4, d * 8, 4, 2, 1 )
+        self.conv4_bn = nn.BatchNorm3d( d * 8 )
+        self.conv5 = nn.Conv3d( d * 8, 1, 4, 1, 1)
 
-    criterion_G = nn.L1Loss()
+    
+    def weight_init( self, mean, std ):
+        for m in self._modules:
+            normal_init( self._modules[ m ], mean, std )
 
-    for epoch in range(params.epochs):
-        start = time.time()
+    
+    def forward( self, input ):
+        x = F.leaky_relu( self.conv1( input ), 0.2 )
+        x = F.leaky_relu( self.conv2_bn( self.conv2( x ) ), 0.2 )
+        x = F.leaky_relu( self.conv3_bn( self.conv3( x ) ), 0.2 )
+        x = F.leaky_relu( self.conv4_bn( self.conv4( x ) ), 0.2 )
+        x = F.sigmoid( self.conv5( x ) )
+        return x
 
-        for phase in ['train']:
-            if phase == 'train':
-                D.train()
-                G.train()
-            else:
-                D.eval()
-                G.eval()
+def normal_init( m, mean, std ):
+    if isinstance( m, nn.ConvTranspose2d ) or isinstance( m, nn.Conv2d ):
+        m.weight.data.normal_( mean, std )
+        m.bias.data.zero_()
 
-            running_loss_G = 0.0
-            running_loss_D = 0.0
-            running_loss_adv_G = 0.0
+def save(gen_voxels, num):
+    voxel_data = gen_voxels[0,0].cpu().detach().numpy()
+    
+    voxel_data = voxel_data * (1.0 / voxel_data.max())
+    
+    voxel_data = voxel_data > 0.2
 
-            for i, X in enumerate(tqdm(dset_loaders[phase])):
+    
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')                
+    ax.voxels(voxel_data,  edgecolors='k')
+    plt.savefig('images/voxels{}.png'.format(num))
 
-                X = X.to(params.device)
-                batch = X.size()[0]
-                Z = generateZ(batch)
+def main(cuda):
+    Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+    
+    adversarial_loss = torch.nn.BCELoss()
+    
+    generator = Generator()
+    discriminator = Discriminator()
+    if cuda:
+        generator.cuda()
+        discriminator.cuda()
+        adversarial_loss.cuda()
+    
+    generator.weight_init( mean=0.0, std=0.02 )
+    discriminator.weight_init( mean=0.0, std=0.02 )
+    
 
-                d_real = D(X)
 
-                fake = G(Z)
-                d_fake = D(fake)
+    mnist_3d_dataset = LoadDataset()
+    train_loader = torch.utils.data.DataLoader( mnist_3d_dataset,
+                                              batch_size=batch_size,
+                                              shuffle=False )
+    
+    optimizer_G = torch.optim.Adam( generator.parameters(),
+                                    lr=lr,
+                                    betas=( b1, b2 ) )
+    optimizer_D = torch.optim.Adam( discriminator.parameters(),
+                                    lr=lr,
+                                    betas=( b1, b2 ) )
+    
+    
+    os.makedirs( 'images', exist_ok=True )
+    os.makedirs( 'models', exist_ok=True )
 
-                real_labels = torch.ones_like(d_real).to(params.device)
-                fake_labels = torch.zeros_like(d_fake).to(params.device)
+    for epoch in range( n_epochs ):
+        if ( epoch + 1 ) == 11:
+            optimizer_G.param_groups[ 0 ][ 'lr' ] /= 10
+            optimizer_D.param_groups[ 0 ][ 'lr' ] /= 10
+            print( 'learning rate change!' )
+        if ( epoch + 1 ) == 16:
+            optimizer_G.param_groups[ 0 ][ 'lr' ] /= 10
+            optimizer_D.param_groups[ 0 ][ 'lr' ] /= 10
+            print( 'learning rate change!' )
+
+        for i, voxels in enumerate( train_loader ):
+            
+            valid = Variable(Tensor(voxels.shape[0], 1, 1, 1, 1).fill_(1.0), requires_grad=False)
+
+            fake = Variable( Tensor( voxels.shape[ 0 ], 1 ).fill_( 0.0 ),
+                             requires_grad=False )
+            
+            real_voxels = Variable( voxels.type( Tensor ) )
+     
+            optimizer_G.zero_grad()
+            
+            z = Variable( Tensor( np.random.normal( 0, 1, ( voxels.shape[ 0 ],
+                                                            latent_dim ) ) ) )
+            
+            gen_voxels = generator( z )
+            
+            g_loss = adversarial_loss( discriminator( gen_voxels ), valid )
+            g_loss.backward()
+            optimizer_G.step()
  
-                d_real_loss = criterion_D(d_real, real_labels)
+            optimizer_D.zero_grad()
+            
+            label_real = discriminator( real_voxels )
+            label_gen = discriminator( gen_voxels.detach() )
+            real_loss = adversarial_loss( label_real, valid )
+            fake_loss = adversarial_loss( label_gen, fake )
+            d_loss = ( real_loss + fake_loss ) / 2
+            real_acc = ( label_real > 0.5 ).float().sum() / real_voxels.shape[ 0 ]
+            gen_acc = ( label_gen < 0.5 ).float().sum() / gen_voxels.shape[ 0 ]
+            d_acc = ( real_acc + gen_acc ) / 2
+            d_loss.backward()
+            optimizer_D.step()
+        
+            print( "[Epoch %d/%d] [Batch %d/%d] [D loss: %f, acc: %.2f%%] [G loss: %f]" % \
+                    ( epoch,
+                      n_epochs,
+                      i,
+                      len(train_loader),
+                      d_loss.item(),
+                      d_acc * 100,
+                      g_loss.item() ) )
+            
+            batches_done = epoch * len( train_loader ) + i
 
-                d_fake_loss = criterion_D(d_fake, fake_labels)
+            if batches_done % sample_interval == 0:
+                save(gen_voxels, batches_done)
+                
+                torch.save( generator, 'models/gen_%d.pt' % batches_done )
+                torch.save( discriminator, 'models/dis_%d.pt' % batches_done )
 
-                d_loss = d_real_loss + d_fake_loss
-
-                d_real_acu = torch.ge(d_real.squeeze(), 0.5).float()
-                d_fake_acu = torch.le(d_fake.squeeze(), 0.5).float()
-                d_total_acu = torch.mean(torch.cat((d_real_acu, d_fake_acu), 0))
-
-                if d_total_acu < params.d_thresh:
-                    D.zero_grad()
-                    d_loss.backward()
-                    D_solver.step()
-
-                Z = generateZ(batch)
-
-                fake = G(Z)
-                d_fake = D(fake)
-
-                adv_g_loss = criterion_D(d_fake, real_labels)
-                recon_g_loss = criterion_G(fake, X)
-
-                g_loss = adv_g_loss
-
-                D.zero_grad()
-                G.zero_grad()
-                g_loss.backward()
-                G_solver.step()
-
-                running_loss_G += recon_g_loss.item() * X.size(0)
-                running_loss_D += d_loss.item() * X.size(0)
-                running_loss_adv_G += adv_g_loss.item() * X.size(0)
-
-            epoch_loss_D = running_loss_D / dset_len[phase]
-            epoch_loss_adv_G = running_loss_adv_G / dset_len[phase]
-
-            end = time.time()
-            epoch_time = end - start
-
-            print('Epochs-{} ({}) , D(x) : {:.4}, D(G(x)) : {:.4}'.format(epoch, phase, epoch_loss_D, epoch_loss_adv_G))
-            print('Elapsed Time: {:.4} min'.format(epoch_time / 60.0))
-
-            if (epoch + 1) % params.model_save_step == 0:
-                samples = fake.cpu().data[:8].squeeze().numpy()
-                SavePloat_Voxels(samples, "images", epoch)
-
-    torch.save(G.state_dict(), "models" + '/G.pth')
-    torch.save(D.state_dict(), "models" + '/D.pth')
+if __name__ == '__main__':
+    cuda = True if torch.cuda.is_available() else False
+    main(cuda)
