@@ -1,23 +1,22 @@
-from VAE import VAE
-from dataset import parse_dataset
+from dataset import *
 import numpy as np
-
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+from GAN import *
 
 from keras import backend as K
 K.clear_session()
 
 x_train = parse_dataset()
+x_train = np.array(x_train)
 
-box_size = 32
+x_train = x_train.reshape([-1,256,256,256,1])
+box_size = 256
 
 print("Training...")
 
-autoencoder = VAE(box_size=box_size).build_vae()
+epochs = 10000
+batch_size = 1
+save_interval = 100
 
-history = autoencoder.fit(x_train, x_train, epochs=1000, batch_size=100)
-
-autoencoder.save('../TrainedModels/autoencoder.h5')
+train_gan(x_train,generator, discriminator, gan, epochs, batch_size, save_interval)
 
 print("Done!")
