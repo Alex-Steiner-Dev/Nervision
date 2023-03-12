@@ -1,67 +1,29 @@
-import sys
-
-sys.path.append("../GAN/")
-
-from params import *
-from utils import *
-import numpy as np
+import trimesh
 import glob
-import numpy as np
-import scipy.io as io
-import scipy.ndimage as nd
-import torch
-from model import net_G
 import numpy as np
 
 DATA_DIR = "../Data/VolumetricData/*"
 
-def load_model():
-    generator_path =  '../TrainedModels/G.pth'
+def point_cloud_to_voxel_to_point_cloud(mesh_path):
+    points = trimesh.load(mesh_path).sample(2048).T
 
-    generator = net_G()
+    voxels = np.zeros((2048, 2048, 2048))
+    voxels[0,:,:] = points[0]
+    voxels[1,:,:] = points[1]
+    voxels[2,:,:] = points[2]
 
-    if not torch.cuda.is_available():
-        generator.load_state_dict(torch.load(generator_path, map_location={'cuda:0': 'cpu'}))
-    else:
-        generator.load_state_dict(torch.load(generator_path))
+    point_cloud = np.zeros((points.shape[1], 3))
+    for i in range(3):
+        flattened_slice = voxels[i, :, :].flatten()
+        point_cloud[:, i] = flattened_slice[:points.shape[1]]
 
-    generator.to(params.device)
-
-    return generator
-
-def predict_noisy():
-    generator = load_model()
-    
-    z = generateZ(1)
-    fake = generator(z)
-    noisy = fake.unsqueeze(dim=0).detach().cpu().numpy()
-
-    return noisy
-
-def getVoxelsFromMat(path):
-    voxels = io.loadmat(path)['instance']
-    voxels = np.pad(voxels, (1, 1), 'constant', constant_values=(0, 0))
-    voxels = nd.zoom(voxels, (1, 1, 1), mode='constant', order=0)
-
-    return voxels
+    return point_cloud, voxels
 
 def parse_dataset():
     print("Loading dataset...")
     
-    voxels = []
-    noisy = []
-    
-    folders = glob.glob(DATA_DIR)
-
-    for i, folder in enumerate(folders):
-        voxels_files = glob.glob(folder + "/30/train/*.mat")
-
-        if folder == "../Data/VolumetricData\chair":
-            for f in voxels_files:
-                voxel = getVoxelsFromMat(f)
-                voxels.append(voxel)
-                noisy.append(predict_noisy())
+    point_cloud, voxels = point_cloud_to_voxel_to_point_cloud("chair_0001.off")
 
     print("Done!")
 
-    return voxels, noisy
+    return voxels
