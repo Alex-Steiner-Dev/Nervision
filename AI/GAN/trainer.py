@@ -14,7 +14,7 @@ lr = 0.0002
 b1 = 0.5
 b2 = 0.99
 latent_dim = 100
-img_size = 32
+img_size = 256
 sample_interval = 400
 
 class Generator( nn.Module ):
@@ -88,7 +88,7 @@ def save(gen_voxels, num):
 
     
     fig = plt.figure()
-    ax = fig.gca(projection='3d')                
+    ax = fig.add_subplot(projection='3d')                
     ax.voxels(voxel_data,  edgecolors='k')
     plt.savefig('images/voxels{}.png'.format(num))
 
@@ -157,10 +157,13 @@ def main(cuda):
  
             optimizer_D.zero_grad()
             
+            real_voxels = torch.unsqueeze(real_voxels, 1)
             label_real = discriminator( real_voxels )
             label_gen = discriminator( gen_voxels.detach() )
-            real_loss = adversarial_loss( label_real, valid )
-            fake_loss = adversarial_loss( label_gen, fake )
+            valid = torch.ones_like(label_real)
+            fake = torch.zeros_like(label_gen)
+            real_loss = adversarial_loss( label_real, valid.expand_as(label_real) )
+            fake_loss = adversarial_loss( label_gen, fake.expand_as(label_gen) )
             d_loss = ( real_loss + fake_loss ) / 2
             real_acc = ( label_real > 0.5 ).float().sum() / real_voxels.shape[ 0 ]
             gen_acc = ( label_gen < 0.5 ).float().sum() / gen_voxels.shape[ 0 ]
