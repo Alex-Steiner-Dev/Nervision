@@ -1,8 +1,6 @@
 import os
-from torch.utils.data import Dataset
 import trimesh
 import numpy as np
-import torch
 
 def mesh_to_voxel(mesh_path):
     points = trimesh.load(mesh_path).sample(256).T
@@ -22,21 +20,3 @@ def voxel_to_point_cloud(voxels):
 
     return reshaped_arr
 
-
-class LoadDataset (Dataset):
-    def __init__(self, root="data/"):
-        self.root = root
-        self.listdir = os.listdir(self.root)
-
-        data_size = len(self.listdir)
-        self.listdir = self.listdir[0:int(data_size)]
-        
-        print ('data_size =', len(self.listdir)) 
-
-    def __getitem__(self, index):
-        volume = mesh_to_voxel(self.root + self.listdir[index])
-
-        return volume
-
-    def __len__(self):
-        return len(self.listdir)
