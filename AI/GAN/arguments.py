@@ -3,13 +3,13 @@ import argparse
 class Arguments:
     def __init__(self):
         self._parser = argparse.ArgumentParser(description='Arguments for TreeGAN.')
-        
+
         self._parser.add_argument('--dataset_path', type=str, default='dataset/shapenetcore_partanno_segmentation_benchmark_v0', help='Dataset file path.')
         self._parser.add_argument('--class_choice', type=str, default='Airplane', help='Select one class to generate. [Airplane, Chair, ...] (default:all_class)')
         self._parser.add_argument('--batch_size', type=int, default=32, help='Integer value for batch size.')
         self._parser.add_argument('--point_num', type=int, default=2048, help='Integer value for number of points.')
-        
-        self._parser.add_argument('--gpu', type=int, default=0, help='GPU number to use.')
+
+        self._parser.add_argument('--gpu', type=int, default=1, help='GPU number to use.')
         self._parser.add_argument('--epochs', type=int, default=2000, help='Integer value for epochs.')
         self._parser.add_argument('--lr', type=float, default=1e-4, help='Float value for learning rate.')
         self._parser.add_argument('--ckpt_path', type=str, default='model/ckpt/', help='Checkpoint path.')
