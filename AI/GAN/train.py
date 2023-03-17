@@ -2,7 +2,7 @@ import tensorflow as tf
 from model import WarpingGAN, Discriminator
 
 from gradient_penalty import GradientPenalty
-from data_benchmark import BenchmarkDataset
+from data_benchmark import parse_dataset
 from stitchingloss import stitchloss
 
 from arguments import Arguments
@@ -13,8 +13,7 @@ class WarpingGANTrain():
     def __init__(self, args):
         self.args = args
         
-        self.data = BenchmarkDataset(root=args.dataset_path, npoints=args.point_num, class_choice=args.class_choice)
-        self.dataLoader = tf.data.Dataset.from_tensor_slices(self.data).batch(args.batch_size).shuffle(True).repeat().prefetch(tf.data.AUTOTUNE)
+        self.data = parse_dataset(root=args.dataset_path, npoints=args.point_num)
         print("Training Dataset : {} prepared.".format(len(self.data)))
         
         self.G = WarpingGAN(num_points=2048)
@@ -28,13 +27,12 @@ class WarpingGANTrain():
         self.GP = GradientPenalty(args.lambdaGP, gamma=1, device=args.device)
         print("Network prepared.")
 
-
     def run(self):
         epoch_log = 0
         loss_log = {'G_loss': [], 'D_loss': []}
 
         for epoch in range(epoch_log, self.args.epochs + 1):
-            for _iter, data in enumerate(self.dataLoader):
+            for _iter, data in enumerate(self.data):
                 point, _ = data
                 point = point.numpy()
                 start_time = time.time()
