@@ -1,28 +1,23 @@
-import torch
+import tensorflow as tf
 
 def pc_distmat(x):
-    batchsize = x.size(0)
-    m = x.size(1)
-    xx = torch.pow(x,2).sum(2, keepdim=True).expand(batchsize,m,m)
-    yy = xx.transpose(2,1)
-    inner = torch.matmul(x,x.transpose(2,1))
-    distance = xx+yy-2*inner
-    # print(distance)
+    batchsize = tf.shape(x)[0]
+    m = tf.shape(x)[1]
+    xx = tf.tile(tf.expand_dims(tf.reduce_sum(tf.square(x), axis=2), axis=2), [1, m, m])
+    yy = tf.transpose(xx, perm=[0, 2, 1])
+    inner = tf.matmul(x, tf.transpose(x, perm=[0, 2, 1]))
+    distance = xx + yy - 2*inner
     return distance
 
 def stitchloss(point, indices):
-    batchsize = point.size(0)
+    batchsize = tf.shape(point)[0]
     dismat = pc_distmat(point)
     keypointvariance = 0
     for i in range(batchsize):
-        tmpindexes = torch.unique(indices[i].reshape(512))
-        tmp = torch.index_select(dismat[i], 0, tmpindexes)
-        tmp = -tmp 
-        min20distances,_ = tmp.topk(40,dim=1)
-        var11 = torch.var(-min20distances,1)
-        keypointvariance += var11.mean()
-
+        tmpindexes = tf.unique(tf.reshape(indices[i], [512])).y
+        tmp = tf.gather(dismat[i], tmpindexes, axis=0)
+        tmp = -tmp
+        min20distances,_ = tf.math.top_k(tmp, k=40, sorted=False)
+        var11 = tf.math.reduce_variance(-min20distances, axis=1)
+        keypointvariance += tf.math.reduce_mean(var11)
     return keypointvariance
-
-
-
