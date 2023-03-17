@@ -1,9 +1,7 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
 import itertools
-import time
 
 class CodeEnhancement(nn.Module):
     def __init__(self, num_points=2048):
@@ -23,8 +21,7 @@ class CodeEnhancement(nn.Module):
         x = self.leaky_relu(self.conv5(x))
 
         return x.transpose(1,2)
-
-
+    
 class WarpingGAN(nn.Module):
     def __init__(self, num_points=2048, m=128, dimofgrid=3):
         super(WarpingGAN, self).__init__()
@@ -84,7 +81,6 @@ class WarpingGAN(nn.Module):
         concate2 = torch.cat((splitinput, globalfeature, after_folding1.reshape(batch_size,3,self.numgrid,self.m).transpose(1,2)), dim=2).transpose(1,2).reshape(batch_size, int(512/self.numgrid)+3+512, 2048)  # [bs, 515, m]
         after_folding2 = self.mlp2(concate2)  
         return after_folding2.transpose(1, 2)  
-
 
 class Discriminator(nn.Module):
     def __init__(self, batch_size, features, num_points=2048):
