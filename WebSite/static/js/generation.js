@@ -28,8 +28,17 @@ function loadModel(modelUrl){
 
   loader.load(modelUrl, (obj) => {
     const model = obj;
-    model.scale.set(5, 5, 5);
-    model.position.set(0, 1, 0)
+
+    model.scale.set(7, 7, 7);
+    model.position.set(0, -1, 0);
+
+    const material = new THREE.MeshBasicMaterial({ color: '#4CAF50' });
+    model.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        child.material.color = material.color;
+      }
+    });
+
     scene.add(model);
   });
 
