@@ -46,8 +46,11 @@ with torch.no_grad():
         pcd, alpha=0.1
     )
 
-    mesh_smoothed = mesh.filter_smooth_simple(number_of_iterations=20)
+    mesh.remove_duplicated_vertices()
+    mesh.remove_degenerate_triangles()
+
+    mesh = mesh.filter_smooth_simple(number_of_iterations=20)
 
     o3d.io.write_triangle_mesh("output_mesh.obj", mesh)
 
-    o3d.visualization.draw_geometries([mesh_smoothed])
+    o3d.visualization.draw_geometries([mesh])
