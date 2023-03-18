@@ -5,7 +5,7 @@ import open3d as o3d
 
 Generator = Generator(num_points=2048).cuda()
 
-model_path = "chair.pt" 
+model_path = "../TrainedModels/chair.pt" 
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
