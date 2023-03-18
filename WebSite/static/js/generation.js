@@ -24,11 +24,12 @@ function loadModel(modelUrl){
   const ambientLight = new THREE.AmbientLight('#fff', 1);
   scene.add(ambientLight);
 
-  const loader = new THREE.GLTFLoader();
+  const loader = new THREE.OBJLoader();
 
-  loader.load(modelUrl, (gltf) => {
-    const model = gltf.scene;
-    model.position.set(0, 2, 0)
+  loader.load(modelUrl, (obj) => {
+    const model = obj;
+    model.scale.set(5, 5, 5);
+    model.position.set(0, 1, 0)
     scene.add(model);
   });
 
@@ -63,4 +64,4 @@ function dropdown(){
   }
 }
 
-loadModel("/static/chair.glb")
+loadModel("/static/generation.obj");
