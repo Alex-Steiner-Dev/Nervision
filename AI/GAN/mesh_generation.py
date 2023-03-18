@@ -31,9 +31,21 @@ def generate_mesh(points):
         pcd, alpha=0.1
     )
 
+    pcd = mesh.sample_points_uniformly(number_of_points=4096*6)
+    
+    mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(
+        pcd, alpha=0.1
+    )
+
+    pcd = mesh.sample_points_uniformly(number_of_points=4096*8)
+    
+    mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(
+        pcd, alpha=0.1
+    )
+
     mesh.remove_duplicated_vertices()
     mesh.remove_degenerate_triangles()
 
-    mesh = mesh.filter_smooth_simple(number_of_iterations=20)
+    mesh = mesh.filter_smooth_simple(number_of_iterations=15)
 
     return mesh
