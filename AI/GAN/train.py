@@ -13,7 +13,7 @@ from arguments import Arguments
 import time
 import numpy as np
 
-class WarpingGANTrain():
+class GAN():
     def __init__(self, args):
         self.args = args
       
@@ -102,8 +102,8 @@ class WarpingGANTrain():
 if __name__ == '__main__':
     args = Arguments().parser().parse_args()
 
-    args.device = torch.device('cuda:'+str(args.gpu) if torch.cuda.is_available() else 'cpu')
+    args.device = torch.device('cuda:'+ str(args.gpu) if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(args.device)
 
-    model = WarpingGANTrain(args)
+    model = GAN(args)
     model.run()
