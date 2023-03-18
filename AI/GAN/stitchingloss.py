@@ -14,6 +14,7 @@ def stitchloss(point, indices):
     batchsize = point.size(0)
     dismat = pc_distmat(point)
     keypointvariance = 0
+    
     for i in range(batchsize):
         tmpindexes = torch.unique(indices[i].reshape(512))
         tmp = torch.index_select(dismat[i], 0, tmpindexes)

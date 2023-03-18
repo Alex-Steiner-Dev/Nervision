@@ -1,4 +1,3 @@
-from __future__ import print_function
 import torch.utils.data as data
 import os
 import os.path
@@ -39,7 +38,6 @@ class BenchmarkDataset(data.Dataset):
             for fn in self.meta[item]:
                 self.datapath.append((item, fn[0], fn[1], fn[2]))
 
-
         self.classes = dict(zip(sorted(self.cat), range(len(self.cat))))
         print(self.classes)
         self.num_seg_classes = 0
@@ -51,7 +49,7 @@ class BenchmarkDataset(data.Dataset):
 
     def __getitem__(self, index):
         fn = self.datapath[index]
-        cls = self.classes[self.datapath[index][0]]
+
         point_set = np.loadtxt(fn[1]).astype(np.float32)
         seg = np.loadtxt(fn[2]).astype(np.int64)
         
@@ -62,11 +60,8 @@ class BenchmarkDataset(data.Dataset):
 
         point_set = torch.from_numpy(point_set)
         seg = torch.from_numpy(seg)
-        cls = torch.from_numpy(np.array([cls]).astype(np.int64))
-        if self.classification:
-            return point_set, cls
-        else:
-            return point_set, seg
+
+        return point_set, seg
 
     def __len__(self):
         return len(self.datapath)
