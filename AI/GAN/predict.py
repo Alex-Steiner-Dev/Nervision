@@ -1,7 +1,6 @@
 import torch
-import pyvista as pv
+from mesh_generation import generate_mesh
 from model import Generator
-import numpy as np
 import open3d as o3d
 
 Generator = Generator(num_points=2048).cuda()
@@ -17,40 +16,8 @@ with torch.no_grad():
 
     points = sample.numpy().reshape(2048,3)
 
-    pcd = o3d.geometry.PointCloud()
+    mesh = generate_mesh(points)
 
-    pcd.points = o3d.utility.Vector3dVector(points)
-    
-    mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(
-        pcd, alpha=0.1
-    )
-
-    pcd = mesh.sample_points_uniformly(number_of_points=4096)
-
-    mesh = mesh.filter_smooth_taubin(number_of_iterations=15)
-
-    mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(
-        pcd, alpha=0.1
-    )
-    mesh = mesh.simplify_quadric_decimation(target_number_of_triangles=5000)
-
-    pcd = mesh.sample_points_uniformly(number_of_points=4096*2)
-    
-    mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(
-        pcd, alpha=0.1
-    )
-
-    pcd = mesh.sample_points_uniformly(number_of_points=4096*4)
-    
-    mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(
-        pcd, alpha=0.1
-    )
-
-    mesh.remove_duplicated_vertices()
-    mesh.remove_degenerate_triangles()
-
-    mesh = mesh.filter_smooth_simple(number_of_iterations=20)
-
-    o3d.io.write_triangle_mesh("output_mesh.obj", mesh)
+    o3d.io.write_triangle_mesh("generation.obj", mesh)
 
     o3d.visualization.draw_geometries([mesh])
