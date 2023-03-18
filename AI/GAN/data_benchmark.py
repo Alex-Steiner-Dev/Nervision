@@ -17,9 +17,6 @@ class BenchmarkDataset(data.Dataset):
                 ls = line.strip().split()
                 self.cat[ls[0]] = ls[1]
                 
-        if not class_choice is  None:
-            self.cat = {k:v for k,v in self.cat.items() if k in class_choice}
-
         self.meta = {}
         for item in self.cat:
             self.meta[item] = []
