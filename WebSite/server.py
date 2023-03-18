@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-
+from predict import generate
 app = Flask(__name__)
 
 @app.route('/')
@@ -16,6 +16,7 @@ def signup():
 
 @app.route('/generation')
 def generation():
+    generate()
     return render_template('generation.html')
 
 if __name__ == '__main__':
