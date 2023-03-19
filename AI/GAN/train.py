@@ -45,7 +45,8 @@ class GAN():
                     self.D.zero_grad()
 
                     #z = torch.randn(self.args.batch_size, 1, 128).to(self.args.device)
-                    z = torch.from_numpy(label).to(self.args.device)
+                    z = label.to(self.args.device)
+                    z = torch.reshape(z, (self.args.batch_size, 1, 128)).to(self.args.device)
 
                     with torch.no_grad():
                         fake_point = self.G(z)         
@@ -68,7 +69,8 @@ class GAN():
                 loss_log['D_loss'].append(d_loss.item())                  
                 
                 self.G.zero_grad()
-                z = torch.randn(self.args.batch_size, 1, 128).to(self.args.device)
+                z = label.to(self.args.device)
+                z = torch.reshape(z, (self.args.batch_size, 1, 128)).to(self.args.device)
                 fake_point = self.G(z)
                 fake_point = (fake_point)
                 G_fake, fake_index = self.D(fake_point)
