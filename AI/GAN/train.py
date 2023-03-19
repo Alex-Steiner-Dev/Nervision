@@ -5,7 +5,7 @@ import torch.optim as optim
 from model import Generator, Discriminator
 
 from gradient_penalty import GradientPenalty
-from data_benchmark import BenchmarkDataset
+from data_benchmark import LoadDataset
 from stitchingloss import stitchloss
 
 from arguments import Arguments
@@ -17,7 +17,7 @@ class GAN():
     def __init__(self, args):
         self.args = args
       
-        self.data = BenchmarkDataset(root=args.dataset_path, npoints=args.point_num, class_choice=args.class_choice)
+        self.data = LoadDataset(root=args.dataset_path, npoints=args.point_num)
         self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=args.batch_size, shuffle=True, pin_memory=True, num_workers=4)
         print("Training Dataset : {} prepared.".format(len(self.data)))
 
@@ -37,14 +37,15 @@ class GAN():
 
         for epoch in range(epoch_log, self.args.epochs):
             for _iter, data in enumerate(self.dataLoader):
-                point, _ = data
+                point, label = data
                 point = point.to(self.args.device)
                 start_time = time.time()
        
                 for d_iter in range(self.args.D_iter):
                     self.D.zero_grad()
 
-                    z = torch.randn(self.args.batch_size, 1, 128).to(self.args.device)
+                    #z = torch.randn(self.args.batch_size, 1, 128).to(self.args.device)
+                    z = torch.from_numpy(label).to(self.args.device)
 
                     with torch.no_grad():
                         fake_point = self.G(z)         
