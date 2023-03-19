@@ -6,6 +6,8 @@ sys.path.append("../AI/GAN/")
 from mesh_generation import generate_mesh
 from model import Generator
 import open3d as o3d
+import pyvista as pv
+import numpy as np
 
 Generator = Generator(num_points=2048).cuda()
 
