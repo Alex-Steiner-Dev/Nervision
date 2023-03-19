@@ -6,5 +6,3 @@ def text_to_vec(sentence):
     vector = model.wv[sentence.split()[0]]
     
     return vector
-
-text_to_vec("An airplane with wings")

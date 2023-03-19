@@ -17,7 +17,7 @@ class GAN():
     def __init__(self, args):
         self.args = args
       
-        self.data = LoadDataset(root=args.dataset_path, npoints=args.point_num)
+        self.data = LoadDataset(data_dir=args.dataset_path)
         self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=args.batch_size, shuffle=True, pin_memory=True, num_workers=4)
         print("Training Dataset : {} prepared.".format(len(self.data)))
 

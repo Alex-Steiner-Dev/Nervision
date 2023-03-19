@@ -4,7 +4,7 @@ class Arguments:
     def __init__(self):
         self._parser = argparse.ArgumentParser()
 
-        self._parser.add_argument('--dataset_path', type=str, default='dataset/', help='Dataset file path.')
+        self._parser.add_argument('--dataset_path', type=str, default='dataset', help='Dataset file path.')
         self._parser.add_argument('--class_choice', type=str, default='Rocket', help='Select one class to generate. [Airplane, Chair, ...] (default:all_class)')
         self._parser.add_argument('--batch_size', type=int, default=32, help='Integer value for batch size.')
         self._parser.add_argument('--point_num', type=int, default=2048, help='Integer value for number of points.')
