@@ -1,18 +1,16 @@
-from gensim.models import Word2Vec
+import torch
+from sentence_transformers import SentenceTransformer
+
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-
-import nltk
-from textblob import TextBlob
 
 #nltk.download('stopwords')
 #nltk.download('punkt')
 
 def process_text(prompt):
     prompt = prompt.lower()
-    prompt = correct_prompt(prompt)
     prompt = remove_unicode(prompt)
-    prompt = remove_stop_words(prompt)
+    #prompt = remove_stop_words(prompt)
     return prompt
 
 def remove_stop_words(prompt):
@@ -26,21 +24,15 @@ def remove_unicode(prompt):
 
     return prompt.decode()
 
-def correct_prompt(prompt):
-    prompt = TextBlob(prompt)
-    prompt = prompt.correct()
-
-    return prompt.string
-
 def text_to_vec(sentence):
-    str_ = ""
-    sentences = [process_text(sentence)]
-    temp = str_.join(process_text(sentence))
+    model = SentenceTransformer('bert-base-nli-mean-tokens')
 
-    model = Word2Vec(sentences, vector_size=128, window=5, min_count=1, workers=2)
+    sentences = [sentence]
 
-    print(temp)
+    embeddings = model.encode(sentences, convert_to_tensor=True)
 
-    vector = model.wv[temp]
-    
-    return vector
+    projector = torch.nn.Linear(768, 128).cuda()
+    embeddings = projector(embeddings).cuda()
+    embeddings = embeddings.cpu().detach().numpy()
+
+    return embeddings
