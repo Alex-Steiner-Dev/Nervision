@@ -11,11 +11,12 @@
 			<canvas id="model-canvas"></canvas>
 		</div>
 
-	  	<div class="search-container">
-			<input type="text" placeholder="Type your message...">
-			<button>Send</button>
-	  	</div>
-		
+		<form action="/generation" method="post" class="search-container">
+			<div class="search-container">
+				<input type="text" placeholder="Type your message..." name="input-bar">
+				<button>Send</button>
+			</div>
+		</form>
 	</div>
 
 	<div class="dropdown", id="dropdown">

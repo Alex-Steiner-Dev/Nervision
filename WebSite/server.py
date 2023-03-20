@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from predict import generate
 app = Flask(__name__)
 
@@ -14,9 +14,11 @@ def login():
 def signup():
     return render_template('signup.html')
 
-@app.route('/generation')
+@app.route('/generation', methods=['GET', 'POST'])
 def generation():
-    generate()
+    if request.method == "POST":
+        generate(request.form.get("input-bar"))
+
     return render_template('generation.html')
 
 if __name__ == '__main__':
