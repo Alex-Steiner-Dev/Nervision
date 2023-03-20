@@ -27,8 +27,8 @@ def generate_mesh(points):
                 pcd, alpha=.1
             )
 
-    mesh.remove_duplicated_vertices()
-    mesh.remove_degenerate_triangles()
+   # mesh.remove_duplicated_vertices()
+   # mesh.remove_degenerate_triangles()
 
     mesh = mesh.filter_smooth_simple(number_of_iterations=15)
 
