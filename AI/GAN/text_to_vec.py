@@ -33,10 +33,14 @@ def correct_prompt(prompt):
     return prompt.string
 
 def text_to_vec(sentence):
-    sentences = process_text(sentence)
-    temp = sentences
+    str_ = ""
+    sentences = [process_text(sentence)]
+    temp = str_.join(process_text(sentence))
 
     model = Word2Vec(sentences, vector_size=128, window=5, min_count=1, workers=2)
+
+    print(temp)
+
     vector = model.wv[temp]
     
     return vector
