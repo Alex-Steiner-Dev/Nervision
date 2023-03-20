@@ -1,7 +1,6 @@
 import torch
 import torch.optim as optim
 
-
 from model import Generator, Discriminator
 
 from gradient_penalty import GradientPenalty
@@ -11,7 +10,6 @@ from stitchingloss import stitchloss
 from arguments import Arguments
 
 import time
-import numpy as np
 
 class GAN():
     def __init__(self, args):
@@ -44,7 +42,6 @@ class GAN():
                 for d_iter in range(self.args.D_iter):
                     self.D.zero_grad()
 
-                    #z = torch.randn(self.args.batch_size, 1, 128).to(self.args.device)
                     z = label.to(self.args.device)
                     z = torch.reshape(z, (self.args.batch_size, 1, 128)).to(self.args.device)
 
@@ -69,8 +66,10 @@ class GAN():
                 loss_log['D_loss'].append(d_loss.item())                  
                 
                 self.G.zero_grad()
+
                 z = label.to(self.args.device)
                 z = torch.reshape(z, (self.args.batch_size, 1, 128)).to(self.args.device)
+
                 fake_point = self.G(z)
                 fake_point = (fake_point)
                 G_fake, fake_index = self.D(fake_point)
