@@ -16,7 +16,7 @@ class GAN():
         self.args = args
       
         self.data = LoadDataset(data_dir=args.dataset_path)
-        self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=args.batch_size, shuffle=True, pin_memory=True, num_workers=4)
+        self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=args.batch_size, pin_memory=True, num_workers=4)
         print("Training Dataset : {} prepared.".format(len(self.data)))
 
         self.G = Generator(num_points=2048).to(args.device)      
