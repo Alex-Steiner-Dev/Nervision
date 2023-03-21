@@ -1,5 +1,7 @@
-import torch
-from sentence_transformers import SentenceTransformer
+import tensorflow_hub as hub
+
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -25,14 +27,8 @@ def remove_unicode(prompt):
     return prompt.decode()
 
 def text_to_vec(sentence):
-    model = SentenceTransformer('bert-base-nli-mean-tokens')
+    embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
 
-    sentences = [sentence]
+    embedding = embed([sentence])[0][:128].numpy()
 
-    embeddings = model.encode(sentences, convert_to_tensor=True)
-
-    projector = torch.nn.Linear(768, 128).cuda()
-    embeddings = projector(embeddings).cuda()
-    embeddings = embeddings.cpu().detach().numpy()
-
-    return embeddings
+    return embedding

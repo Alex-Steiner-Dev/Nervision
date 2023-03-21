@@ -11,11 +11,11 @@ logger.setLevel(logging.ERROR)
 Generator = Generator(num_points=2048).cuda()
 
 model_path = "../TrainedModels/chair.pt" 
-model_path = "50.pt" 
+model_path = "1300.pt" 
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
-z = torch.from_numpy(text_to_vec("a bowl")).reshape(1,1,128).cuda()
+z = torch.from_numpy(text_to_vec("double decker bus")).reshape(1,1,128).cuda()
 
 with torch.no_grad():
     sample = Generator(z).cpu()
@@ -31,4 +31,4 @@ with torch.no_grad():
 
     o3d.visualization.draw_geometries([pcd])
 
-    o3d.visualization.draw_geometries([mesh])
+    #o3d.visualization.draw_geometries([mesh])
