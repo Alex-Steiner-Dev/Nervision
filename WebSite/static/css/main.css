@@ -3,3 +3,33 @@ body{
     color: #111;
     font-family: 'Montserrat', sans-serif;
 }
+
+ul {
+    list-style-type: none;
+
+    margin: 0;
+    padding: 0;
+
+    overflow: hidden;
+    position: sticky;
+    top: 0;
+
+    margin-left: 0;
+}
+  
+li {
+    float: left;
+}
+
+.signup {
+    float: right;
+}
+  
+li a {
+    display: block;
+
+    color: black;
+
+    text-align: center;
+    padding: 14px 16px;
+}

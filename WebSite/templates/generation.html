@@ -1,38 +1,57 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Nerve Vision</title>
+	<title>Nerve Vision | Generate</title>
 	<link type="text/css" href="/static/css/generation.css" rel="stylesheet"/>
+	<link type="text/css" href="/static/css/main.css" rel="stylesheet"/>
 </head>
 <body>
-	<div class="chat-container">
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/generation">Generate</a></li>
+        <li><a href="/about">About</a></li>
+        <li class="signup"><a href="/signup">Sign Up</a></li>
+    </ul>
 
-		<div class="canvas-container">
-			<canvas id="model-canvas"></canvas>
-		</div>
+    <div class="generation">
+        <img class="logo" src="/static/images/logo.png">
 
-		<form action="/generation" method="post" class="search-container">
-			<div class="search-container">
-				<input type="text" placeholder="Type your message..." name="input-bar">
-				<button>Send</button>
-			</div>
-		</form>
-	</div>
+        <form class="generation-form">
+            <input class="generation-input" placeholder="There is no limit to your imigination" required>
+            <button class="button-input">Generate</button>
+        </form>
 
-	<div class="dropdown", id="dropdown">
-		<button class="dropbtn">Download</button>
-		<div class="dropdown-content">
-		  <a href="#">OBJ</a>
-		  <a href="#">GLB</a>
-		  <a href="#">STL</a>
-		</div>
-	</div>	  
-  
-	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/build/three.min.js"></script>
+        <form class="about">
+            <div class="about-div">
+                <h4 class="about-text">Generate everything you love</h4>
+            </div>
+
+            <div class="about-div">
+                <h4 class="about-text">Generate everything you love</h4>
+            </div>
+
+            <div class="about-div">
+                <h4 class="about-text">Generate everything you love</h4>
+            </div>
+
+            <div class="about-div">
+                <h4 class="about-text">Generate everything you love</h4>
+            </div>
+
+            <div class="about-div">
+                <h4 class="about-text">Generate everything you love</h4>
+            </div>
+
+            <div class="about-div">
+                <h4 class="about-text">Generate everything you love</h4>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.131.2/build/three.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/loaders/OBJLoader.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/controls/OrbitControls.js"></script>
 
-	<script src="/static/js/generation.js"></script>
-
-  </body>
+	<!--- <script src="/static/js/generation.js"></script> -->
+</body>
 </html>
