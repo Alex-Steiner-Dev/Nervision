@@ -1,109 +1,74 @@
-body {
-  margin: 0;
-  padding: 0;
-  background-color: #111;
-  color: #eee;
-  font-family: 'Montserrat', sans-serif;
+.generation{
+    width: auto;
+    height: auto;
+
+    display: block;
+    margin-left: auto;
+    margin-right: auto;   
+
+    text-align: center;
 }
 
-.chat-container {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
+.logo{
+    margin-top: 5%;
+    width: 30%;
+    height: auto;
 }
 
-.search-container {
-  width: 80%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
-  margin-bottom: 60px;
+.generation-form{
+    margin-left: auto;
+    margin-right: auto; 
 }
 
-.search-container input[type="text"] {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  background-color: #444;
-  color: #eee;
-  font-size: 1.2rem;
-  font-weight: 400;
-  font-family: inherit;
+.generation-input{
+    text-align: center;
+
+    margin-top: 10px;
+
+    width: 45%;
+    height: 35px;
+
+    font-size: medium;
+
+    border: 2px solid black;
+    border-radius: 5px;
 }
 
-.search-container button {
-  padding: 10px;
-  background-color: #4CAF50;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  margin-left: 10px;
-  cursor: pointer;
-  font-size: 1.2rem;
-  font-weight: 400;
-  font-family: inherit;
+.button-input{
+    text-align: center;
+
+    margin-top: 10px;
+
+    width: 6%;
+    height: 40px;
+
+    font-size: medium;
+
+    border: 2px solid black;
+    border-radius: 5px;
 }
 
-.search-container button:hover {
-  background-color: #3e8e41;
+.about{
+    margin-top: 4%;
+    display: block;
+
+    margin-left: 22%;
+    margin-right: auto;   
 }
 
-.canvas-container {
-  margin-bottom: 50px;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+.about-div{
+    float: left;
 
-canvas {
-  width: 100%;
-  height: 100%;
-}
+    margin-right: 5%;
+    margin-bottom: 2%;
+  
+    text-align: center;
 
-.dropdown {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
+    width: 34%;
+    height: 70%;
 
-.dropbtn {
-  background-color: #4CAF50;
-  color: white;
-  padding: 16px;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-}
+    font-size: medium;
 
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f1f1f1;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-}
-
-.dropdown-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-}
-
-.dropdown-content a:hover {background-color: #ddd;}
-
-.dropdown:hover .dropdown-content {
-  display: block;
-}
-
-.dropdown:hover .dropbtn {
-  background-color: #3e8e41;
+    border: 2px solid black;
+    border-radius: 5px;
 }

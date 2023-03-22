@@ -13,7 +13,7 @@
 
 .logo{
     margin-top: 7%;
-    width: 45%;
+    width: 30%;
     height: auto;
 }
 
@@ -42,4 +42,8 @@
     font-size: medium;
     border: 2px solid black;
     border-radius: 5px;
+}
+
+a{
+    color: black;
 }

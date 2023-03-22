@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from predict import generate
+#from predict import generate
 app = Flask(__name__)
 
 @app.route('/')
@@ -17,7 +17,8 @@ def signup():
 @app.route('/generation', methods=['GET', 'POST'])
 def generation():
     if request.method == "POST":
-        generate(request.form.get("input-bar"))
+        pass
+        #generate(request.form.get("input-bar"))
 
     return render_template('generation.html')
 
