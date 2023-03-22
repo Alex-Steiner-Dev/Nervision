@@ -9,10 +9,6 @@
     text-align: center;
 }
 
-.title{
-    margin-top: -50px;
-}
-
 .logo{
     margin-top: 5%;
     width: 30%;
@@ -24,11 +20,52 @@
     margin-right: auto; 
 }
 
-.mail-form-input{
-    margin-top: 20px;
+.generation-input{
+    text-align: center;
 
-    width: 50%;
-    height: 100%;
+    margin-top: 10px;
+
+    width: 45%;
+    height: 35px;
+
+    font-size: medium;
+
+    border: 2px solid black;
+    border-radius: 5px;
+}
+
+.button-input{
+    text-align: center;
+
+    margin-top: 10px;
+
+    width: 6%;
+    height: 40px;
+
+    font-size: medium;
+
+    border: 2px solid black;
+    border-radius: 5px;
+}
+
+.about{
+    margin-top: 4%;
+    display: block;
+
+    margin-left: 22%;
+    margin-right: auto;   
+}
+
+.about-div{
+    float: left;
+
+    margin-right: 5%;
+    margin-bottom: 2%;
+  
+    text-align: center;
+
+    width: 34%;
+    height: 70%;
 
     font-size: medium;
 
