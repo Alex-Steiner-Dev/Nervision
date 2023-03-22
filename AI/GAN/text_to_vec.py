@@ -1,5 +1,5 @@
 import tensorflow_hub as hub
-
+import string
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
@@ -12,14 +12,12 @@ from nltk.tokenize import word_tokenize
 def process_text(prompt):
     prompt = prompt.lower()
     prompt = remove_unicode(prompt)
-    #prompt = remove_stop_words(prompt)
+    prompt = remove_stop_words(prompt)
     return prompt
 
 def remove_stop_words(prompt):
-    word_tokens = word_tokenize(prompt)
-    output = [w for w in word_tokens if not w in stopwords.words('english')]
-
-    return output
+    stop = set(stopwords.words('english') + list(string.punctuation))
+    return [i for i in word_tokenize(prompt.lower()) if i not in stop]
 
 def remove_unicode(prompt):
     prompt = prompt.encode("ascii", "ignore")
@@ -27,6 +25,8 @@ def remove_unicode(prompt):
     return prompt.decode()
 
 def text_to_vec(sentence):
+    sentence = ' '.join([str(x) for x in sentence])
+    
     embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
 
     embedding = embed([sentence])[0][:128].numpy()

@@ -21,7 +21,7 @@ class LoadDataset(data.Dataset):
                 desc_path = desc_path.replace('\\', '/').replace('model', 'description')
 
                 with open(desc_path, 'r') as f:
-                    label = text_to_vec(f.read().strip())
+                    label = text_to_vec(process_text(f.read()))
 
                 self.objects.append(obj_path)
                 self.labels.append(label)
