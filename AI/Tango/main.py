@@ -73,7 +73,7 @@ def train(args):
                              args.normal_random_pe_numfreq,
                              args.symmetry,
                              args.radius,
-                             args.background,
+                             "black",#args.background,
                              args.init_r_and_s,
                              args.width,
                              args.init_roughness,
