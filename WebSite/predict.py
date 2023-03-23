@@ -12,7 +12,7 @@ import numpy as np
 
 Generator = Generator(num_points=2048).cuda()
 
-model_path = "../AI/TrainedModels/bowl.pt" 
+model_path = "../AI/TrainedModels/1750.pt" 
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
@@ -28,4 +28,4 @@ def generate(text):
 
         o3d.io.write_triangle_mesh("static/generation.obj", mesh)
 
-        o3d.visualization.draw_geometries([mesh])
+        #o3d.visualization.draw_geometries([mesh])

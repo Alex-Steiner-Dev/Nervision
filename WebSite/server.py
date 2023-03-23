@@ -18,6 +18,7 @@ def signup():
 def generation():
     if request.method == "POST":
         generate(request.form.get("input-bar"))
+        return render_template('generated.html')
 
     return render_template('generation.html')
 

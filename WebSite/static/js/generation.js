@@ -1,5 +1,5 @@
 // Initialize
-const canvas = document.getElementById('model-canvas');
+const canvas = document.getElementById('canvas');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 
 const fov = 45;
@@ -7,7 +7,6 @@ const aspect = canvas.width / canvas.height;
 const near = 0.1;
 const far = 100;
 
-document.getElementById("dropdown").style.visibility = "hidden";
 
 // Load Model
 function loadModel(modelUrl){
@@ -19,7 +18,7 @@ function loadModel(modelUrl){
   const controls = new THREE.OrbitControls(camera, canvas);
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#111');
+  scene.background = new THREE.Color('#FFFFFF');
 
   const ambientLight = new THREE.AmbientLight('#fff', 1);
   scene.add(ambientLight);
@@ -32,7 +31,7 @@ function loadModel(modelUrl){
     model.scale.set(7, 7, 7);
     model.position.set(0, -1, 0);
 
-    const material = new THREE.MeshBasicMaterial({ color: '#4CAF50' });
+    const material = new THREE.MeshBasicMaterial({ color: '#000000' });
     model.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         child.material.color = material.color;
@@ -52,25 +51,6 @@ function loadModel(modelUrl){
   }
 
   animate();
-  dropdown();
-}
-
-function dropdown(){
-  document.getElementById("dropdown").style.visibility = "visible"
-
-  window.onclick = function(event) {
-    if (!event.target.matches('.dropbtn')) {
-      var dropdowns = document.getElementsByClassName("dropdown-content");
-
-      for (var i = 0; i < dropdowns.length; i++) {
-        var openDropdown = dropdowns[i];
-
-        if (openDropdown.style.display === "block") {
-          openDropdown.style.display = "none";
-        }
-      }
-    }
-  }
 }
 
 loadModel("/static/generation.obj");
