@@ -225,7 +225,7 @@ if __name__ == '__main__':
     parser.add_argument('--clipavg', type=str, default=None)
     parser.add_argument('--mincrop', type=float, default=1) #minimium clipping scale in 2D augmentation 
     parser.add_argument('--maxcrop', type=float, default=1) #maximium clipping scale in 2D augmentation
-    parser.add_argument('--overwrite', action='store_true')
+    parser.add_argument('--overwrite', default=True, action='store_true')
     parser.add_argument('--seed', type=int, default=0) #random seed
     parser.add_argument('--symmetry', default=False, action='store_true') #With this symmetry prior, the texture of the mesh 
                                                                           #will be symmetrical along the z-axis.We use this parameter in person
