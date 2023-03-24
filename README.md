@@ -11,8 +11,11 @@ To develop this project, I utilized a research paper created by the University o
 To run Nervision, the following requirements must be met:
 
 - PyTorch
+- Keras
 - Python 3.x
 - CUDA-enabled GPU (optional)
+- Open 3D
+- Trimesh
 
 ## Usage
 
