@@ -63,6 +63,8 @@ Nervision is a powerful tool for generating 3D models quickly and easily from te
     journal   = {arXiv:1801.09847},
     year      = {2018},
 }
+```
+```
 @software{trimesh,
 	author = {{Dawson-Haggerty et al.}},
 	title = {trimesh},
@@ -70,11 +72,15 @@ Nervision is a powerful tool for generating 3D models quickly and easily from te
 	version = {3.2.0},
 	date = {2019-12-8},
 }
+```
+```
 @article{paszke2017automatic,
   title={Automatic differentiation in PyTorch},
   author={Paszke, Adam and Gross, Sam and Chintala, Soumith and Chanan, Gregory and Yang, Edward and DeVito, Zachary and Lin, Zeming and Desmaison, Alban and Antiga, Luca and Lerer, Adam},
   year={2017}
 }
+```
+```
 @misc{chollet2015keras,
   title={Keras},
   author={Chollet, Fran\c{c}ois and others},
