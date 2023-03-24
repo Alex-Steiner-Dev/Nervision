@@ -34,7 +34,7 @@ In conclusion, Nervision is a Text to 3D Model AI developed by Alex Steiner for 
 
 Nervision is a powerful tool for generating 3D models quickly and easily from textual descriptions. It has potential applications in various industries, including architecture, gaming, and film.
 
-## Citatonion
+## Citation
 ```
 @misc{tang2022warpinggan,
       title={WarpingGAN: Warping Multiple Uniform Priors for Adversarial 3D Point Cloud Generation}, 
