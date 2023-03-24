@@ -1,4 +1,5 @@
 import tensorflow_hub as hub
+from autocorrect import Speller
 import string
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
@@ -23,6 +24,11 @@ def remove_unicode(prompt):
     prompt = prompt.encode("ascii", "ignore")
 
     return prompt.decode()
+
+def correct_prompt(sentece):
+    spell = Speller()
+
+    return spell(sentece)
 
 def text_to_vec(sentence):
     sentence = ' '.join([str(x) for x in sentence])

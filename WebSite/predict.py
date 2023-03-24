@@ -12,12 +12,12 @@ import numpy as np
 
 Generator = Generator(num_points=2048).cuda()
 
-model_path = "../AI/TrainedModels/150.pt" 
+model_path = "../AI/TrainedModels/1200.pt" 
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
 def generate(text):
-    z = torch.from_numpy(text_to_vec(process_text(text))).reshape(1,1,128).cuda()
+    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,1,128).cuda()
 
     with torch.no_grad():
         sample = Generator(z).cpu()
