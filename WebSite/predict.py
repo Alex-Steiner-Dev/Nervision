@@ -18,6 +18,9 @@ Generator.load_state_dict(checkpoint['G_state_dict'])
 
 def generate(text):
     z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,1,128).cuda()
+    epsilon = 0.03 
+    noise = torch.randn(1, 1, 128).cuda() * epsilon
+    z = z + noise
 
     with torch.no_grad():
         sample = Generator(z).cpu()
