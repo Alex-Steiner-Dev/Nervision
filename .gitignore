@@ -125,11 +125,7 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-WebSite/.DS_Store
+*.DS_Store
 AI/GAN/model.h5
 *.txt
 *.obj
-*.pts
-*.seg
-AI/GAN/dataset/shapenetcore_partanno_segmentation_benchmark_v0/02691156/seg_img/2a06adfb446c85c9f9d3f977c7090b2a.png
-*.png
