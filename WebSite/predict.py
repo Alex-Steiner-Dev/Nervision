@@ -10,15 +10,12 @@ import open3d as o3d
 
 Generator = Generator(num_points=2048).cuda()
 
-model_path = "../AI/TrainedModels/1450.pt" 
+model_path = "../AI/TrainedModels/2000.pt" 
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
 def generate(text):
     z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,1,128).cuda()
-    #epsilon = 0.03 
-    #noise = torch.randn(1, 1, 128).cuda() * epsilon
-    #z = z + noise
 
     with torch.no_grad():
         sample = Generator(z).cpu()
@@ -28,5 +25,3 @@ def generate(text):
         mesh = generate_mesh(points)
 
         o3d.io.write_triangle_mesh("static/generation.obj", mesh)
-
-        #o3d.visualization.draw_geometries([mesh])
