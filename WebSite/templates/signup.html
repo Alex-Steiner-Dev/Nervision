@@ -10,7 +10,7 @@
         <li><a href="/">Home</a></li>
         <li><a href="/generation">Generate</a></li>
         <li><a href="/about">About</a></li>
-        <li class="signup"><a href="/signup">Sign Up</a></li>
+        <li class="signup"><a href="/login">Login</a></li>
     </ul>
     
     <div class="login">
@@ -22,11 +22,13 @@
 
         <br>
 
-        <form class="login-form">
+        <form class="login-form" method="post">
             <input class="mail-form-input" placeholder="Username" required>
             <br>
             <br>
-            <input class="psw-form-input" placeholder="Password">
+            <input class="psw-form-input" type="password" placeholder="Password">
+            <br>
+            <button>Signup</button>
         </form>
 
         <p>Already have an account? <a href="/login">Login</a></p>

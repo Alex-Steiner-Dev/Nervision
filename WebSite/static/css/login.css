@@ -8,7 +8,7 @@
 }
 
 .title{
-    margin-top: -50px;
+    margin-top: -10px;
 }
 
 .logo{
@@ -46,4 +46,13 @@
 
 a{
     color: black;
+}
+
+button{
+    margin-bottom: 20px;
+
+    width: auto;
+    font-size: medium;
+    border: 2px solid black;
+    border-radius: 5px;
 }

@@ -1,10 +1,18 @@
 from flask import Flask, render_template, request, send_file
 from predict import generate
+import pymongo
 
-from pymongo import MongoClient
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 
+client = pymongo.MongoClient(os.getenv("MONGO_URI"))
+db = client.db
+
+print("Connected to the DB!")
 
 @app.route('/')
 def index():
