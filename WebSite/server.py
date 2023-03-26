@@ -1,6 +1,10 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
 from predict import generate
+
+from pymongo import MongoClient
+
 app = Flask(__name__)
+
 
 @app.route('/')
 def index():
@@ -21,6 +25,11 @@ def generation():
         return render_template('generated.html')
 
     return render_template('generation.html')
+
+@app.route('/download')
+def download ():
+    path = "static/generation.obj"
+    return send_file(path, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=3000)

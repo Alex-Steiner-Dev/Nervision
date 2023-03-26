@@ -32,6 +32,8 @@ def correct_prompt(sentece):
 
 def text_to_vec(sentence):
     sentence = ' '.join([str(x) for x in sentence])
+
+    print(sentence)
     
     embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
 
