@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, session
+from flask_session import Session
 from predict import generate
 import pymongo
 
@@ -8,6 +9,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
+
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
 client = pymongo.MongoClient(os.getenv("MONGO_URI"))
 db = client.db
@@ -24,10 +29,13 @@ def login():
         mail = request.form.get("mail")
         psw = request.form.get("psw")
 
-        user_found = db.users.find_one({ "mail" : mail, "psw": psw})
+        user_found = db.users.find_one({ "mail" : mail, "psw": psw, "premium": False})
 
         try:
             if len(user_found) > 0:
+                session["mail"] = mail
+                session["psw"] = psw
+
                 return render_template('index.html')
         except:
             return "Wrong data!"
@@ -42,10 +50,17 @@ def signup():
 
         db.users.insert_one({ "mail" : mail, "psw": psw})
 
-        return "Ok"
+        return render_template('index.html')
 
     else:
         return render_template('signup.html')
+
+@app.route('/logout')
+def logout():
+    session["mail"] = None
+    session["psw"] = None
+
+    return render_template('login.html')    
 
 @app.route('/generation', methods=['GET', 'POST'])
 def generation():
