@@ -18,13 +18,34 @@ print("Connected to the DB!")
 def index():
     return render_template('index.html')
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    return render_template('login.html')
+    if request.method == "POST":
+        mail = request.form.get("mail")
+        psw = request.form.get("psw")
 
-@app.route('/signup')
+        user_found = db.users.find_one({ "mail" : mail, "psw": psw})
+
+        try:
+            if len(user_found) > 0:
+                return render_template('index.html')
+        except:
+            return "Wrong data!"
+    else:
+        return render_template('login.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    return render_template('signup.html')
+    if request.method == "POST":
+        mail = request.form.get("mail")
+        psw = request.form.get("psw")
+
+        db.users.insert_one({ "mail" : mail, "psw": psw})
+
+        return "Ok"
+
+    else:
+        return render_template('signup.html')
 
 @app.route('/generation', methods=['GET', 'POST'])
 def generation():
