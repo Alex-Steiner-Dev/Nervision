@@ -23,10 +23,10 @@ class CodeEnhancement(nn.Module):
         return x.transpose(1,2)
     
 class Generator(nn.Module):
-    def __init__(self, num_points=2048, m=1280, dimofgrid=3):
+    def __init__(self, num_points=2048, m=128, dimofgrid=3):
         super(Generator, self).__init__()
         self.n = num_points  
-        self.numgrid = int(20480 / m)
+        self.numgrid = int(2048 / m)
         self.dimofgrid = dimofgrid
         self.m = m  
         self.meshgrid = [[-0.2, 0.1, 4], [-0.2, 0.1, 4], [-0.2, 0.1, 8]]

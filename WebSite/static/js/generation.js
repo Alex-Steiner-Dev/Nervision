@@ -20,24 +20,32 @@ function loadModel(modelUrl){
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#FFFFFF');
 
-  const ambientLight = new THREE.AmbientLight('#fff', 1);
+  // create an ambient light
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
   scene.add(ambientLight);
 
-  const loader = new THREE.OBJLoader();
+  // create a directional light
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+  directionalLight.position.set(0, 1, 0);
+  scene.add(directionalLight);
 
-  loader.load(modelUrl, (obj) => {
-    const model = obj;
+  const loader = new THREE.GLTFLoader();
+
+  loader.load(modelUrl, (gltf) => {
+    gltf.encoding = THREE.sRGBEncoding;
+    const model = gltf.scene;
+    const texture = gltf.textures;
+    
+    model.traverse((child) => {
+      if (child.isMesh) {
+        child.material.map = texture;
+      }
+    });
 
     model.scale.set(7, 7, 7);
     model.position.set(0, -1, 0);
 
-    const material = new THREE.MeshBasicMaterial({ color: '#000000' });
-    model.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        child.material.color = material.color;
-      }
-    });
-
+   
     scene.add(model);
   });
 
@@ -53,4 +61,4 @@ function loadModel(modelUrl){
   animate();
 }
 
-loadModel("/static/generation.obj");
+loadModel("/static/1.glb");

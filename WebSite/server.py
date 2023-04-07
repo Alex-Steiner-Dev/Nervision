@@ -36,7 +36,7 @@ def login():
                 session["mail"] = mail
                 session["psw"] = psw
 
-                return render_template('generation.html')
+                return render_template('index.html')
         except:
             return "Wrong data!"
     else:

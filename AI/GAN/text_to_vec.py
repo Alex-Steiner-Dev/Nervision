@@ -35,6 +35,6 @@ def text_to_vec(sentence):
 
     embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
 
-    embedding = embed([sentence])[0][:1280].numpy()
+    embedding = embed([sentence])[0][:128].numpy()
 
     return embedding
