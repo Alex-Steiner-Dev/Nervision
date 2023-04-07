@@ -72,7 +72,7 @@ def generation():
 
 @app.route('/download')
 def download ():
-    path = "static/generation.obj"
+    path = "static/generation.glb"
     return send_file(path, as_attachment=True)
 
 if __name__ == '__main__':

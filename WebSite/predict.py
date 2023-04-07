@@ -5,7 +5,7 @@ sys.path.append("../AI/GAN/")
 
 from mesh_generation import generate_mesh
 from text_to_vec import *
-import numpy as np
+
 from model import Generator
 import open3d as o3d
 
@@ -25,4 +25,4 @@ def generate(text):
 
         mesh = generate_mesh(points)
 
-        o3d.io.write_triangle_mesh("static/generation.glb", mesh)
+        o3d.io.write_triangle_mesh("static/generation.obj", mesh)
