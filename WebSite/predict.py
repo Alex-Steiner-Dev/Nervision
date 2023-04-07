@@ -5,12 +5,13 @@ sys.path.append("../AI/GAN/")
 
 from mesh_generation import generate_mesh
 from text_to_vec import *
+import numpy as np
 from model import Generator
 import open3d as o3d
 
 Generator = Generator(num_points=2048).cuda()
 
-model_path = "../AI/TrainedModels/bowls.pt" 
+model_path = "../AI/TrainedModels/generation2.pt" 
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
@@ -24,4 +25,4 @@ def generate(text):
 
         mesh = generate_mesh(points)
 
-        o3d.io.write_triangle_mesh("static/generation.glb", mesh)
+        o3d.io.write_triangle_mesh("static/1.glb", mesh)

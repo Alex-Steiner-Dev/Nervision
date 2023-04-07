@@ -45,7 +45,6 @@ function loadModel(modelUrl){
     model.scale.set(7, 7, 7);
     model.position.set(0, -1, 0);
 
-   
     scene.add(model);
   });
 
@@ -61,4 +60,4 @@ function loadModel(modelUrl){
   animate();
 }
 
-loadModel("/static/1.glb");
+loadModel("/static/generation.glb");
