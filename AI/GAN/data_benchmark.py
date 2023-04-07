@@ -13,12 +13,12 @@ class LoadDataset(data.Dataset):
         self.objects = []
         self.labels = []
 
-        for obj_file in os.listdir(data_dir):
-            if obj_file.endswith('.obj'):
+        for txt_file in os.listdir(data_dir):
+            if txt_file.endswith('.txt'):
 
-                obj_path = os.path.join(data_dir, obj_file)
-                desc_path = os.path.join(data_dir, obj_file.replace('.obj', '.txt'))
-                desc_path = desc_path.replace('\\', '/').replace('model', 'description')
+                desc_path = os.path.join(data_dir, txt_file)
+                obj_path = os.path.join(data_dir, txt_file.replace('.txt', '.obj'))
+                obj_path = obj_path.replace('\\', '/').replace('model', 'description')
 
                 with open(desc_path, 'r') as f:
                     label = text_to_vec(process_text(f.read()))
