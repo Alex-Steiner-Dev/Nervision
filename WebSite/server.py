@@ -29,14 +29,14 @@ def login():
         mail = request.form.get("mail")
         psw = request.form.get("psw")
 
-        user_found = db.users.find_one({ "mail" : mail, "psw": psw, "premium": False})
+        user_found = db.users.find_one({ "mail" : mail, "psw": psw})
 
         try:
             if len(user_found) > 0:
                 session["mail"] = mail
                 session["psw"] = psw
 
-                return render_template('index.html')
+                return render_template('generation.html')
         except:
             return "Wrong data!"
     else:
@@ -50,7 +50,7 @@ def signup():
 
         db.users.insert_one({ "mail" : mail, "psw": psw})
 
-        return render_template('index.html')
+        return render_template('login.html')
 
     else:
         return render_template('signup.html')
@@ -60,7 +60,7 @@ def logout():
     session["mail"] = None
     session["psw"] = None
 
-    return render_template('login.html')    
+    return render_template('index.html')    
 
 @app.route('/generation', methods=['GET', 'POST'])
 def generation():

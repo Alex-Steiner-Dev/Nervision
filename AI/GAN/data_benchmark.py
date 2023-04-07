@@ -3,7 +3,6 @@ import trimesh
 import os
 from text_to_vec import *
 import numpy as np
-
 import logging
 logger = logging.getLogger("trimesh")
 logger.setLevel(logging.ERROR)
@@ -31,7 +30,7 @@ class LoadDataset(data.Dataset):
         label = self.labels[idx]
 
         mesh = trimesh.load(obj_path, force="mesh")
-        points = mesh.sample(2048)
+        points = mesh.sample(20480)
         points = np.array(points, dtype=np.float32)
 
         return points, label
