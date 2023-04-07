@@ -20,31 +20,23 @@ function loadModel(modelUrl){
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#FFFFFF');
 
-  // create an ambient light
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-  scene.add(ambientLight);
-
-  // create a directional light
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-  directionalLight.position.set(0, 1, 0);
-  scene.add(directionalLight);
+  const ambient = new THREE.AmbientLight(0x404040, 5)
+  const point = new THREE.PointLight(0xE4FF00, 1, 10)
+  point.position.set(3, 3, 2)
+  scene.add(ambient)
+  scene.add(point)
 
   const loader = new THREE.GLTFLoader();
 
   loader.load(modelUrl, (gltf) => {
     gltf.encoding = THREE.sRGBEncoding;
     const model = gltf.scene;
-    const texture = gltf.textures;
-    
-    model.traverse((child) => {
-      if (child.isMesh) {
-        child.material.map = texture;
-      }
-    });
+   
 
     model.scale.set(7, 7, 7);
     model.position.set(0, -1, 0);
 
+   
     scene.add(model);
   });
 
@@ -60,4 +52,4 @@ function loadModel(modelUrl){
   animate();
 }
 
-loadModel("/static/generation.glb");
+loadModel("/static/TreasureBox.glb");

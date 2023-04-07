@@ -25,4 +25,4 @@ def generate(text):
 
         mesh = generate_mesh(points)
 
-        o3d.io.write_triangle_mesh("static/1.glb", mesh)
+        o3d.io.write_triangle_mesh("static/generation.glb", mesh)
