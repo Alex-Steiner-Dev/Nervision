@@ -16,7 +16,7 @@ class GAN():
         self.args = args
       
         self.data = LoadDataset(data_dir=args.dataset_path)
-        self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=args.batch_size, pin_memory=True, num_workers=4)
+        self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=args.batch_size)
         print("Training Dataset : {} prepared.".format(len(self.data)))
 
         self.G = Generator(num_points=2048).to(args.device)      
@@ -29,11 +29,10 @@ class GAN():
         print("Network prepared.")
 
     def run(self):        
-        epoch_log = 0
-        
-        loss_log = {'G_loss': [], 'D_loss': []}
+        checkpoint = torch.load("300.pt")
+        self.G = torch.load_state_dict(checkpoint['G_state_dict'])
 
-        for epoch in range(epoch_log, self.args.epochs):
+        for epoch in range(self.args.epochs):
             for _iter, data in enumerate(self.dataLoader):
                 point, label = data
                 point = point.to(self.args.device)
@@ -63,8 +62,6 @@ class GAN():
 
                 realvar = stitchloss(point, real_index)
 
-                loss_log['D_loss'].append(d_loss.item())                  
-                
                 self.G.zero_grad()
 
                 z = label.to(self.args.device)
@@ -83,8 +80,6 @@ class GAN():
                 g_loss.backward()
                 self.optimizerG.step()
 
-                loss_log['G_loss'].append(g_loss.item())
-                 
                 print("[Epoch/Iter] ", "{:3} / {:3}".format(epoch, _iter),
                       "[ D_Loss ] ", "{: 7.6f}".format(d_loss), 
                       "[ G_Loss ] ", "{: 7.6f}".format(g_loss), 
@@ -92,11 +87,7 @@ class GAN():
            
             if epoch % 50 == 0:
                 torch.save({
-                        'epoch': epoch,
-                        'D_state_dict': self.D.state_dict(),
                         'G_state_dict': self.G.state_dict(),
-                        'D_loss': loss_log['D_loss'],
-                        'G_loss': loss_log['G_loss'],
                 }, str(epoch)+'.pt')
 
                 print('Checkpoint is saved.')
