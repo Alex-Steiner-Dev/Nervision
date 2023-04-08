@@ -18,7 +18,7 @@ class LoadDataset(data.Dataset):
 
                 desc_path = os.path.join(data_dir, txt_file)
                 obj_path = os.path.join(data_dir, txt_file.replace('.txt', '.obj'))
-                obj_path = obj_path.replace('\\', '/').replace('model', 'description')
+                obj_path = obj_path.replace('\\', '/').replace('description', 'model')
 
                 with open(desc_path, 'r') as f:
                     label = text_to_vec(process_text(f.read()))
