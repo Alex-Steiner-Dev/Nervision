@@ -30,7 +30,7 @@ class GAN():
 
     def run(self):        
         checkpoint = torch.load("300.pt")
-        self.G = torch.load_state_dict(checkpoint['G_state_dict'])
+        self.G.load_state_dict(checkpoint['G_state_dict'])
 
         for epoch in range(self.args.epochs):
             for _iter, data in enumerate(self.dataLoader):

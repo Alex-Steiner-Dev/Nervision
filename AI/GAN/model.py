@@ -41,12 +41,13 @@ class Generator(nn.Module):
         )
 
         self.mlp2 = nn.Sequential(
-            nn.Conv1d(int(512/self.numgrid)+3+512, 256, 1),
+            nn.Conv1d(int(512/self.numgrid)+self.dimofgrid+512, 256, 1),
             nn.LeakyReLU(negative_slope=0.2),
             nn.Conv1d(256, 64, 1),
             nn.LeakyReLU(negative_slope=0.2),
             nn.Conv1d(64, 3, 1),
         )
+
 
     def build_grid(self, batch_size):
         x = np.linspace(*self.meshgrid[0])

@@ -3,7 +3,7 @@ from mesh_generation import generate_mesh
 from model import Generator
 import open3d as o3d
 from text_to_vec import *
-
+import time
 import logging
 logger = logging.getLogger("trimesh")
 logger.setLevel(logging.ERROR)
@@ -15,12 +15,17 @@ model_path = "300.pt"
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
-z = torch.from_numpy(text_to_vec("Tall deep square bathtub with a small indented step inside it")).reshape(1,1,128).cuda()
+z = torch.from_numpy(text_to_vec(process_text(correct_prompt("a bathtub bowl")))).reshape(1,1,128).cuda()
+
 
 with torch.no_grad():
+    start = time.time()
     sample = Generator(z).cpu()
 
     points = sample.numpy().reshape(2048,3)
+
+    end = time.time()
+    print(end - start)
 
     mesh = generate_mesh(points)
 
