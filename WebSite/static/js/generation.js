@@ -23,16 +23,26 @@ function loadModel(modelUrl){
   const ambientLight = new THREE.AmbientLight(0xffffff, 1)
   scene.add(ambientLight)
   
-  const loader = new THREE.GLTFLoader();
+  const loader = new THREE.OBJLoader();
 
-  loader.load(modelUrl, (gltf) => {
-    gltf.encoding = THREE.sRGBEncoding;
-    const model = gltf.scene;
-   
+  loader.load(modelUrl, (obj) => {
+    const model = obj;
+
+    var gradientTexture = new THREE.TextureLoader().load( '/static/texture.jpg' );
+
+    var material = new THREE.MeshStandardMaterial( {
+        map: gradientTexture,
+        metalness: 0.5,
+        roughness: 0.5
+    } );
+
+    obj.traverse( function ( child ) {
+      child.material = material
+    });
+
     model.scale.set(7, 7, 7);
     model.position.set(0, -1, 0);
 
-   
     scene.add(model);
   });
 
@@ -48,4 +58,4 @@ function loadModel(modelUrl){
   animate();
 }
 
-loadModel("/static/generation.glb");
+loadModel("/static/generation.obj");

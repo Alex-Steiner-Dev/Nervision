@@ -11,9 +11,10 @@ import numpy as np
 from model import Generator
 import open3d as o3d
 
-Generator = Generator(num_points=2048).cuda()
+Generator = Generator().cuda()
 
-model_path = "../AI/TrainedModels/generation2.pt" 
+model_path = "../AI/TrainedModels/model.pt" 
+
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 

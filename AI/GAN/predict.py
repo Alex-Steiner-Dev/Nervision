@@ -13,7 +13,7 @@ model_path = "550.pt"
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
-z = torch.from_numpy(text_to_vec(process_text(correct_prompt("bench"))) + np.random.normal(0, 0.01, 128).astype(np.float64)).reshape(1,1,128).cuda().float()
+z = torch.from_numpy(text_to_vec(process_text(correct_prompt("bathtub"))) + np.random.normal(0, 0.01, 128).astype(np.float64)).reshape(1,1,128).cuda().float()
 
 with torch.no_grad():
     start = time.time()
