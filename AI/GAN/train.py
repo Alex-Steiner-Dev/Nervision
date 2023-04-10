@@ -19,7 +19,7 @@ class GAN():
         self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=args.batch_size)
         print("Training Dataset : {} prepared.".format(len(self.data)))
 
-        self.G = Generator(num_points=2048).to(args.device)      
+        self.G = Generator().to(args.device)      
         self.D = Discriminator(batch_size=args.batch_size, features=args.D_FEAT).to(args.device)             
 
         self.optimizerG = optim.Adam(self.G.parameters(), lr=args.lr, betas=(0, 0.99))
