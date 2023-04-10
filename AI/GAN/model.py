@@ -26,6 +26,7 @@ class Generator(nn.Module):
         self.n = num_points
         self.numgrid = int(2048 / m)
         self.dimofgrid = dimofgrid
+        self.meshgrid = [[-0.2, 0.1, 4], [-0.2, 0.1, 4], [-0.2, 0.1, 8]]
         self.m = m  
         self.codegenerator = CodeEnhancement()
 
@@ -47,7 +48,7 @@ class Generator(nn.Module):
 
     def forward(self, input):
         input = self.codegenerator(input)
-        input = input.transpose(1, 2).repeat(1, 1, self.m)  
+        input = input.transpose(1, 2).repeat(1, 1, self.m)
         
         batch_size = input.size(0)
         splitinput = input.view(batch_size, self.numgrid, int(512/self.numgrid), self.m)
@@ -55,10 +56,9 @@ class Generator(nn.Module):
 
         grid = torch.rand([1, 16, 3, 128]).to('cuda')
 
-        concate1 = torch.cat((splitinput, globalfeature, grid), dim=2).transpose(1,2).reshape(batch_size, int(512/self.numgrid)+self.dimofgrid+512, 2048)  
-        after_folding1 = self.mlp1(concate1)  
-
-        concate2 = torch.cat((splitinput, globalfeature, after_folding1.reshape(batch_size,3,self.numgrid,self.m).transpose(1,2)), dim=2).transpose(1,2).reshape(batch_size, int(512/self.numgrid)+3+512, 2048)  # [bs, 515, m]
+        concate1 = torch.cat((splitinput, globalfeature, grid), dim=2).transpose(1,2).reshape(batch_size, int(512/self.numgrid)+self.dimofgrid+512, 2048) 
+        after_folding1 = self.mlp1(concate1)
+        concate2 = torch.cat((splitinput, globalfeature, after_folding1.reshape(batch_size,3,self.numgrid,self.m).transpose(1,2)), dim=2).transpose(1,2).reshape(batch_size, int(512/self.numgrid)+3+512, 2048) 
         after_folding2 = self.mlp2(concate2)  
 
         return after_folding2.transpose(1, 2)  
