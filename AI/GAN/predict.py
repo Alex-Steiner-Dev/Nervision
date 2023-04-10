@@ -9,8 +9,7 @@ import numpy as np
 
 Generator = Generator(num_points=2048).cuda()
 
-model_path = "../TrainedModels/chair.pt" 
-model_path = "300.pt" 
+model_path = "500.pt" 
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 

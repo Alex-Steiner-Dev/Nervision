@@ -1,7 +1,5 @@
 import torch
 import torch.nn as nn
-import numpy as np
-import itertools
 
 class CodeEnhancement(nn.Module):
     def __init__(self):
@@ -25,11 +23,10 @@ class CodeEnhancement(nn.Module):
 class Generator(nn.Module):
     def __init__(self, num_points=2048, m=128, dimofgrid=3):
         super(Generator, self).__init__()
-        self.n = num_points  
+        self.n = num_points
         self.numgrid = int(2048 / m)
         self.dimofgrid = dimofgrid
         self.m = m  
-        self.meshgrid = [[-0.2, 0.1, 4], [-0.2, 0.1, 4], [-0.2, 0.1, 8]]
         self.codegenerator = CodeEnhancement()
 
         self.mlp1 = nn.Sequential(
@@ -41,51 +38,31 @@ class Generator(nn.Module):
         )
 
         self.mlp2 = nn.Sequential(
-            nn.Conv1d(int(512/self.numgrid)+self.dimofgrid+512, 256, 1),
+            nn.Conv1d(int(512/self.numgrid)+3+512, 256, 1),
             nn.LeakyReLU(negative_slope=0.2),
             nn.Conv1d(256, 64, 1),
             nn.LeakyReLU(negative_slope=0.2),
             nn.Conv1d(64, 3, 1),
         )
 
-
-    def build_grid(self, batch_size):
-        x = np.linspace(*self.meshgrid[0])
-        y = np.linspace(*self.meshgrid[1])
-        z = np.linspace(*self.meshgrid[2])
-        grid = np.array(list(itertools.product(x, y, z)))
-        grid = np.repeat(grid[np.newaxis, ...], repeats=batch_size, axis=0)
-        grid = torch.tensor(grid)
-
-        return grid.float()
-
     def forward(self, input):
         input = self.codegenerator(input)
-        input = input.transpose(1, 2).repeat(1, 1, self.m) 
+        input = input.transpose(1, 2).repeat(1, 1, self.m)  
         
         batch_size = input.size(0)
         splitinput = input.view(batch_size, self.numgrid, int(512/self.numgrid), self.m)
         globalfeature = input.view(batch_size, 1, 512, self.m).repeat(1,self.numgrid,1,1)
-        gridlist = []
 
-        for i in range(self.numgrid):
-            gridlist.append(self.build_grid(input.shape[0]).transpose(1, 2).view(batch_size, 1, self.dimofgrid, self.m))
-        
-        if torch.cuda.is_available():
-            for i in range(self.numgrid):
-                gridlist[i] = gridlist[i].cuda()    
-        
-        grid = gridlist[0]
-        for i in range(1,self.numgrid): 
-            grid = torch.cat((grid,gridlist[i]),axis=1)
-        concate1 = torch.cat((splitinput, globalfeature, grid), dim=2).transpose(1,2).reshape(batch_size, int(512/self.numgrid)+self.dimofgrid+512, 2048)
+        grid = torch.rand([1, 16, 3, 128]).to('cuda')
 
+        concate1 = torch.cat((splitinput, globalfeature, grid), dim=2).transpose(1,2).reshape(batch_size, int(512/self.numgrid)+self.dimofgrid+512, 2048)  
         after_folding1 = self.mlp1(concate1)  
+
         concate2 = torch.cat((splitinput, globalfeature, after_folding1.reshape(batch_size,3,self.numgrid,self.m).transpose(1,2)), dim=2).transpose(1,2).reshape(batch_size, int(512/self.numgrid)+3+512, 2048)  # [bs, 515, m]
         after_folding2 = self.mlp2(concate2)  
 
         return after_folding2.transpose(1, 2)  
-
+    
 class Discriminator(nn.Module):
     def __init__(self, batch_size, features, num_points=2048):
         self.batch_size = batch_size
@@ -93,7 +70,6 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
         self.numpoints = num_points
         self.fc_layers = nn.ModuleList([])
-        
         for inx in range(self.layer_num):
             self.fc_layers.append(nn.Conv1d(features[inx], features[inx+1], kernel_size=1, stride=1))
 
@@ -112,6 +88,6 @@ class Discriminator(nn.Module):
             feat = self.leaky_relu(feat)
 
         out, indices = self.maxpool(feat)
-        out = self.final_layer(out.squeeze(-1))
+        out = self.final_layer(out.squeeze(-1)) 
 
         return out, indices 
