@@ -29,10 +29,10 @@ class GAN():
         print("Network prepared.")
 
     def run(self):        
-        checkpoint = torch.load("300.pt")
+        checkpoint = torch.load("950.pt")
         self.G.load_state_dict(checkpoint['G_state_dict'])
 
-        for epoch in range(self.args.epochs):
+        for epoch in range(950, self.args.epochs):
             for _iter, data in enumerate(self.dataLoader):
                 point, label = data
                 point = point.to(self.args.device)

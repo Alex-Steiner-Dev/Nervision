@@ -9,11 +9,11 @@ import numpy as np
 
 Generator = Generator().cuda()
 
-model_path = "550.pt" 
+model_path = "950.pt" 
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
-z = torch.from_numpy(text_to_vec(process_text(correct_prompt("bathtub"))) + np.random.normal(0, 0.01, 128).astype(np.float64)).reshape(1,1,128).cuda().float()
+z = torch.from_numpy(text_to_vec(process_text(correct_prompt("bowl"))) + np.random.normal(0, 0.01, 128).astype(np.float64)).reshape(1,1,128).cuda().float()
 
 with torch.no_grad():
     start = time.time()
@@ -23,13 +23,13 @@ with torch.no_grad():
     points = sample.numpy().reshape(2048,3)
 
     end = time.time()
-    print(end - start)
+    print("Time taken:" +  str(end - start))
 
     mesh = generate_mesh(points)
 
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(points)
-    
+
     o3d.io.write_triangle_mesh("mesh.obj", mesh)
 
     o3d.visualization.draw_geometries([pcd])

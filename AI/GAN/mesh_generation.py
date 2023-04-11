@@ -22,6 +22,7 @@ def generate_mesh(points):
     for i in range(9):
         if not i == 0 and i % 2 == 0:
             pcd = mesh.sample_points_uniformly(number_of_points=4096*i)
+            pcd, _ = pcd.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
             
             mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(
                 pcd, alpha=.1
