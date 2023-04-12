@@ -32,7 +32,7 @@ class LoadDataset(data.Dataset):
         label = self.labels[idx]
 
         mesh = trimesh.load(obj_path, force="mesh")
-        points = mesh.sample(4096)
+        points = mesh.sample(2048)
         points = np.array(points, dtype=np.float32)
 
         return points, label

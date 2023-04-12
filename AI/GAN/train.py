@@ -1,5 +1,5 @@
+from matplotlib import pyplot as plt
 import torch
-import torch.nn as nn
 import torch.optim as optim
 from gradient_penalty import GradientPenalty
 
@@ -28,7 +28,10 @@ class GAN():
 
         print("Network prepared.")
 
-    def run(self):        
+    def run(self):      
+        G_losses = []
+        D_losses = []
+         
         for epoch in range(args.epochs):
             for _iter, data in enumerate(self.dataLoader):
                 point, label = data
@@ -42,14 +45,14 @@ class GAN():
                     self.D.zero_grad()
                     
                     with torch.no_grad():
-                        fake_point = self.G(z).reshape(1,4096,3)       
+                        fake_point = self.G(z).reshape(1,2048,3)       
                         
                     D_real = self.D(point)
                     D_realm = D_real.mean()
 
                     D_fake = self.D(fake_point)
                     D_fakem = D_fake.mean()
-
+                    
                     gp_loss = self.GP(self.D, point.data, fake_point.data)
                     
                     d_loss = -D_realm + D_fakem
@@ -59,13 +62,16 @@ class GAN():
 
                 self.G.zero_grad()
             
-                fake_point = self.G(z).reshape(1,4096,3)
+                fake_point = self.G(z).reshape(1,2048,3)
                 G_fake = self.D(fake_point)
                 G_fakem = G_fake.mean()
                 
                 g_loss = -G_fakem
                 g_loss.backward()
                 self.optimizerG.step()
+
+                G_losses.append(g_loss.item())
+                D_losses.append(d_loss.item())
 
                 print("[Epoch/Iter] ", "{:3} / {:3}".format(epoch, _iter),
                       "[ D_Loss ] ", "{: 7.6f}".format(d_loss), 
@@ -75,6 +81,16 @@ class GAN():
             if epoch % 500 == 0:
                 torch.save({'G_state_dict': self.G.state_dict()}, str(epoch)+'.pt')
                 print('Checkpoint is saved.')
+
+        plt.figure(figsize=(10,5))
+        plt.title("Generator and Discriminator Loss During Training")
+        plt.plot(G_losses,label="G")
+        plt.plot(D_losses,label="D")
+        plt.xlabel("iterations")
+        plt.ylabel("Loss")
+        plt.legend()
+        plt.show()
+        plt.savefig("graph.png")
 
 if __name__ == '__main__':
     args = Arguments().parser().parse_args()

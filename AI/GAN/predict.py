@@ -13,14 +13,14 @@ model_path = "2000.pt"
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
-z = torch.from_numpy(text_to_vec(process_text(correct_prompt("a medium quality bowl"))) + np.random.normal(0, 0.01, 128).astype(np.float64)).reshape(1,1,128).cuda().float()
+z = torch.from_numpy(text_to_vec(process_text(correct_prompt("a medium quality bowl"))) + np.random.normal(0, 0.01, 768).astype(np.float64)).reshape(1,1,768).cuda().float()
 
 with torch.no_grad():
     start = time.time()
 
     sample = Generator(z).cpu()
 
-    points = sample.numpy().reshape(4096,3)
+    points = sample.numpy().reshape(2048,3)
 
     end = time.time()
     print("Time taken:" +  str(end - start))

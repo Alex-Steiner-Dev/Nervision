@@ -11,14 +11,12 @@ class Generator(nn.Module):
             nn.LeakyReLU(negative_slope=0.2),
             nn.Conv1d(1024, 2048, 1, bias=False),
             nn.LeakyReLU(negative_slope=0.2),
-            nn.Conv1d(2048, 4096, 1, bias=False),
-            nn.LeakyReLU(negative_slope=0.2),
-            nn.Conv1d(4096, 4096*3, 1, bias=False),
+            nn.Conv1d(2048, 2048*3, 1, bias=False),
         )
 
     def forward(self, input):       
         input = input.reshape(1,768,1)
-        x = self.main(input).reshape(4096,3)  
+        x = self.main(input).reshape(2048,3)  
 
         return x
     
