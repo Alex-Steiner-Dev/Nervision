@@ -89,8 +89,8 @@ class GAN():
         plt.xlabel("iterations")
         plt.ylabel("Loss")
         plt.legend()
-        plt.show()
         plt.savefig("graph.png")
+        plt.show()
 
 if __name__ == '__main__':
     args = Arguments().parser().parse_args()
