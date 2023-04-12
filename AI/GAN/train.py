@@ -1,12 +1,11 @@
 import torch
+import torch.nn as nn
 import torch.optim as optim
+from gradient_penalty import GradientPenalty
 
 from model import Generator, Discriminator
 
-from gradient_penalty import GradientPenalty
-from data_benchmark import LoadDataset
-from stitchingloss import stitchloss
-
+from dataset import LoadDataset
 from arguments import Arguments
 
 import time
@@ -20,37 +19,35 @@ class GAN():
         print("Training Dataset : {} prepared.".format(len(self.data)))
 
         self.G = Generator().to(args.device)      
-        self.D = Discriminator(batch_size=args.batch_size, features=args.D_FEAT).to(args.device)             
+        self.D = Discriminator().to(args.device)             
 
         self.optimizerG = optim.Adam(self.G.parameters(), lr=args.lr, betas=(0, 0.99))
         self.optimizerD = optim.Adam(self.D.parameters(), lr=args.lr, betas=(0, 0.99))
 
-        self.GP = GradientPenalty(args.lambdaGP, gamma=1, device=args.device)
+        self.GP = GradientPenalty(10, gamma=1, device=args.device)
+
         print("Network prepared.")
 
     def run(self):        
-        checkpoint = torch.load("950.pt")
-        self.G.load_state_dict(checkpoint['G_state_dict'])
-
-        for epoch in range(950, self.args.epochs):
+        for epoch in range(args.epochs):
             for _iter, data in enumerate(self.dataLoader):
                 point, label = data
                 point = point.to(self.args.device)
+                z = label.to(self.args.device)
+                z = torch.reshape(z, (self.args.batch_size, 1, 768)).to(self.args.device)
+
                 start_time = time.time()
-       
-                for d_iter in range(self.args.D_iter):
+
+                for d_iter in range(5):
                     self.D.zero_grad()
-
-                    z = label.to(self.args.device)
-                    z = torch.reshape(z, (self.args.batch_size, 1, 128)).to(self.args.device)
-
+                    
                     with torch.no_grad():
-                        fake_point = self.G(z)         
-                        fake_point = (fake_point)
-
-                    D_real, real_index = self.D(point)
+                        fake_point = self.G(z).reshape(1,4096,3)       
+                        
+                    D_real = self.D(point)
                     D_realm = D_real.mean()
-                    D_fake, _ = self.D(fake_point)
+
+                    D_fake = self.D(fake_point)
                     D_fakem = D_fake.mean()
 
                     gp_loss = self.GP(self.D, point.data, fake_point.data)
@@ -60,23 +57,13 @@ class GAN():
                     d_loss_gp.backward()
                     self.optimizerD.step()
 
-                realvar = stitchloss(point, real_index)
-
                 self.G.zero_grad()
-
-                z = label.to(self.args.device)
-                z = torch.reshape(z, (self.args.batch_size, 1, 128)).to(self.args.device)
-
-                fake_point = self.G(z)
-                fake_point = (fake_point)
-                G_fake, fake_index = self.D(fake_point)
-                
-                fakevar = stitchloss(fake_point,fake_index)
+            
+                fake_point = self.G(z).reshape(1,4096,3)
+                G_fake = self.D(fake_point)
                 G_fakem = G_fake.mean()
                 
-                varloss = torch.pow((fakevar-realvar),2)
-                
-                g_loss = -G_fakem + 0.05*varloss
+                g_loss = -G_fakem
                 g_loss.backward()
                 self.optimizerG.step()
 
@@ -84,12 +71,9 @@ class GAN():
                       "[ D_Loss ] ", "{: 7.6f}".format(d_loss), 
                       "[ G_Loss ] ", "{: 7.6f}".format(g_loss), 
                       "[ Time ] ", "{:4.2f}s".format(time.time()-start_time))
-           
-            if epoch % 50 == 0:
-                torch.save({
-                        'G_state_dict': self.G.state_dict(),
-                }, str(epoch)+'.pt')
 
+            if epoch % 500 == 0:
+                torch.save({'G_state_dict': self.G.state_dict()}, str(epoch)+'.pt')
                 print('Checkpoint is saved.')
 
 if __name__ == '__main__':
