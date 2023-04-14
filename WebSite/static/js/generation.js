@@ -18,7 +18,7 @@ function loadModel(modelUrl){
   const controls = new THREE.OrbitControls(camera, canvas);
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#FFFFFF');
+  scene.background = new THREE.Color('#000000');
 
   const ambientLight = new THREE.AmbientLight(0xffffff, 1)
   scene.add(ambientLight)
@@ -28,16 +28,8 @@ function loadModel(modelUrl){
   loader.load(modelUrl, (obj) => {
     const model = obj;
 
-    var gradientTexture = new THREE.TextureLoader().load( '/static/texture.jpg' );
-
-    var material = new THREE.MeshStandardMaterial( {
-        map: gradientTexture,
-        metalness: 0.5,
-        roughness: 0.5
-    } );
-
     obj.traverse( function ( child ) {
-      child.material = material
+      child.material = new THREE.MeshPhongMaterial({shininess: 1});
     });
 
     model.scale.set(7, 7, 7);
@@ -58,4 +50,4 @@ function loadModel(modelUrl){
   animate();
 }
 
-loadModel("/static/generation.obj");
+loadModel("generation.obj");

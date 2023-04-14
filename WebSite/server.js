@@ -6,6 +6,8 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 
+const child_process = require('child_process');
+
 require('dotenv').config()
 
 const app = express();
@@ -108,7 +110,22 @@ app.get('/generation', function(req, res){
         res.render('generation');
     }
     else{
-        res.render('index')
+        res.render('index');
+    }
+});
+
+app.post('/generation', function(req, res){
+    if(req.session.mail != null){
+        child_process.exec('python predict.py', function (err){
+            if (err) {
+                console.log(err.code);
+            }
+        });
+
+        res.render('generated');
+    }
+    else{
+        res.render('index');
     }
 });
 
