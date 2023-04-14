@@ -19,7 +19,7 @@ checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
 def generate(text):
-    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text))) + np.random.normal(0, 0.01, 128).astype(np.float64)).reshape(1,1,128).cuda().float()
+    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text))) + np.random.normal(0, 0.01, 768).astype(np.float64)).reshape(1,1,768).cuda().float()
 
     with torch.no_grad():
         sample = Generator(z).cpu()
