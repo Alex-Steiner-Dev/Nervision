@@ -82,7 +82,25 @@ app.get('/logout', function(req, res){
     req.session.mail = null;
     req.session.password = null;
 
-    res.render('index');
+    res.render('login');
+});
+
+app.post('/login', async function(req, res){
+    const mail = req.body.mail;
+    const psw = req.body.psw;
+
+    users.find({ mail: mail, psw:psw}).then(function(x){
+        if(x.length != 0){
+            req.session.mail = mail;
+            req.session.psw = psw;
+
+            res.render('index-logged');
+        }
+        else{
+            res.send('Wrong data');
+        }
+    });
+
 });
 
 app.get('/generation', function(req, res){
@@ -95,7 +113,9 @@ app.get('/generation', function(req, res){
 });
 
 app.get('/download', function(req, res){
-    var path = 'static/generation.glb';
+    var data =fs.readFileSync('static/generation.obj');
+    res.contentType("application/obj");
+    res.send(data);
 });
 
 app.listen(port=8080, function(){
