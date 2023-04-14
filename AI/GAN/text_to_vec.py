@@ -1,14 +1,18 @@
-from sentence_transformers import SentenceTransformer
+
 import tensorflow as tf
 from autocorrect import Speller
 import string
 import os
 
-
+import tensorflow as tf
+import tensorflow_hub as hub
+  
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
-model = SentenceTransformer('bert-base-nli-mean-tokens')
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+tf.config.set_visible_devices([], 'GPU')
+embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
 
 #nltk.download('stopwords')
 #nltk.download('punkt')
@@ -35,7 +39,6 @@ def correct_prompt(sentece):
 
 def text_to_vec(sentence):
     sentence = [' '.join([str(x) for x in sentence])]
-
-    embedding = model.encode(sentence)[0]
+    embedding = embed(sentence)[0].numpy()
 
     return embedding

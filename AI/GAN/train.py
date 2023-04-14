@@ -37,7 +37,7 @@ class GAN():
                 point, label = data
                 point = point.to(self.args.device)
                 z = label.to(self.args.device)
-                z = torch.reshape(z, (self.args.batch_size, 1, 768)).to(self.args.device)
+                z = torch.reshape(z, (self.args.batch_size, 1, 512)).to(self.args.device)
 
                 start_time = time.time()
 
@@ -74,11 +74,11 @@ class GAN():
                 D_losses.append(d_loss.item())
 
                 print("[Epoch/Iter] ", "{:3} / {:3}".format(epoch, _iter),
-                      "[ D_Loss ] ", "{: 7.6f}".format(d_loss_gp), 
+                      "[ D_Loss ] ", "{: 7.6f}".format(d_loss), 
                       "[ G_Loss ] ", "{: 7.6f}".format(g_loss), 
                       "[ Time ] ", "{:4.2f}s".format(time.time()-start_time))
 
-            if epoch % 50 == 0:
+            if epoch % 500 == 0:
                 torch.save({'G_state_dict': self.G.state_dict()}, str(epoch)+'.pt')
                 print('Checkpoint is saved.')
 

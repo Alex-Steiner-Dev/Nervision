@@ -9,11 +9,11 @@ import numpy as np
 
 Generator = Generator().cuda()
 
-model_path = "50.pt" 
+model_path = "1000.pt" 
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
-z = torch.from_numpy(text_to_vec(process_text(correct_prompt("a medium quality bowl"))) + np.random.normal(0, 0.01, 768).astype(np.float64)).reshape(1,1,768).cuda().float()
+z = torch.from_numpy(text_to_vec(process_text(correct_prompt("bathtub round and smooth inside"))) + np.random.normal(0, 0.01, 512).astype(np.float64)).reshape(1,1,512).cuda().float()
 
 with torch.no_grad():
     start = time.time()
