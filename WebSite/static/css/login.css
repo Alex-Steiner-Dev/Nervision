@@ -29,7 +29,7 @@
 .mail-form-input{
     margin-top: 20px;
 
-    width: 200px;
+    width: 300px;
     font-size: medium;
     border: 2px solid black;
     border-radius: 5px;
@@ -38,7 +38,7 @@
 .psw-form-input{
     margin-bottom: 20px;
 
-    width: 200px;
+    width: 300px;
     font-size: medium;
     border: 2px solid black;
     border-radius: 5px;
