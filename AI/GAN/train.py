@@ -15,7 +15,7 @@ class GAN():
         self.args = args
       
         self.data = LoadDataset(data_dir=args.dataset_path)
-        self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=args.batch_size)
+        self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=args.batch_size, pin_memory=True, num_workers=4)
         print("Training Dataset : {} prepared.".format(len(self.data)))
 
         self.G = Generator().to(args.device)      
@@ -78,7 +78,7 @@ class GAN():
                       "[ G_Loss ] ", "{: 7.6f}".format(g_loss), 
                       "[ Time ] ", "{:4.2f}s".format(time.time()-start_time))
 
-            if epoch % 500 == 0:
+            if epoch % 50 == 0:
                 torch.save({'G_state_dict': self.G.state_dict()}, str(epoch)+'.pt')
                 print('Checkpoint is saved.')
 
@@ -86,7 +86,7 @@ class GAN():
         plt.title("Generator and Discriminator Loss During Training")
         plt.plot(G_losses,label="G")
         plt.plot(D_losses,label="D")
-        plt.xlabel("iterations")
+        plt.xlabel("Iterations")
         plt.ylabel("Loss")
         plt.legend()
         plt.savefig("graph.png")
