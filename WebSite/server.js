@@ -7,7 +7,6 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 
 const {PythonShell} =require('python-shell');
-const LoadingScreenPlugin = require('loading-screen');
 
 require('dotenv').config()
 
@@ -119,14 +118,15 @@ app.post('/generation', async function(req, res){
     if(req.session.mail != null){
         var random = Math.random().toString(36).replace('.','-') + Math.random().toString(36).replace('.','-');
 
+        res.render('generated', {random : random});
+
         let options = {
             mode: 'text',
             pythonOptions: ['-u'],
             args: [req.body.input, random]
         };
-         
+
         await PythonShell.run('predict.py', options)
-        res.render('generated', {random : random});
     }
     else{
         res.render('index');

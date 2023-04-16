@@ -29,9 +29,9 @@ function loadModel(modelUrl){
     const model = obj;
 
     var material = new THREE.MeshBasicMaterial({
-      color: 0x0095DD,
+      color: 0x000000,
       wireframe: true,
-      wireframeLinewidth: 2
+      wireframeLinewidth: 5
     });
 
     obj.traverse( function ( child ) {
