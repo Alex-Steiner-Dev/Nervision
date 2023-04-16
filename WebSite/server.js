@@ -6,7 +6,8 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 
-const child_process = require('child_process');
+const {PythonShell} =require('python-shell');
+const LoadingScreenPlugin = require('loading-screen');
 
 require('dotenv').config()
 
@@ -114,15 +115,18 @@ app.get('/generation', function(req, res){
     }
 });
 
-app.post('/generation', function(req, res){
+app.post('/generation', async function(req, res){
     if(req.session.mail != null){
-        child_process.exec('python predict.py', function (err){
-            if (err) {
-                console.log(err.code);
-            }
-        });
+        var random = Math.random().toString(36).replace('.','-') + Math.random().toString(36).replace('.','-');
 
-        res.render('generated');
+        let options = {
+            mode: 'text',
+            pythonOptions: ['-u'],
+            args: [req.body.input, random]
+        };
+         
+        await PythonShell.run('predict.py', options)
+        res.render('generated', {random : random});
     }
     else{
         res.render('index');

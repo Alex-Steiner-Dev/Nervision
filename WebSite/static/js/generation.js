@@ -18,7 +18,7 @@ function loadModel(modelUrl){
   const controls = new THREE.OrbitControls(camera, canvas);
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#000000');
+  scene.background = new THREE.Color('#FFFFFF');
 
   const ambientLight = new THREE.AmbientLight(0xffffff, 1)
   scene.add(ambientLight)
@@ -28,8 +28,14 @@ function loadModel(modelUrl){
   loader.load(modelUrl, (obj) => {
     const model = obj;
 
+    var material = new THREE.MeshBasicMaterial({
+      color: 0x0095DD,
+      wireframe: true,
+      wireframeLinewidth: 2
+    });
+
     obj.traverse( function ( child ) {
-      child.material = new THREE.MeshPhongMaterial({shininess: 1});
+      child.material = material;
     });
 
     model.scale.set(7, 7, 7);
@@ -49,5 +55,3 @@ function loadModel(modelUrl){
 
   animate();
 }
-
-loadModel("generation.obj");

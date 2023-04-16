@@ -7,6 +7,9 @@
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
-    "mongoose": "^7.0.3"
+    "loading-screen": "^2.1.0",
+    "mongoose": "^7.0.3",
+    "python-shell": "^5.0.0",
+    "webpack": "^5.79.0"
   }
 }

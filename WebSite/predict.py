@@ -19,7 +19,7 @@ checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
 def generate(text):
-    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text))) + np.random.normal(0, 0.01, 768).astype(np.float64)).reshape(1,1,768).cuda().float()
+    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text))) + np.random.normal(0, 0.01, 512).astype(np.float64)).reshape(1,1,512).cuda().float()
 
     with torch.no_grad():
         sample = Generator(z).cpu()
@@ -28,4 +28,6 @@ def generate(text):
 
         mesh = generate_mesh(points)
 
-        o3d.io.write_triangle_mesh("static/generation.obj", mesh)
+        o3d.io.write_triangle_mesh("static/generations/generation_" + sys.argv[2] + ".obj", mesh)
+
+generate(sys.argv[1])
