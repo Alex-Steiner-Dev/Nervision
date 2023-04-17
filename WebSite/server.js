@@ -110,7 +110,7 @@ app.get('/generation', function(req, res){
         res.render('generation');
     }
     else{
-        res.render('index');
+        res.render('login');
     }
 });
 

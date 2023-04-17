@@ -4,6 +4,7 @@
 	<title>Nerve Vision | Generate</title>
 	<link type="text/css" href="/css/generation.css" rel="stylesheet"/>
 	<link type="text/css" href="/css/main.css" rel="stylesheet"/>
+	<link type="text/css" href="/css/index.css" rel="stylesheet"/>
 </head>
 <body>
     <ul>
@@ -12,5 +13,23 @@
         <li><a href="/about">About</a></li>
         <li class="signup"><a href="/logout">Log Out</a></li>
     </ul>
+
+    <div class="parent">
+        <div class="child" style="width: 50%;">
+            <h1 class="title">Introducing Nervision</h1>
+
+            <p class="info">Our idea is a website that utilises natural language processing to allow users to create a 3D model by simply describing what they want. The website would have a vast library of 3D scenery, including terrain; structures; vegetation; and more. Users could describe the environment they want in a text input, and the website would automatically generate the desired 3D scenery. The website could also take into account the attributes of the desired environment such as the weather, time of day and season. This would be a game-changer for the industry as it would greatly simplify the process of creating large 3D models, making it accessible to a wider range of users.</p>
+            <button class="try-out"><a style="text-decoration: none; color: black;" href="/generation">Try Nervision</a></button>
+        </div>
+
+        <div class="child" style="width: 43%; height: auto; background-color: black; margin-left: 1%;">
+            <canvas id="canvas" style="height: 200%;"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.131.2/build/three.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/loaders/OBJLoader.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/controls/OrbitControls.js"></script>
+
 </body>
 </html>
