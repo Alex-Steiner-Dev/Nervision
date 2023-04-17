@@ -1,0 +1,34 @@
+.title{
+    margin-left: 2%;
+    font-size: 100px;
+    margin-right: 50%;
+}
+
+.info{
+    margin-top: -3%;
+    margin-left: 2%;
+    line-height: 30px;
+    text-align: justify;
+    text-justify: inter-word;
+}
+
+.try-out{
+    margin-left: 2%;
+    margin-bottom: 20px;
+
+    width: auto;
+    font-size: medium;
+    border: 2px solid black;
+    border-radius: 5px;
+}
+
+.canvas{
+    margin-left: 50%;
+}
+
+.child {
+    display: inline-block;
+    border: 1px solid red;
+    padding: 1rem 1rem;
+    vertical-align: middle;
+  }
