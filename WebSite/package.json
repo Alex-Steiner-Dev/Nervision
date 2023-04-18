@@ -10,6 +10,7 @@
     "express-session": "^1.17.3",
     "loading-screen": "^2.1.0",
     "mongoose": "^7.0.3",
+    "paypal-rest-sdk": "^1.8.1",
     "python-shell": "^5.0.0",
     "webpack": "^5.79.0"
   }

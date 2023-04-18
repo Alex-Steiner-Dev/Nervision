@@ -22,13 +22,15 @@
             <button class="try-out"><a style="text-decoration: none; color: black;" href="/generation">Try Nervision</a></button>
         </div>
 
-        <div class="child" style="width: 43%; height: auto; background-color: black; margin-left: 1%;">
-            <canvas id="canvas" style="height: 200%;"></canvas>
+        <div class="child" style="width: 43%; background-color: black; margin-left: 1%;">
+            <canvas id="canvas" style="height: 0px;"></canvas>
         </div>
     </div>
 
+    <script src="js/load-models.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/three@0.131.2/build/three.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/loaders/OBJLoader.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/loaders/GLTFLoader.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/controls/OrbitControls.js"></script>
 
 </body>
