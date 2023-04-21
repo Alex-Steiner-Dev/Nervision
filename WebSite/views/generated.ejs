@@ -11,7 +11,7 @@
         <li><a href="/generation">Generate</a></li>
         <li><a href="/about">About</a></li>
         <li class="signup"><a href="/logout">Log Out</a></li>
-        <li class="signup"><a href="/download">Download</a></li>
+        <li id="download" class="signup"><a href="/download">Download</a></li>
     </ul>
 
     <div id="loader" class="loader"></div>
@@ -26,6 +26,7 @@
 
     <script>
         document.getElementById('canvas').style.visibility = "hidden";
+        document.getElementById('download').style.visibility = "hidden";
 
         function doesFileExist(urlToFile)
         {
@@ -44,6 +45,7 @@
             if(doesFileExist("generations/generation_" + "<%= random %>" + ".obj"))
             {
                 document.getElementById('canvas').style.visibility = "visible";
+                document.getElementById('download').style.visibility = "visible";
                 document.getElementById("loader").remove();
                 await loadModel("generations/generation_" + "<%= random %>" + ".obj");
                 clearInterval(interval)

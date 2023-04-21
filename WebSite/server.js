@@ -140,6 +140,18 @@ app.post('/generation', async function(req, res){
     }
 });
 
+app.get('/about',async function(req, res){
+    if(req.session.mail != null){  
+        users.find({ mail: req.session.mail, psw:req.session.psw}).then( function(x){
+            res.render('about-logged');
+        });
+    }
+
+    else{
+        res.render('about');
+    }
+});
+
 app.get('/download', function(req, res){
     var data =fs.readFileSync('static/generation.obj');
     res.contentType("application/obj");
