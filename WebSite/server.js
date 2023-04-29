@@ -119,10 +119,10 @@ app.get('/generation', function(req, res){
 app.post('/generation', async function(req, res){
     if(req.session.mail != null){
         var random = Math.random().toString(36).replace('.','-') + Math.random().toString(36).replace('.','-');
+        
+        req.session.zip = "/static/generations/".concat(random).concat(".zip")
 
         res.render('generated', {random : random});
-
-        req.session.zip = "static/generations/" + random + ".zip"
 
         let options = {
             mode: 'text',
@@ -151,9 +151,8 @@ app.get('/about',async function(req, res){
 
 app.get('/download', function(req, res){
     console.log(req.session.zip)
-    var data =fs.readFileSync(req.session.zip.toString());
-    res.contentType("application/zip");
-    res.send(data);
+    res.setHeader('Content-type','application/zip');
+    res.sendFile(req.session.zip);
 });
 
 app.listen(port=8080, function(){

@@ -1,0 +1,11 @@
+# wavefront mtl file written by the visualization toolkit
+
+newmtl mtl1
+Ka 0 0 0
+Kd 1 1 1
+Ks 0 0 0
+Ns 100
+Tr 1
+illum 3
+map_Kd C:\Users\Marco\Documents\Programmazione\Python\Nerve-Vision\WebSite\static\generations\0-eubae1keis0-bmfii2w4oip\modeltexture1.png
+
