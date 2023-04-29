@@ -14,7 +14,7 @@
         <li class="signup"><a href="/login">Login</a></li>
     </ul>
 
-    <div class="parent">
+    <div class="parent" style="top:50%; transform: translate3d(0%,-55%, 0); position: absolute;">
         <div class="child" style="width: 50%;">
             <h1 class="title">Introducing Nervision</h1>
 
@@ -22,14 +22,43 @@
             <button class="try-out"><a style="text-decoration: none; color: black;" href="/generation">Try Nervision</a></button>
         </div>
 
-        <div class="child" style="width: 43%; height: auto; background-color: black; margin-left: 1%;">
-            <canvas id="canvas" style="height: 200%;"></canvas>
+        <div class="child" style="width: 45%;">
+            <div class="slideshow-container">
+                <br><br><br><br><br><br>
+
+                <div class="mySlides fade">
+                  <img src="https://i.all3dp.com/wp-content/uploads/2020/02/25174355/Wireframe.png" style="width:100%">
+                </div>
+                
+                <div class="mySlides fade">
+                  <img src="https://i.all3dp.com/wp-content/uploads/2020/02/25174355/Wireframe.png" style="width:100%">
+                </div>
+                
+                <div class="mySlides fade">
+                  <img src="https://i0.wp.com/news.productioncrate.com/wp-content/uploads/2022/02/FREE_3D_MODELS_THUMBNAIL.jpg?fit=1030%2C579&ssl=1" style="width:100%">
+                </div>
+                
+            </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/three@0.131.2/build/three.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/loaders/OBJLoader.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        let slideIndex = 0;
+        showSlides();
+        
+        function showSlides() {
+          let i;
+          let slides = document.getElementsByClassName("mySlides");
+          for (i = 0; i < slides.length; i++) {
+            slides[i].style.display = "none";  
+          }
+          slideIndex++;
+          if (slideIndex > slides.length) {slideIndex = 1}    
+   
+          slides[slideIndex-1].style.display = "block";  
 
+          setTimeout(showSlides, 2000); 
+        }
+    </script>
 </body>
 </html>

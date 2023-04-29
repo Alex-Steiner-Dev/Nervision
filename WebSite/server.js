@@ -120,7 +120,7 @@ app.post('/generation', async function(req, res){
     if(req.session.mail != null){
         var random = Math.random().toString(36).replace('.','-') + Math.random().toString(36).replace('.','-');
         
-        req.session.zip = "/static/generations/".concat(random).concat(".zip")
+        req.session.gltf = "/static/generations/".concat(random).concat("/model.gltf")
 
         res.render('generated', {random : random});
 
@@ -150,9 +150,8 @@ app.get('/about',async function(req, res){
 });
 
 app.get('/download', function(req, res){
-    console.log(req.session.zip)
-    res.setHeader('Content-type','application/zip');
-    res.sendFile(req.session.zip);
+    res.setHeader('Content-type','application/gltf');
+    res.sendFile(req.session.gltf);
 });
 
 app.listen(port=8080, function(){

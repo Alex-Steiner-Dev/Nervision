@@ -22,22 +22,13 @@ function loadModel(modelUrl){
 
   const ambientLight = new THREE.AmbientLight(0xffffff, 1)
   scene.add(ambientLight)
+ 
+  const gltfLoader = new THREE.GLTFLoader();
 
-  const mtlLoader = new THREE.MTLLoader();
-
-  mtlLoader.load(modelUrl.replace(".obj", ".mtl"), function(materials) {
-    materials.preload();
-  
-    const objLoader = new THREE.OBJLoader();
-
-    objLoader.setMaterials(materials);
-
-    objLoader.load(modelUrl, function(object) {
-      scene.add(object);
-    });
+  gltfLoader.load(modelUrl, function(object) {
+    scene.add(object.scene);
   });
   
-
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio * 2); 
 

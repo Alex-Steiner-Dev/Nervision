@@ -19,8 +19,7 @@
     <canvas style="width: 100%; height: 100%; margin: auto; background-color: white;" id="canvas"></canvas>
 
     <script src="https://cdn.jsdelivr.net/npm/three@0.131.2/build/three.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/loaders/OBJLoader.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/loaders/MTLLoader.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/loaders/GLTFLoader.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/controls/OrbitControls.js"></script>
 
     <script src="/js/generation.js"></script>
@@ -43,19 +42,13 @@
         }
 
         async function check(){
-            if(doesFileExist("generations/" + "<%= random %>" + "/model.obj"))
+            if(doesFileExist("generations/" + "<%= random %>" + "/model.gltf"))
             {
-                if(doesFileExist("generations/" + "<%= random %>" + "/model.mtl"))
-                {
-                    if(doesFileExist("generations/" + "<%= random %>" + "/modeltexture1.png"))
-                    {
-                        document.getElementById('canvas').style.visibility = "visible";
-                        document.getElementById('download').style.visibility = "visible";
-                        document.getElementById("loader").remove();
-                        await loadModel("generations/generation_" + "<%= random %>" + ".obj");
-                        clearInterval(interval)
-                    }
-                }
+                document.getElementById('canvas').style.visibility = "visible";
+                document.getElementById('download').style.visibility = "visible";
+                document.getElementById("loader").remove();
+                await loadModel("generations/generation_" + "<%= random %>" + ".gltf");
+                clearInterval(interval)
             }
         }
 
