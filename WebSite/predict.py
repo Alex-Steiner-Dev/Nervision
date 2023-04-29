@@ -37,6 +37,9 @@ def generate(text):
         mesh.textures['texture'] = texture
         mesh.texture_map_to_plane(inplace=True)
 
-        mesh.save("static/generations/generation_" + sys.argv[2] + ".stl")
+        p = pv.Plotter()
+        p.add_mesh(mesh)
+
+        p.export_obj("static/generations/generation_" + sys.argv[2] + ".obj")
 
 generate(sys.argv[1])

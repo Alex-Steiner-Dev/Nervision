@@ -23,7 +23,7 @@ function loadModel(modelUrl){
   const ambientLight = new THREE.AmbientLight(0xffffff, 1)
   scene.add(ambientLight)
   
-  const loader = new THREE.STLLoader();
+  const loader = new THREE.OBJLoader();
 
   loader.load(modelUrl, (obj) => {
     const model = obj;
