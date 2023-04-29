@@ -11,7 +11,9 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+
 tf.config.set_visible_devices([], 'GPU')
+
 embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
 
 #nltk.download('stopwords')

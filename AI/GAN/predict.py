@@ -5,6 +5,7 @@ import open3d as o3d
 from text_to_vec import *
 import time
 
+import pyvista as pv
 import numpy as np
 
 Generator = Generator().cuda()
@@ -32,4 +33,12 @@ with torch.no_grad():
 
     o3d.io.write_triangle_mesh("mesh.obj", mesh)
 
-    o3d.visualization.draw_geometries([pcd])
+
+mesh = pv.read('mesh.obj')
+texture = pv.read_texture('texture.jpeg')
+
+mesh.textures['texture'] = texture
+mesh.texture_map_to_plane(inplace=True)
+
+mesh.plot()
+mesh.save('mesh_uv.stl')

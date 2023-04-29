@@ -7,6 +7,7 @@ from mesh_generation import generate_mesh
 from text_to_vec import *
 
 import numpy as np
+import pyvista as pv
 
 from model import Generator
 import open3d as o3d
@@ -28,6 +29,12 @@ def generate(text):
 
         mesh = generate_mesh(points)
 
-        o3d.io.write_triangle_mesh("static/generations/generation_" + sys.argv[2] + ".obj", mesh)
+        mesh = pv.read("static/generations/generation_" + sys.argv[2] + ".obj")
+        texture = pv.read_texture('texture.jpg')
+
+        mesh.textures['texture'] = texture
+        mesh.texture_map_to_plane(inplace=True)
+
+        mesh.plot()
 
 generate(sys.argv[1])

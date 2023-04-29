@@ -7,7 +7,6 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 
 const {PythonShell} =require('python-shell');
-const paypal = require('paypal-rest-sdk');
 
 require('dotenv').config()
 
@@ -20,12 +19,6 @@ app.use(session({secret: process.env.SECRET}));
 
 app.set('view engine', 'ejs'); 
 app.use(express.static(__dirname + '/static'));
-
-paypal.configure({
-  'mode': 'sandbox', //sandbox or live
-  'client_id': '####yourclientid######',
-  'client_secret': '####yourclientsecret#####'
-});
 
 const userSchema ={
     mail: String,
