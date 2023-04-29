@@ -8,6 +8,8 @@ const session = require('express-session');
 
 const {PythonShell} =require('python-shell');
 
+const fs = require("fs");
+
 require('dotenv').config()
 
 const app = express();
@@ -120,6 +122,8 @@ app.post('/generation', async function(req, res){
 
         res.render('generated', {random : random});
 
+        req.session.zip = "static/generations/" + random + ".zip"
+
         let options = {
             mode: 'text',
             pythonOptions: ['-u'],
@@ -146,8 +150,9 @@ app.get('/about',async function(req, res){
 });
 
 app.get('/download', function(req, res){
-    var data =fs.readFileSync('static/generation.obj');
-    res.contentType("application/obj");
+    console.log(req.session.zip)
+    var data =fs.readFileSync(req.session.zip.toString());
+    res.contentType("application/zip");
     res.send(data);
 });
 

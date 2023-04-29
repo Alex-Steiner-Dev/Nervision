@@ -1,4 +1,5 @@
 import torch
+import os
 import sys
 
 sys.path.append("../AI/GAN/")
@@ -11,6 +12,8 @@ import pyvista as pv
 
 from model import Generator
 import open3d as o3d
+
+import zipfile
 
 Generator = Generator().cuda()
 
@@ -29,9 +32,11 @@ def generate(text):
 
         mesh = generate_mesh(points)
 
-        o3d.io.write_triangle_mesh("static/generations/generation_" + sys.argv[2] + ".obj", mesh)
+        os.mkdir("static/generations/" + sys.argv[2])
 
-        mesh = pv.read("static/generations/generation_" + sys.argv[2] + ".obj")
+        o3d.io.write_triangle_mesh("static/generations/" + sys.argv[2] + "/model.obj", mesh)
+
+        mesh = pv.read("static/generations/" + sys.argv[2] + "/model.obj")
         texture = pv.read_texture('texture.jpg')
 
         mesh.textures['texture'] = texture
@@ -40,6 +45,11 @@ def generate(text):
         p = pv.Plotter()
         p.add_mesh(mesh)
 
-        p.export_obj("static/generations/generation_" + sys.argv[2] + ".obj")
+        p.export_obj("static/generations/" + sys.argv[2] + "/model.obj")
+
+        with zipfile.ZipFile("static/generations/" + sys.argv[2] + ".zip", 'w') as zip:
+            zip.write("static/generations/" + sys.argv[2] + "/model.obj")
+            zip.write("static/generations/" + sys.argv[2] + "/model.mtl")
+            zip.write("static/generations/" + sys.argv[2] + "/modeltexture1.png")
 
 generate(sys.argv[1])

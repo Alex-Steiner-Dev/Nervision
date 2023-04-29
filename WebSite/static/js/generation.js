@@ -22,27 +22,21 @@ function loadModel(modelUrl){
 
   const ambientLight = new THREE.AmbientLight(0xffffff, 1)
   scene.add(ambientLight)
+
+  const mtlLoader = new THREE.MTLLoader();
+
+  mtlLoader.load(modelUrl.replace(".obj", ".mtl"), function(materials) {
+    materials.preload();
   
-  const loader = new THREE.OBJLoader();
+    const objLoader = new THREE.OBJLoader();
 
-  loader.load(modelUrl, (obj) => {
-    const model = obj;
+    objLoader.setMaterials(materials);
 
-    var material = new THREE.MeshBasicMaterial({
-      color: 0x000000,
-      wireframe: true,
-      wireframeLinewidth: 5
+    objLoader.load(modelUrl, function(object) {
+      scene.add(object);
     });
-
-    obj.traverse( function ( child ) {
-      child.material = material;
-    });
-
-    model.scale.set(7, 7, 7);
-    model.position.set(0, -1, 0);
-
-    scene.add(model);
   });
+  
 
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio * 2); 
