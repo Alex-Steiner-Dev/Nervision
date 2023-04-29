@@ -29,12 +29,14 @@ def generate(text):
 
         mesh = generate_mesh(points)
 
+        o3d.io.write_triangle_mesh("static/generations/generation_" + sys.argv[2] + ".obj", mesh)
+
         mesh = pv.read("static/generations/generation_" + sys.argv[2] + ".obj")
         texture = pv.read_texture('texture.jpg')
 
         mesh.textures['texture'] = texture
         mesh.texture_map_to_plane(inplace=True)
 
-        mesh.plot()
+        mesh.save("static/generations/generation_" + sys.argv[2] + ".stl")
 
 generate(sys.argv[1])
