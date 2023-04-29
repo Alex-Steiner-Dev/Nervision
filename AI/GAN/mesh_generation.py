@@ -27,7 +27,7 @@ def generate_mesh(points):
             mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(
                 pcd, alpha=.1
             )
-
+            
     mesh = mesh.filter_smooth_simple(number_of_iterations=15)
 
     return mesh

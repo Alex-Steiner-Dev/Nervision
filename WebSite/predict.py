@@ -43,7 +43,7 @@ def generate(text):
     top_k = 128
 
     image_stream = model.generate_image_stream(
-        text="lava texture",
+        text="4k check texture",
         seed=random.randint(0,768),
         grid_size = grid_size,
         progressive_outputs = progressive_outputs,

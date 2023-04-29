@@ -120,7 +120,7 @@ app.post('/generation', async function(req, res){
     if(req.session.mail != null){
         var random = Math.random().toString(36).replace('.','-') + Math.random().toString(36).replace('.','-');
         
-        req.session.gltf = "/static/generations/".concat(random).concat("/model.gltf")
+        req.session.gltf = "static/generations/".concat(random).concat("/model.gltf")
 
         res.render('generated', {random : random});
 
