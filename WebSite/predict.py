@@ -13,7 +13,7 @@ import numpy as np
 import pyvista as pv
 
 from model import Generator
-import open3d as o3d
+import cv2
 
 import random
 
@@ -55,6 +55,18 @@ def generate(text):
     for i in image_stream:
         i.save("texture.jpg")
 
+    image = cv2.imread('path/to/image.jpg')
+
+    sr = cv2.dnn_superres.DnnSuperResImpl_create()
+    path = "LapSRN_x8.pb"
+    
+    sr.readModel(path)
+    sr.setModel("lapsrn",8)
+    
+    result = sr.upsample(image)
+ 
+    cv2.imwrite('texture.jpg', result)
+
     with torch.no_grad():
         sample = Generator(z).cpu()
 
@@ -62,7 +74,7 @@ def generate(text):
 
         os.mkdir("static/generations/" + sys.argv[2])
 
-        mesh = pv.PolyData(points).delaunay_2d().extract_geometry().smooth(n_iter=100)
+        mesh = pv.PolyData(points).delaunay_3d().extract_geometry().smooth(n_iter=100)
         texture = pv.read_texture('texture.jpg')
 
         mesh.textures['texture'] = texture

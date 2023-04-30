@@ -24,7 +24,7 @@ function loadModel(modelUrl){
   renderer.setSize( window.innerWidth, window.innerHeight );
   document.body.appendChild( renderer.domElement );
 
-  const controls = new OrbitControls( camera, renderer.domElement );
+  const controls = new THREE.OrbitControls( camera, renderer.domElement );
   controls.addEventListener( 'change', render );
   controls.target.set( 0, 2, 0 );
   controls.update();
