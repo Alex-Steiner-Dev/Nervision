@@ -2,41 +2,49 @@
 const canvas = document.getElementById('canvas');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 
-const fov = 45;
-const aspect = canvas.width / canvas.height;
-const near = 0.1;
-const far = 100;
-
-
 // Load Model
 function loadModel(modelUrl){
-  const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+  camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 100 );
+  camera.position.set( 1.5, 4, 9 );
 
-  camera.position.set(0, 0, 15); 
-  camera.lookAt(new THREE.Vector3(0, 0, 0));
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color( 0xf6eedc );
 
-  const controls = new THREE.OrbitControls(camera, canvas);
+  const loader = new THREE.GLTFLoader();
 
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#FFFFFF');
+  loader.load( modelUrl , function ( gltf ) {
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 1)
-  scene.add(ambientLight)
- 
-  const gltfLoader = new THREE.GLTFLoader();
+    scene.add( gltf.scene );
 
-  gltfLoader.load(modelUrl, function(object) {
-    scene.add(object.scene);
-  });
-  
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(window.devicePixelRatio * 2); 
+    render();
 
-  function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
-    controls.update();
-  }
+  } );
 
-  animate();
+  renderer.setPixelRatio( window.devicePixelRatio );
+  renderer.setSize( window.innerWidth, window.innerHeight );
+  document.body.appendChild( renderer.domElement );
+
+  const controls = new OrbitControls( camera, renderer.domElement );
+  controls.addEventListener( 'change', render );
+  controls.target.set( 0, 2, 0 );
+  controls.update();
+
+  window.addEventListener( 'resize', onWindowResize );
+}
+
+function onWindowResize() {
+
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize( window.innerWidth, window.innerHeight );
+
+  render();
+
+}
+
+function render() {
+
+  renderer.render( scene, camera );
+
 }

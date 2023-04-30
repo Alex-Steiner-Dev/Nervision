@@ -4,7 +4,6 @@ import sys
 
 sys.path.append("../AI/GAN/")
 
-from mesh_generation import generate_mesh
 from text_to_vec import *
 
 from PIL import Image
@@ -43,7 +42,7 @@ def generate(text):
     top_k = 128
 
     image_stream = model.generate_image_stream(
-        text="4k check texture",
+        text=text + " 4k texture",
         seed=random.randint(0,768),
         grid_size = grid_size,
         progressive_outputs = progressive_outputs,
@@ -61,13 +60,9 @@ def generate(text):
 
         points = sample.numpy().reshape(2048,3)
 
-        mesh = generate_mesh(points)
-
         os.mkdir("static/generations/" + sys.argv[2])
 
-        o3d.io.write_triangle_mesh("static/generations/" + sys.argv[2] + "/model.obj", mesh)
-
-        mesh = pv.read("static/generations/" + sys.argv[2] + "/model.obj")
+        mesh = pv.PolyData(points).delaunay_2d().extract_geometry().smooth(n_iter=100)
         texture = pv.read_texture('texture.jpg')
 
         mesh.textures['texture'] = texture
@@ -77,6 +72,6 @@ def generate(text):
         p.add_mesh(mesh)
 
         p.export_gltf("static/generations/" + sys.argv[2] + "/model.gltf")
-        p.show()
+        #p.show()
 
 generate(sys.argv[1])
