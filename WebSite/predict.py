@@ -13,6 +13,8 @@ import numpy as np
 import pyvista as pv
 
 from model import Generator
+from mesh_generation import *
+
 import cv2
 
 import random
@@ -35,7 +37,7 @@ model = MinDalle(
 )
 
 def generate(text):
-    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text))) + np.random.normal(0, 0.01, 512).astype(np.float64)).reshape(1,1,512).cuda().float()
+    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,1,512).cuda().float()
 
     progressive_outputs = False
     seamless = True
@@ -45,7 +47,7 @@ def generate(text):
     top_k = 128
 
     image_stream = model.generate_image_stream(
-        text=text + " texture",
+        text=sys.argv[2] + " texture",
         seed=random.randint(0,768),
         grid_size = grid_size,
         progressive_outputs = progressive_outputs,
@@ -55,12 +57,12 @@ def generate(text):
         supercondition_factor = supercondition_factor,
     )
 
-    os.mkdir("static/generations/" + sys.argv[2])
+    os.mkdir("static/generations/" + sys.argv[3])
 
     for i in image_stream:
-        i.save("static/generations/" + sys.argv[2] + "/texture.jpg")
+        i.save("static/generations/" + sys.argv[3] + "/texture.jpg")
 
-    image = cv2.imread("static/generations/" + sys.argv[2] + '/texture.jpg')
+    image = cv2.imread("static/generations/" + sys.argv[3] + '/texture.jpg')
 
     sr = cv2.dnn_superres.DnnSuperResImpl_create()
     path = "LapSRN_x8.pb"
@@ -70,15 +72,19 @@ def generate(text):
     
     result = sr.upsample(image)
  
-    cv2.imwrite("static/generations/" + sys.argv[2] + '/texture.jpg', result)
+    cv2.imwrite("static/generations/" + sys.argv[3] + '/texture.jpg', result)
 
     with torch.no_grad():
         sample = Generator(z).cpu()
 
         points = sample.numpy().reshape(2048,3)
 
-        mesh = pv.PolyData(points).delaunay_3d().extract_geometry().smooth(n_iter=1000)
-        texture = pv.read_texture("static/generations/" + sys.argv[2] + '/texture.jpg')
+        mesh = generate_mesh(points)
+        o3d.io.write_triangle_mesh("static/generations/" + sys.argv[3] + "/model.obj", mesh)
+
+        mesh = pv.read("static/generations/" + sys.argv[3] + "/model.obj")
+
+        texture = pv.read_texture("static/generations/" + sys.argv[3] + '/texture.jpg')
 
         mesh.textures['texture'] = texture
         mesh.texture_map_to_plane(inplace=True)
@@ -86,8 +92,8 @@ def generate(text):
         p = pv.Plotter()
         p.add_mesh(mesh)
 
-        p.export_gltf("static/generations/" + sys.argv[2] + "/model.gltf")
-        #p.show()
+        p.export_gltf("static/generations/" + sys.argv[3] + "/model.gltf")
+        p.show()
 
 generate(sys.argv[1])
 print((time.time() - start_time))

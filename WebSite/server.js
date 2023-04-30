@@ -127,7 +127,7 @@ app.post('/generation', async function(req, res){
         let options = {
             mode: 'text',
             pythonOptions: ['-u'],
-            args: [req.body.input, random]
+            args: [req.body.object, req.body.attributes, random]
         };
 
         await PythonShell.run('predict.py', options)
