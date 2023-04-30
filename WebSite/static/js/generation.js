@@ -8,11 +8,20 @@ function loadModel(modelUrl){
   camera.position.set( 1.5, 4, 9 );
 
   scene = new THREE.Scene();
-  scene.background = new THREE.Color( 0xf6eedc );
+  scene.background = new THREE.Color( 0xffffff );
+
+  // Load Light
+  var ambientLight = new THREE.AmbientLight( 0xcccccc );
+  scene.add( ambientLight );
+        
+  var directionalLight = new THREE.DirectionalLight( 0xffffff );
+  directionalLight.position.set( 0, 1, 1 ).normalize();
+  scene.add( directionalLight );				
+
 
   const loader = new THREE.GLTFLoader();
 
-  loader.load( modelUrl , function ( gltf ) {
+  loader.load(modelUrl , function ( gltf ) {
 
     scene.add( gltf.scene );
 

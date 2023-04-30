@@ -16,6 +16,9 @@ from model import Generator
 import cv2
 
 import random
+import time
+
+start_time = time.time()
 
 Generator = Generator().cuda()
 
@@ -74,7 +77,7 @@ def generate(text):
 
         points = sample.numpy().reshape(2048,3)
 
-        mesh = pv.PolyData(points).delaunay_3d().extract_geometry().smooth(n_iter=100)
+        mesh = pv.PolyData(points).delaunay_3d().extract_geometry().smooth(n_iter=1000)
         texture = pv.read_texture("static/generations/" + sys.argv[2] + '/texture.jpg')
 
         mesh.textures['texture'] = texture
@@ -84,6 +87,7 @@ def generate(text):
         p.add_mesh(mesh)
 
         p.export_gltf("static/generations/" + sys.argv[2] + "/model.gltf")
-        p.show()
+        #p.show()
 
 generate(sys.argv[1])
+print((time.time() - start_time))

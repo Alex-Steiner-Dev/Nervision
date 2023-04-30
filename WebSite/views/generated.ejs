@@ -47,7 +47,7 @@
                 document.getElementById('canvas').style.visibility = "visible";
                 document.getElementById('download').style.visibility = "visible";
                 document.getElementById("loader").remove();
-                await loadModel("generations/generation_" + "<%= random %>" + ".gltf");
+                await loadModel("generations/" + "<%= random %>" + "/model.gltf");
                 clearInterval(interval)
             }
         }
