@@ -37,7 +37,7 @@ model = MinDalle(
 )
 
 def generate(text):
-    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,1,512).cuda().float()
+    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text))) + np.random.normal(0, 0.01, 512).astype(np.float64)).reshape(1,1,512).cuda().float()
 
     progressive_outputs = False
     seamless = True

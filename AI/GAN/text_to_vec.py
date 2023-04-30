@@ -39,8 +39,7 @@ def correct_prompt(sentece):
 
     return spell(sentece)
 
-def text_to_vec(sentence):
-    sentence = [' '.join([str(x) for x in sentence])]
-    embedding = embed(sentence)[0].numpy()
+def text_to_vec(sentences):
+    embedding = embed(sentences).numpy()
 
     return embedding
