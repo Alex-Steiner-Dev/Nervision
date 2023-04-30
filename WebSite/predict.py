@@ -42,7 +42,7 @@ def generate(text):
     top_k = 128
 
     image_stream = model.generate_image_stream(
-        text=text + " 4k texture",
+        text=text + " texture",
         seed=random.randint(0,768),
         grid_size = grid_size,
         progressive_outputs = progressive_outputs,
@@ -52,10 +52,12 @@ def generate(text):
         supercondition_factor = supercondition_factor,
     )
 
-    for i in image_stream:
-        i.save("texture.jpg")
+    os.mkdir("static/generations/" + sys.argv[2])
 
-    image = cv2.imread('path/to/image.jpg')
+    for i in image_stream:
+        i.save("static/generations/" + sys.argv[2] + "/texture.jpg")
+
+    image = cv2.imread("static/generations/" + sys.argv[2] + '/texture.jpg')
 
     sr = cv2.dnn_superres.DnnSuperResImpl_create()
     path = "LapSRN_x8.pb"
@@ -65,17 +67,15 @@ def generate(text):
     
     result = sr.upsample(image)
  
-    cv2.imwrite('texture.jpg', result)
+    cv2.imwrite("static/generations/" + sys.argv[2] + '/texture.jpg', result)
 
     with torch.no_grad():
         sample = Generator(z).cpu()
 
         points = sample.numpy().reshape(2048,3)
 
-        os.mkdir("static/generations/" + sys.argv[2])
-
         mesh = pv.PolyData(points).delaunay_3d().extract_geometry().smooth(n_iter=100)
-        texture = pv.read_texture('texture.jpg')
+        texture = pv.read_texture("static/generations/" + sys.argv[2] + '/texture.jpg')
 
         mesh.textures['texture'] = texture
         mesh.texture_map_to_plane(inplace=True)
@@ -84,6 +84,6 @@ def generate(text):
         p.add_mesh(mesh)
 
         p.export_gltf("static/generations/" + sys.argv[2] + "/model.gltf")
-        #p.show()
+        p.show()
 
 generate(sys.argv[1])
