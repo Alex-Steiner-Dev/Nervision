@@ -20,9 +20,9 @@ embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
 #nltk.download('punkt')
 
 def process_text(prompt):
-    prompt = prompt.lower()
-    prompt = remove_unicode(prompt)
-    prompt = remove_stop_words(prompt)
+    #prompt = prompt.lower()
+    #prompt = remove_unicode(prompt)
+    #prompt = remove_stop_words(prompt)
     return prompt
 
 def remove_stop_words(prompt):
