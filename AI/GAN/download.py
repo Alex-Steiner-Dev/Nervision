@@ -1,17 +1,19 @@
-import requests
+import json
+import objaverse
+import shutil
+import os
 
-data_dir = "dataset/"
+f = open("captions.json")
+data = json.load(f)
 
-ranges = []
+for i in data:
+    objects = objaverse.load_objects(
+        uids=[i]
+    )
 
-for i in range(0, 160):
-    if i < 10:
-        ranges.append("000-00" + str(i))
+f.close()
 
-    elif i < 100:
-        ranges.append("000-0" + str(i))
-
-    else:
-        ranges.append("000-" + str(i))
-
-print(ranges)
+for path, subdirs, files in os.walk("glbs/"):
+    for name in files:
+        print()
+        shutil.move(os.path.join(path, name), "dataset/" + name)

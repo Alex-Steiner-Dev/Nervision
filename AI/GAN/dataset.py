@@ -14,21 +14,14 @@ class LoadDataset(data.Dataset):
         self.objects = []
         self.labels = []
 
-        for txt_file in os.listdir(data_dir):
-            if txt_file.endswith('.txt'):
+        for glb_file in os.listdir(data_dir):
+            if glb_file.endswith('.glb'):
 
-                desc_path = os.path.join(data_dir, txt_file)
-                obj_path = os.path.join(data_dir, txt_file.replace('.txt', '.obj'))
+                glb_path = os.path.join(data_dir, glb_file)
+   
+                label = text_to_vec(process_text(f.read()))
 
-                mesh = o3d.io.read_triangle_mesh(obj_path.replace(".obj", ".glb"))
-                o3d.io.write_triangle_mesh(obj_path, mesh)
-
-                #os.remove(obj_path.replace("\\", "/").replace(".obj", ".glb"))
-
-                with open(desc_path, 'r', encoding="utf-8") as f:
-                    label = text_to_vec(process_text(f.read()))
-
-                self.objects.append(obj_path)
+                self.objects.append(glb_path)
                 self.labels.append(label)
     
     def __getitem__(self, idx):
