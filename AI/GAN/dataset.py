@@ -21,13 +21,10 @@ class LoadDataset(data.Dataset):
                 obj_path = obj_path.replace('\\', '/').replace('description', 'model')
 
                 with open(desc_path, 'r') as f:
-                    label = process_text(f.read())
-                    label = ' '.join([str(x) for x in label])
+                    label = text_to_vec(process_text(f.read()))
 
                 self.objects.append(obj_path)
                 self.labels.append(label)
-
-        self.labels = text_to_vec(self.labels)
 
     
     def __getitem__(self, idx):
