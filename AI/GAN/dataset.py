@@ -1,7 +1,6 @@
 import torch.utils.data as data
 import trimesh
 import json
-import os
 from text_to_vec import *
 import numpy as np
 import logging
@@ -17,15 +16,13 @@ class LoadDataset(data.Dataset):
         f = open("captions.json")
         self.data = json.load(f)
 
-        self.objects = []
-
-        for i in self.data:
-            self.objects.append(i)
-
         for i, itObject in enumerate(self.data):
             obj_path = "dataset/" + itObject['mid'] + ".obj"
-            
-            label = text_to_vec(process_text(itObject['desc']))
+
+            if itObject['desc'].split('.')[0].find(".") != -1:
+                label = text_to_vec(process_text(itObject['desc']))
+            else:
+                label = text_to_vec(process_text(itObject['desc'].split('.')[0]))
 
             mesh = trimesh.load(obj_path, force="mesh")
 
@@ -34,6 +31,8 @@ class LoadDataset(data.Dataset):
 
             self.points.append(point)
             self.labels.append(label)
+
+        f.close()
         
     def __getitem__(self, idx):
         points = self.points[idx]
