@@ -19,7 +19,7 @@
 
 .login-form{
     border: 2px solid black;
-    border-radius: 5px;
+    border-radius: 7px;
     width: 30%;
 
     margin-left: auto;
@@ -32,7 +32,7 @@
     width: 300px;
     font-size: medium;
     border: 2px solid black;
-    border-radius: 5px;
+    border-radius: 7px;
 }
 
 .psw-form-input{
@@ -41,7 +41,7 @@
     width: 300px;
     font-size: medium;
     border: 2px solid black;
-    border-radius: 5px;
+    border-radius: 7px;
 }
 
 a{
@@ -54,5 +54,5 @@ button{
     width: auto;
     font-size: medium;
     border: 2px solid black;
-    border-radius: 5px;
+    border-radius: 7px;
 }
