@@ -8,7 +8,7 @@ function loadModel(modelUrl){
   camera.position.set( 1.5, 4, 9 );
 
   scene = new THREE.Scene();
-  scene.background = new THREE.Color( 0xffffff );
+  scene.background = new THREE.Color( 0xFAF9F6 );
 
   // Load Light
   var ambientLight = new THREE.AmbientLight( 0xcccccc );

@@ -4,6 +4,12 @@
 	<title>Nerve Vision | Generate</title>
 	<link type="text/css" href="/css/generation.css" rel="stylesheet"/>
 	<link type="text/css" href="/css/main.css" rel="stylesheet"/>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.131.2/build/three.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/loaders/GLTFLoader.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/controls/OrbitControls.js"></script>
+
+    <script src="/js/generation.js"></script>
 </head>
 <body>
     <ul>
@@ -14,15 +20,11 @@
         <li id="download" class="signup"><a href="/download">Download</a></li>
     </ul>
 
-    <div id="loader" class="loader"></div>
+    <div id="progress">
+        <div id="progressBar">0%</div>
+    </div>
 
     <canvas style="width: 100%; height: 100%; margin: auto; background-color: white;" id="canvas"></canvas>
-
-    <script src="https://cdn.jsdelivr.net/npm/three@0.131.2/build/three.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/loaders/GLTFLoader.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/three@0.131.2/examples/js/controls/OrbitControls.js"></script>
-
-    <script src="/js/generation.js"></script>
 
     <script>
         document.getElementById('canvas').style.visibility = "hidden";

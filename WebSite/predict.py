@@ -47,7 +47,7 @@ def generate(text):
     top_k = 128
 
     image_stream = model.generate_image_stream(
-        text=sys.argv[2] + " texture",
+        text=sys.argv[1] + " texture",
         seed=random.randint(0,768),
         grid_size = grid_size,
         progressive_outputs = progressive_outputs,
@@ -57,12 +57,12 @@ def generate(text):
         supercondition_factor = supercondition_factor,
     )
 
-    os.mkdir("static/generations/" + sys.argv[3])
+    os.mkdir("static/generations/" + sys.argv[2])
 
     for i in image_stream:
-        i.save("static/generations/" + sys.argv[3] + "/texture.jpg")
+        i.save("static/generations/" + sys.argv[2] + "/texture.jpg")
 
-    image = cv2.imread("static/generations/" + sys.argv[3] + '/texture.jpg')
+    image = cv2.imread("static/generations/" + sys.argv[2] + '/texture.jpg')
 
     sr = cv2.dnn_superres.DnnSuperResImpl_create()
     path = "LapSRN_x8.pb"
@@ -72,7 +72,7 @@ def generate(text):
     
     result = sr.upsample(image)
  
-    cv2.imwrite("static/generations/" + sys.argv[3] + '/texture.jpg', result)
+    cv2.imwrite("static/generations/" + sys.argv[2] + '/texture.jpg', result)
 
     with torch.no_grad():
         sample = Generator(z).cpu()
@@ -80,11 +80,11 @@ def generate(text):
         points = sample.numpy().reshape(2048,3)
 
         mesh = generate_mesh(points)
-        o3d.io.write_triangle_mesh("static/generations/" + sys.argv[3] + "/model.obj", mesh)
+        o3d.io.write_triangle_mesh("static/generations/" + sys.argv[2] + "/model.obj", mesh)
 
-        mesh = pv.read("static/generations/" + sys.argv[3] + "/model.obj")
+        mesh = pv.read("static/generations/" + sys.argv[2] + "/model.obj")
 
-        texture = pv.read_texture("static/generations/" + sys.argv[3] + '/texture.jpg')
+        texture = pv.read_texture("static/generations/" + sys.argv[2] + '/texture.jpg')
 
         mesh.textures['texture'] = texture
         mesh.texture_map_to_plane(inplace=True)
@@ -92,8 +92,7 @@ def generate(text):
         p = pv.Plotter()
         p.add_mesh(mesh)
 
-        p.export_gltf("static/generations/" + sys.argv[3] + "/model.gltf")
-        p.show()
+        p.export_gltf("static/generations/" + sys.argv[2] + "/model.gltf")
 
 generate(sys.argv[1])
 print((time.time() - start_time))
