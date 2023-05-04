@@ -37,7 +37,7 @@ class GAN():
                 point, label = data
                 point = point.to(self.args.device)
                 z = label.to(self.args.device)
-                z = torch.reshape(z, (self.args.batch_size, 1, 512)).to(self.args.device)
+                z = torch.reshape(z, (self.args.batch_size, 1, 768)).to(self.args.device)
 
                 start_time = time.time()
 

@@ -5,6 +5,9 @@ class Generator(nn.Module):
     def __init__(self):
         super(Generator, self).__init__()
         self.main = nn.Sequential(
+            nn.Conv1d(768, 768, 1, bias=False),
+            nn.Conv1d(768, 512, 1, bias=False),
+           
             nn.Conv1d(512, 512, 1, bias=False),
             nn.LeakyReLU(negative_slope=0.2),
             nn.Conv1d(512, 1024, 1, bias=False),
