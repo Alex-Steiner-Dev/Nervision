@@ -1,4 +1,3 @@
-
 import tensorflow as tf
 from autocorrect import Speller
 import string
@@ -10,21 +9,19 @@ import tensorflow_hub as hub
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
-from sentence_transformers import SentenceTransformer
-
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
 tf.config.set_visible_devices([], 'GPU')
 
-model = SentenceTransformer('bert-base-nli-mean-tokens')
+embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
 
 #nltk.download('stopwords')
 #nltk.download('punkt')
 
 def process_text(prompt):
-    #prompt = prompt.lower()
-    #prompt = remove_unicode(prompt)
-    #prompt = remove_stop_words(prompt)
+    prompt = prompt.lower()
+    prompt = remove_unicode(prompt)
+    prompt = remove_stop_words(prompt)
     return prompt
 
 def remove_stop_words(prompt):
@@ -43,6 +40,6 @@ def correct_prompt(sentece):
 
 def text_to_vec(sentence):
     sentence = [' '.join([str(x) for x in sentence])]
-    embedding = model.encode(sentence)[0].numpy()
+    embedding = embed(sentence)[0].numpy()
 
     return embedding

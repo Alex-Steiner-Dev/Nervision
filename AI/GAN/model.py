@@ -4,10 +4,8 @@ import torch.nn as nn
 class Generator(nn.Module):
     def __init__(self):
         super(Generator, self).__init__()
+        self.batch_size = 16
         self.main = nn.Sequential(
-            nn.Conv1d(768, 768, 1, bias=False),
-            nn.Conv1d(768, 512, 1, bias=False),
-           
             nn.Conv1d(512, 512, 1, bias=False),
             nn.LeakyReLU(negative_slope=0.2),
             nn.Conv1d(512, 1024, 1, bias=False),
@@ -18,14 +16,13 @@ class Generator(nn.Module):
         )
 
     def forward(self, input):       
-        input = input.reshape(1,512,1)
-        x = self.main(input).reshape(2048,3)  
+        x = self.main(input).reshape(self.batch_size, 2048,3)  
 
         return x
     
 class Discriminator(nn.Module):
     def __init__(self, features=[3, 64, 128, 256, 512, 1024]):
-        self.batch_size = 1
+        self.batch_size = 16
         self.layer_num = len(features)-1
         super(Discriminator, self).__init__()
 

@@ -15,7 +15,7 @@ class GAN():
         self.args = args
       
         self.data = LoadDataset(data_dir=args.dataset_path)
-        self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=args.batch_size, pin_memory=True, num_workers=4)
+        self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=args.batch_size)
         print("Training Dataset : {} prepared.".format(len(self.data)))
 
         self.G = Generator().to(args.device)      
@@ -31,13 +31,13 @@ class GAN():
     def run(self):      
         G_losses = []
         D_losses = []
-         
+        
         for epoch in range(args.epochs):
             for _iter, data in enumerate(self.dataLoader):
                 point, label = data
                 point = point.to(self.args.device)
                 z = label.to(self.args.device)
-                z = torch.reshape(z, (self.args.batch_size, 1, 768)).to(self.args.device)
+                z = torch.reshape(z, (self.args.batch_size, 512, 1)).to(self.args.device)
 
                 start_time = time.time()
 
@@ -45,7 +45,7 @@ class GAN():
                     self.D.zero_grad()
                     
                     with torch.no_grad():
-                        fake_point = self.G(z).reshape(1,2048,3)       
+                        fake_point = self.G(z) 
                         
                     D_real = self.D(point)
                     D_realm = D_real.mean()
@@ -62,7 +62,7 @@ class GAN():
 
                 self.G.zero_grad()
             
-                fake_point = self.G(z).reshape(1,2048,3)
+                fake_point = self.G(z).reshape(self.args.batch_size,2048,3)
                 G_fake = self.D(fake_point)
                 G_fakem = G_fake.mean()
                 

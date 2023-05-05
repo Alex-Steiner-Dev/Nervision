@@ -3,6 +3,7 @@ import trimesh
 import json
 from text_to_vec import *
 import numpy as np
+import torch
 import logging
 
 logger = logging.getLogger("trimesh")
@@ -11,7 +12,7 @@ logger.setLevel(logging.ERROR)
 class LoadDataset(data.Dataset):
     def __init__(self, data_dir):
         self.points = []
-        self.labels = []
+        self.text_embeddings = []
 
         f = open("captions.json")
         self.data = json.load(f)
@@ -30,15 +31,15 @@ class LoadDataset(data.Dataset):
             point = np.array(point, dtype=np.float32)
 
             self.points.append(point)
-            self.labels.append(label)
+            self.text_embeddings.append(label)
 
         f.close()
         
     def __getitem__(self, idx):
-        points = self.points[idx]
-        label = self.labels[idx]
+        point_cloud = torch.tensor(self.points[idx])
+        text_embedding = torch.tensor(self.text_embeddings[idx])
 
-        return points, label
+        return point_cloud, text_embedding
     
     def __len__(self):
         return len(self.points)
