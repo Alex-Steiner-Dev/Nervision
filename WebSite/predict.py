@@ -37,7 +37,7 @@ model = MinDalle(
 )
 
 def generate(text):
-    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,1,512).cuda().float()
+    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,512,1).repeat(16, 1, 1).cuda().float()
 
     progressive_outputs = False
     seamless = True
@@ -77,7 +77,7 @@ def generate(text):
     with torch.no_grad():
         sample = Generator(z).cpu()
 
-        points = sample.numpy().reshape(2048,3)
+        points = sample.numpy()[0].reshape(2048,3)
 
         mesh = generate_mesh(points)
         o3d.io.write_triangle_mesh("static/generations/" + sys.argv[2] + "/model.obj", mesh)

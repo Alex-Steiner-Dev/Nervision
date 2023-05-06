@@ -5,7 +5,7 @@
     text-align: center;
 
     position: absolute;
-    top: 33%;
+    top: 35%;
     left: 0;
     margin-top: -50px;
     margin-left: auto;
@@ -56,16 +56,30 @@
 
 
 /* Loader */
-#progress {
-    width: 80%;
-    background-color: #ddd;
-}
+.loader {
+    border: 16px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 16px solid black;
+    width: 120px;
+    height: 120px;
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+    
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -50px;
+    margin-left: -50px;
+    width: 100px;
+    height: 100px;
+  }
+
+@-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+  }
   
-#progressBar {
-    width: 0%;
-    height: 30px;
-    background-color: black;
-    text-align: center;
-    line-height: 30px;
-    color: white;
-}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
