@@ -13,18 +13,11 @@ model_path = "200.pt"
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
-z = torch.from_numpy(text_to_vec(process_text(correct_prompt("lamp that is average size and average height"))).astype(np.float64)).reshape(1,512, 1).repeat(16, 1, 1).cuda().float()
+z = torch.from_numpy(text_to_vec(process_text(correct_prompt("clock that is average thickness and average size"))).astype(np.float64)).reshape(1,512, 1).repeat(16, 1, 1).cuda().float()
 
 with torch.no_grad():
     sample = Generator(z).cpu()
 
     points = sample.numpy()[0]
 
-    cloud = pv.PolyData(points)
-    cloud.plot()
-
-    mesh = cloud.delaunay_3d(alpha=.05)
-    mesh = mesh.extract_geometry()
-    mesh = mesh.smooth_taubin(n_iter=1000)
-
-    mesh.plot()
+    cloud = pv.PolyData(points).plot()
