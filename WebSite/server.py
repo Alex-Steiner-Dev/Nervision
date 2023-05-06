@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import torch
 import os
 import sys
@@ -21,6 +21,7 @@ model_path = "../AI/TrainedModels/model.pt"
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
+"""
 model = MinDalle(
     dtype=torch.float32, 
     device = 'cuda',
@@ -28,12 +29,26 @@ model = MinDalle(
     is_reusable=True
 )
 
+sr = cv2.dnn_superres.DnnSuperResImpl_create()
+path = "LapSRN_x8.pb"
+    
+sr.readModel(path)
+sr.setModel("lapsrn",8)
+
+"""
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/generate', methods=['POST'])
+def generate_model():
+    name = generate(request.form['object'])
+    url = "static/generations/" + name + "/" + "model.gltf"
+
+    return render_template('generated.html', url=url)
 
 def string_generator(size=12, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
@@ -42,6 +57,9 @@ def generate(text):
     z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,512,1).repeat(16, 1, 1).cuda().float()
     name = string_generator()
 
+    os.mkdir("static/generations/" + name)
+    
+    """
     image_stream = model.generate_image_stream(
         text="gold texture",
         seed=random.randint(0,768),
@@ -53,22 +71,16 @@ def generate(text):
         supercondition_factor = 16,
     )
 
-    os.mkdir("static/generations/" + name)
 
     for i in image_stream:
         i.save("static/generations/" + name + "/texture.jpg")
 
     image = cv2.imread("static/generations/" + name + '/texture.jpg')
-
-    sr = cv2.dnn_superres.DnnSuperResImpl_create()
-    path = "LapSRN_x8.pb"
-    
-    sr.readModel(path)
-    sr.setModel("lapsrn",8)
-    
     result = sr.upsample(image)
- 
+
     cv2.imwrite("static/generations/" + name + '/texture.jpg', result)
+
+    """
 
     with torch.no_grad():
         sample = Generator(z).cpu()
@@ -80,16 +92,20 @@ def generate(text):
 
         mesh = pv.read("static/generations/" + name + "/model.obj")
 
+        """
         texture = pv.read_texture("static/generations/" + name + '/texture.jpg')
 
         mesh.textures['texture'] = texture
         mesh.texture_map_to_plane(inplace=True)
+
+        """
 
         p = pv.Plotter()
         p.add_mesh(mesh)
 
         p.export_gltf("static/generations/" + name + "/model.gltf")
 
+    return name
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080, host='0.0.0.0')

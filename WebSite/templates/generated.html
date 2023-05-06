@@ -7,40 +7,6 @@
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js"></script>
 </head>
 <body>
-    <div id="loader" class="loader"></div>
-
-    <model-viewer id='canvas' src="shared-assets/models/NeilArmstrong.glb"shadow-intensity="1" camera-controls touch-action="pan-y"></model-viewer>
-    
-    <script>
-        document.getElementById('canvas').style.visibility = "hidden";
-        document.getElementById('download').style.visibility = "hidden";
-
-        function doesFileExist(urlToFile)
-        {
-            var xhr = new XMLHttpRequest();
-            xhr.open('HEAD', urlToFile, false);
-            xhr.send();
-
-            if (xhr.status == "404") {
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        async function check(){
-            if(doesFileExist("generations/" + "<%= random %>" + "/model.gltf"))
-            {
-                document.getElementById('canvas').style.visibility = "visible";
-                document.getElementById('download').style.visibility = "visible";
-                document.getElementById("loader").remove();
-                clearInterval(interval)
-            }
-        }
-
-        var interval = setInterval(check, 1000);
-
-    </script> 
-
+    <model-viewer id='canvas' src={{ url }} shadow-intensity="1" camera-controls touch-action="pan-y"></model-viewer>
 </body>
 </html>
