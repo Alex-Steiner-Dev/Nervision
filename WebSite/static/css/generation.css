@@ -1,85 +1,23 @@
-.generation{
-    width: 100%;
-    height: auto;
+model-viewer {
+    width: 1000px;
+    height: 600px;
 
-    text-align: center;
-
-    position: absolute;
-    top: 35%;
-    left: 0;
-    margin-top: -50px;
-    margin-left: auto;
-}
-
-.logo{
-    width: 30%;
-    height: auto;
-}
-
-.generation-input{
-    text-align: center;
-
-    margin-top: 10px;
-
-    width: 45%;
-    height: 35px;
-
-    font-size: medium;
-
-    border: 2px solid black;
-    border-radius: 10px;
-}
-
-.button-input{
-    text-align: center;
-
-    margin-top: 10px;
-
-    width: 6%;
-    height: 40px;
-
-    font-size: medium;
-
-    border: 2px solid black;
-    border-radius: 10px;
-}
-
-.info{
-    position: absolute;
-    bottom: 0;
-    left: 1%;
-}
-
-.info-text{
-    font-size: medium;
-}
-
-
-/* Loader */
-.loader {
-    border: 16px solid #f3f3f3;
-    border-radius: 50%;
-    border-top: 16px solid black;
-    width: 120px;
-    height: 120px;
-    -webkit-animation: spin 2s linear infinite;
-    animation: spin 2s linear infinite;
-    
     position: absolute;
     top: 50%;
     left: 50%;
-    margin-top: -50px;
-    margin-left: -50px;
-    width: 100px;
-    height: 100px;
-  }
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+}
 
-@-webkit-keyframes spin {
-    0% { -webkit-transform: rotate(0deg); }
-    100% { -webkit-transform: rotate(360deg); }
+.download-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px;
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
   }
   
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }

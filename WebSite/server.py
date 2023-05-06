@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file, session
 import torch
 import os
 import sys
@@ -38,6 +38,7 @@ sr.setModel("lapsrn",8)
 """
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your-secret-key'
 
 @app.route('/')
 def index():
@@ -47,8 +48,15 @@ def index():
 def generate_model():
     name = generate(request.form['object'])
     url = "static/generations/" + name + "/" + "model.gltf"
+    session['url'] = url
 
     return render_template('generated.html', url=url)
+
+@app.route('/download')
+def download_file():
+    path = session.get('url')
+
+    return send_file(path, as_attachment=True)
 
 def string_generator(size=12, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))

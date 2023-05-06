@@ -1,34 +1,45 @@
-.title{
-    margin-left: 2%;
-    font-size: 100px;
-    margin-right: 50%;
+.generation{
+    width: 100%;
+    height: auto;
+
+    text-align: center;
+
+    position: absolute;
+    top: 35%;
+    left: 0;
+    margin-top: -50px;
+    margin-left: auto;
 }
 
-.info{
-    margin-top: -3%;
-    margin-left: 2%;
-    line-height: 30px;
-    text-align: justify;
-    text-justify: inter-word;
+.logo{
+    width: 30%;
+    height: auto;
 }
 
-.try-out{
-    margin-left: 2%;
-    margin-bottom: 20px;
+.generation-input{
+    text-align: center;
 
-    width: auto;
+    margin-top: 10px;
+
+    width: 45%;
+    height: 35px;
+
     font-size: medium;
+
     border: 2px solid black;
     border-radius: 10px;
 }
 
-.canvas{
-    margin-left: 50%;
+.button-input{
+    text-align: center;
+
+    margin-top: 10px;
+
+    width: 6%;
+    height: 40px;
+
+    font-size: medium;
+
+    border: 2px solid black;
+    border-radius: 10px;
 }
-
-.child {
-    display: inline-block;
-    padding: 1rem 1rem;
-    vertical-align: middle;
-  }
-
