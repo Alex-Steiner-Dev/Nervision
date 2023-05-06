@@ -6,11 +6,9 @@ import sys
 sys.path.append("../AI/GAN/")
 
 from text_to_vec import *
-from min_dalle import MinDalle
 import pyvista as pv
 from model import Generator
 from mesh_generation import *
-import cv2
 import string
 import random
 
@@ -20,22 +18,6 @@ model_path = "../AI/TrainedModels/model.pt"
 
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
-
-"""
-model = MinDalle(
-    dtype=torch.float32, 
-    device = 'cuda',
-    is_mega = True, 
-    is_reusable=True
-)
-
-sr = cv2.dnn_superres.DnnSuperResImpl_create()
-path = "LapSRN_x8.pb"
-    
-sr.readModel(path)
-sr.setModel("lapsrn",8)
-
-"""
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'
@@ -66,29 +48,6 @@ def generate(text):
     name = string_generator()
 
     os.mkdir("static/generations/" + name)
-    
-    """
-    image_stream = model.generate_image_stream(
-        text="gold texture",
-        seed=random.randint(0,768),
-        grid_size = 1,
-        progressive_outputs = False,
-        is_seamless = True,
-        temperature=2,
-        top_k = int(128),
-        supercondition_factor = 16,
-    )
-
-
-    for i in image_stream:
-        i.save("static/generations/" + name + "/texture.jpg")
-
-    image = cv2.imread("static/generations/" + name + '/texture.jpg')
-    result = sr.upsample(image)
-
-    cv2.imwrite("static/generations/" + name + '/texture.jpg', result)
-
-    """
 
     with torch.no_grad():
         sample = Generator(z).cpu()
@@ -99,14 +58,6 @@ def generate(text):
         o3d.io.write_triangle_mesh("static/generations/" + name + "/model.obj", mesh)
 
         mesh = pv.read("static/generations/" + name + "/model.obj")
-
-        """
-        texture = pv.read_texture("static/generations/" + name + '/texture.jpg')
-
-        mesh.textures['texture'] = texture
-        mesh.texture_map_to_plane(inplace=True)
-
-        """
 
         p = pv.Plotter()
         p.add_mesh(mesh)
