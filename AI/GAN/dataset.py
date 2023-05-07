@@ -1,4 +1,5 @@
 import torch.utils.data as data
+from scipy.interpolate import interp1d
 import trimesh
 import json
 from text_to_vec import *
@@ -27,10 +28,12 @@ class LoadDataset(data.Dataset):
 
             mesh = trimesh.load(obj_path, force="mesh")
 
-            point = mesh.sample(2048)
-            point = np.array(point, dtype=np.float32)
+            point_cloud = mesh.sample(100000)
+            point_cloud = np.array(point_cloud, dtype=np.float32)
 
-            self.points.append(point)
+            point_cloud = point_cloud[np.random.choice(point_cloud.shape[0], 6144, replace=False), :]
+
+            self.points.append(point_cloud)
             self.text_embeddings.append(label)
 
         f.close()

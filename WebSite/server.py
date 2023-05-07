@@ -12,6 +12,8 @@ from mesh_generation import *
 import string
 import random
 
+from scipy.interpolate import interp1d
+
 Generator = Generator().cuda()
 
 model_path = "../AI/TrainedModels/model.pt" 
@@ -50,10 +52,10 @@ def generate(text):
     os.mkdir("static/generations/" + name)
 
     with torch.no_grad():
-        sample = Generator(z).cpu()
+        sample = Generator(z).cpu()[0]
 
-        points = sample.numpy()[0].reshape(2048,3)
-
+        points = sample.numpy().reshape(2048,3)
+        
         mesh = generate_mesh(points)
         o3d.io.write_triangle_mesh("static/generations/" + name + "/model.obj", mesh)
 
