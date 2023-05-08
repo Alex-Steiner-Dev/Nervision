@@ -133,3 +133,7 @@ WebSite/pretrained/dalle_bart_mega/decoder.pt
 WebSite/pretrained/dalle_bart_mega/encoder.pt
 WebSite/pretrained/dalle_bart_mega/vocab.json
 WebSite/pretrained/vqgan/detoker.pt
+*.pt
+*.pt
+AI/TrainedModels/model.pt
+AI/TrainedModels/model.pt

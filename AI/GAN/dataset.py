@@ -31,7 +31,7 @@ class LoadDataset(data.Dataset):
             point_cloud = mesh.sample(100000)
             point_cloud = np.array(point_cloud, dtype=np.float32)
 
-            point_cloud = point_cloud[np.random.choice(point_cloud.shape[0], 6144, replace=False), :]
+            point_cloud = point_cloud[np.random.choice(point_cloud.shape[0], 4096, replace=False), :]
 
             self.points.append(point_cloud)
             self.text_embeddings.append(label)

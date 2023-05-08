@@ -9,7 +9,7 @@ import tensorflow_hub as hub
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+#os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
 tf.config.set_visible_devices([], 'GPU')
 

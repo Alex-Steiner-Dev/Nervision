@@ -14,19 +14,16 @@ class Generator(nn.Module):
             nn.LeakyReLU(negative_slope=0.2),
             nn.Conv1d(2048, 4096, 1, bias=False),
             nn.LeakyReLU(negative_slope=0.2),
-            nn.Conv1d(4096, 6144, 1, bias=False),
-            nn.LeakyReLU(negative_slope=0.2),
-            nn.Conv1d(6144, 6144*3, 1, bias=False),
-            nn.LeakyReLU(negative_slope=0.2),
+            nn.Conv1d(4096, 4096*3, 1, bias=False),
         )
 
     def forward(self, input):       
-        x = self.main(input).reshape(self.batch_size, 6144,3)  
+        x = self.main(input).reshape(self.batch_size, 4096,3)  
 
         return x
     
 class Discriminator(nn.Module):
-    def __init__(self, features=[3, 64, 128, 256, 512, 1024, 2048, 4096]):
+    def __init__(self, features=[3, 64, 128, 256, 512, 1024, 2048]):
         self.batch_size = 16
         self.layer_num = len(features)-1
         super(Discriminator, self).__init__()
