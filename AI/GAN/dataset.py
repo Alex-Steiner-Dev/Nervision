@@ -28,10 +28,8 @@ class LoadDataset(data.Dataset):
 
             mesh = trimesh.load(obj_path, force="mesh")
 
-            point_cloud = mesh.sample(100000)
-            point_cloud = np.array(point_cloud, dtype=np.float32)
-
-            point_cloud = point_cloud[np.random.choice(point_cloud.shape[0], 4096, replace=False), :]
+            vertices, _ = trimesh.sample.sample_surface(mesh, count=4096)
+            point_cloud = np.array(vertices)
 
             self.points.append(point_cloud)
             self.text_embeddings.append(label)
