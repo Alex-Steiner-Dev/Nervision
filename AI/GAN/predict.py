@@ -9,7 +9,7 @@ import numpy as np
 
 Generator = Generator().cuda()
 
-model_path = "50.pt" 
+model_path = "../TrainedModels/model.pt" 
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
@@ -19,7 +19,8 @@ with torch.no_grad():
     sample = Generator(z).cpu()
 
     vertices = sample.numpy()[0]
+    point_cloud = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(vertices))
 
-    mesh = pv.PolyData(vertices)
+    mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(point_cloud, alpha=0.05)
 
-    mesh.plot()
+    o3d.visualization.draw_geometries([mesh])
