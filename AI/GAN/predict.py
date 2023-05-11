@@ -11,7 +11,7 @@ model_path = "400.pt"
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
-z = torch.from_numpy(text_to_vec(process_text(correct_prompt("straight chair that is average size and regular height and regular width"))).astype(np.float64)).reshape(1,512, 1).repeat(16, 1, 1).cuda().float()
+z = torch.from_numpy(text_to_vec(process_text(correct_prompt("cocktail table that is tall and square and average size"))).astype(np.float64)).reshape(1,512, 1).repeat(16, 1, 1).cuda().float()
 
 with torch.no_grad():
     sample = Generator(z).cpu()
@@ -29,4 +29,4 @@ with torch.no_grad():
     mesh.remove_duplicated_vertices()
     mesh.remove_non_manifold_edges()
 
-    o3d.visualization.draw_geometries([mesh, point_cloud])
+    o3d.visualization.draw_geometries([point_cloud])
