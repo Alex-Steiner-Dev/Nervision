@@ -54,7 +54,7 @@ def generate(text):
     with torch.no_grad():
         sample = Generator(z).cpu()[0]
 
-        points = sample.numpy().reshape(4096,3)
+        points = sample.numpy().reshape(2048,3)
         
         mesh = generate_mesh(points)
         o3d.io.write_triangle_mesh("static/generations/" + name + "/model.obj", mesh)

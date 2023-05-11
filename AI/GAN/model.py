@@ -8,22 +8,22 @@ class Generator(nn.Module):
         self.main = nn.Sequential(
             nn.Conv1d(512, 512, 1, bias=False),
             nn.LeakyReLU(negative_slope=0.2),
-            nn.Conv1d(512, 1024, 1, bias=False),
+            nn.Conv1d(512, 10240, 1, bias=False),
             nn.LeakyReLU(negative_slope=0.2),
-            nn.Conv1d(1024, 2048, 1, bias=False),
+            nn.Conv1d(10240, 20480, 1, bias=False),
             nn.LeakyReLU(negative_slope=0.2),
-            nn.Conv1d(2048, 4096, 1, bias=False),
+            nn.Conv1d(20480, 40960, 1, bias=False),
             nn.LeakyReLU(negative_slope=0.2),
-            nn.Conv1d(4096, 4096*3, 1, bias=False),
+            nn.Conv1d(40960, 40960*3, 1, bias=False),
         )
 
     def forward(self, input):       
-        x = self.main(input).reshape(self.batch_size, 4096,3)  
+        x = self.main(input).reshape(self.batch_size, 40960,3)  
 
         return x
     
 class Discriminator(nn.Module):
-    def __init__(self, features=[3, 64, 128, 256, 512, 1024, 2048]):
+    def __init__(self, features=[3, 640, 1280, 2560, 5120, 10240, 20480]):
         self.batch_size = 16
         self.layer_num = len(features)-1
         super(Discriminator, self).__init__()

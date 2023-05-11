@@ -62,7 +62,7 @@ class GAN():
 
                 self.G.zero_grad()
             
-                fake_point = self.G(z).reshape(self.args.batch_size,4096,3)
+                fake_point = self.G(z).reshape(self.args.batch_size,2048,3)
                 G_fake = self.D(fake_point)
                 G_fakem = G_fake.mean()
                 
