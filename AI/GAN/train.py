@@ -31,13 +31,8 @@ class GAN():
     def run(self):      
         G_losses = []
         D_losses = []
-
-        
-        model_path = "400.pt" 
-        checkpoint = torch.load(model_path)
-        self.G.load_state_dict(checkpoint['G_state_dict'])
-                
-        for epoch in range(400, args.epochs):
+      
+        for epoch in range(args.epochs):
             for _iter, data in enumerate(self.dataLoader):
                 point, label = data
                 point = point.to(self.args.device)
