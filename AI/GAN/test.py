@@ -1,24 +1,28 @@
 import open3d as o3d
 import trimesh
 import numpy as np
-import umap
+import pyvista as pv
 
-mesh = trimesh.load("dataset/40f1be4ede6113a2e03aea0698586c31.obj", force="mesh")
+mesh = trimesh.load("dataset/e71d05f223d527a5f91663a74ccd2338.obj", force="mesh")
 
-vertices, _ = trimesh.sample.sample_surface(mesh, count=5000)
+vertices, _ = trimesh.sample.sample_surface(mesh, count=50000)
 point_cloud_array = np.array(vertices, dtype=np.float16)
 
-umap_obj = umap.UMAP(n_components=3, n_neighbors=10)
-
-# Step 5: Fit and transform the data
-lower_dim_representation = umap_obj.fit_transform(point_cloud_array)
-
-# Step 7: Inverse transform
-original_dimension_representation = umap_obj.inverse_transform(lower_dim_representation)
+from sklearn.cluster import MiniBatchKMeans
 
 
-pcd = o3d.geometry.PointCloud()
-pcd.points = o3d.utility.Vector3dVector(original_dimension_representation)
-pcd.estimate_normals()
+def reduce_dimension(point_cloud, num_points):
+    kmeans = MiniBatchKMeans(n_clusters=num_points, random_state=0)
+    kmeans.fit(point_cloud)
 
-o3d.visualization.draw_geometries([pcd])
+    cluster_centers = kmeans.cluster_centers_
+
+    return cluster_centers
+
+
+reduced_points = reduce_dimension(point_cloud_array, num_points=2048)
+
+print(reduced_points.shape)
+
+
+pv.PolyData(reduced_points).delaunay_3d(.02).extract_geometry().plot()
