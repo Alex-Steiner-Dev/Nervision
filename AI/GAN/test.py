@@ -1,28 +1,17 @@
-import open3d as o3d
+import trimesh
 import trimesh
 import numpy as np
 import pyvista as pv
 
-mesh = trimesh.load("dataset/e71d05f223d527a5f91663a74ccd2338.obj", force="mesh")
 
-vertices, _ = trimesh.sample.sample_surface(mesh, count=50000)
-point_cloud_array = np.array(vertices, dtype=np.float16)
+mesh = trimesh.load("dataset/29876b641047897f9bbef973cc1034f9.obj", force="mesh")
 
-from sklearn.cluster import MiniBatchKMeans
+vertices, _ = trimesh.sample.sample_surface(mesh, count=2048)
+point_cloud_array = np.array(vertices, dtype=np.float32)
 
+mesh = pv.PolyData(point_cloud_array).delaunay_3d(.045).extract_geometry()
 
-def reduce_dimension(point_cloud, num_points):
-    kmeans = MiniBatchKMeans(n_clusters=num_points, random_state=0)
-    kmeans.fit(point_cloud)
-
-    cluster_centers = kmeans.cluster_centers_
-
-    return cluster_centers
-
-
-reduced_points = reduce_dimension(point_cloud_array, num_points=2048)
-
-print(reduced_points.shape)
-
-
-pv.PolyData(reduced_points).delaunay_3d(.02).extract_geometry().plot()
+p = pv.Plotter()
+p.add_mesh(mesh)
+p.export_gltf("model.gltf")
+p.show()
