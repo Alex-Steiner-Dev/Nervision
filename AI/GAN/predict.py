@@ -11,7 +11,7 @@ model_path = "150.pt"
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
-z = torch.from_numpy(text_to_vec(process_text(correct_prompt("coffee mug that is large and short "))).astype(np.float64)).reshape(1,512, 1).repeat(16, 1, 1).cuda().float()
+z = torch.from_numpy(text_to_vec(process_text(correct_prompt("table that is large and short "))).astype(np.float64)).reshape(1,512, 1).repeat(16, 1, 1).cuda().float()
 
 with torch.no_grad():
     sample = Generator(z).cpu()
