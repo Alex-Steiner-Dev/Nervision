@@ -57,9 +57,6 @@ def generate(text):
         points = sample.numpy().reshape(2048,3)
         
         mesh = generate_mesh(points)
-        o3d.io.write_triangle_mesh("static/generations/" + name + "/model.obj", mesh)
-
-        mesh = pv.read("static/generations/" + name + "/model.obj")
 
         p = pv.Plotter()
         p.add_mesh(mesh)
