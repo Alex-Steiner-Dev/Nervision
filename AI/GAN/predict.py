@@ -7,19 +7,15 @@ import pyvista as pv
 
 Generator = Generator().cuda()
 
-model_path = "50.pt" 
+model_path = "400.pt" 
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
-z = torch.from_numpy(text_to_vec(process_text(correct_prompt("cocktail table that is tall and square and average size"))).astype(np.float64)).reshape(1,512, 1).repeat(16, 1, 1).cuda().float()
+z = torch.from_numpy(text_to_vec(process_text(correct_prompt("floor lamp that is average size and average height"))).astype(np.float64)).reshape(1,512, 1).repeat(16, 1, 1).cuda().float()
 
 with torch.no_grad():
     sample = Generator(z).cpu()
 
     vertices = sample.numpy()[0]
 
-    mesh = pv.PolyData(vertices).delaunay_3d(.08).extract_geometry()
-
-    plotter = pv.Plotter()
-    plotter.add_mesh(mesh, color='lightblue')
-    plotter.show()
+    pv.PolyData(vertices).plot()
