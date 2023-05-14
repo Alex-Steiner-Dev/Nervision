@@ -59,8 +59,7 @@ def generate(text):
         mesh = generate_mesh(points)
 
         p = pv.Plotter()
-        p.add_mesh(mesh)
-
+        p.add_mesh(mesh, texture=True)
         p.export_gltf("static/generations/" + name + "/model.gltf")
 
     return name

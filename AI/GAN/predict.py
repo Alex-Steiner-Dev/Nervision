@@ -18,7 +18,7 @@ with torch.no_grad():
 
     vertices = sample.numpy()[0]
 
-    mesh = pv.PolyData(vertices).delaunay_3d(.045).extract_geometry()
+    mesh = pv.PolyData(vertices).delaunay_3d(.08).extract_geometry()
 
     plotter = pv.Plotter()
     plotter.add_mesh(mesh, color='lightblue')
