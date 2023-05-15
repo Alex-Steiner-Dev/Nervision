@@ -4,7 +4,7 @@ import numpy as np
 import pyvista as pv
 
 
-mesh = trimesh.load("dataset/f8d4e335655da8855e1d47baa7986b2b.obj", force="mesh")
+mesh = trimesh.load("dataset/e501ac06884534b5d5f962f170e40e8e.obj", force="mesh")
 
 vertices, _ = trimesh.sample.sample_surface(mesh, count=2048)
 point_cloud_array = np.array(vertices, dtype=np.float32)

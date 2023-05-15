@@ -12,8 +12,6 @@ from mesh_generation import *
 import string
 import random
 
-from scipy.interpolate import interp1d
-
 Generator = Generator().cuda()
 
 model_path = "../AI/TrainedModels/model.pt" 
@@ -46,7 +44,7 @@ def string_generator(size=12, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 def generate(text):
-    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,512,1).repeat(16, 1, 1).cuda().float()
+    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,512,1).repeat(128, 1, 1).cuda().float()
     name = string_generator()
 
     os.mkdir("static/generations/" + name)
