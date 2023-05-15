@@ -78,7 +78,7 @@ class GAN():
                       "[ G_Loss ] ", "{: 7.6f}".format(g_loss), 
                       "[ Time ] ", "{:4.2f}s".format(time.time()-start_time))
 
-            if epoch % 50 == 0:
+            if epoch % 500 == 0:
                 torch.save({'G_state_dict': self.G.state_dict()}, str(epoch)+'.pt')
                 print('Checkpoint is saved.')
 

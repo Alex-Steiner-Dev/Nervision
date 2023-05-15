@@ -7,11 +7,11 @@ import pyvista as pv
 
 Generator = Generator().cuda()
 
-model_path = "750.pt" 
+model_path = "30000.pt" 
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
-z = torch.from_numpy(text_to_vec(process_text(correct_prompt("table that is regular height and average size"))).astype(np.float64)).reshape(1,512, 1).repeat(128, 1, 1).cuda().float()
+z = torch.from_numpy(text_to_vec(process_text(correct_prompt("swivel chair that is average size and regular height and regular width"))).astype(np.float64)).reshape(1,512, 1).repeat(1, 1, 1).cuda().float()
 
 with torch.no_grad():
     sample = Generator(z).cpu()
