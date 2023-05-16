@@ -1,18 +1,15 @@
 import trimesh
 import trimesh
 import numpy as np
-import pyvista as pv
+import open3d as o3d
 
 
-mesh = trimesh.load("dataset/ac041c720dc66c06d1c83bc8b134e4d8.obj", force="mesh")
+mesh = trimesh.load("dataset/e71d05f223d527a5f91663a74ccd2338.obj", force="mesh")
 
 vertices, _ = trimesh.sample.sample_surface(mesh, count=2048)
 point_cloud_array = np.array(vertices, dtype=np.float32)
 
-mesh = pv.PolyData(point_cloud_array).delaunay_3d(.02).extract_geometry()
 
-p = pv.Plotter()
-p.add_mesh(mesh)
-p.export_gltf("model.gltf")
-
-pv.PolyData(point_cloud_array).plot()
+pcd = o3d.geometry.PointCloud()
+pcd.points = o3d.utility.Vector3dVector(vertices)
+o3d.visualization.draw_geometries([pcd])
