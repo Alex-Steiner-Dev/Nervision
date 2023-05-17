@@ -28,56 +28,59 @@ class GAN():
 
         print("Network prepared.")
 
-    def run(self, data, count):      
+    def run(self):      
         G_losses = []
         D_losses = []
-
+      
         for epoch in range(args.epochs):
-            point, label = data
-            point = point.to(self.args.device)
-            z = label.to(self.args.device)
-            z = torch.reshape(z, (self.args.batch_size, 512, 1)).to(self.args.device)
+            for _iter, data in enumerate(self.dataLoader):
+                point, label = data
+                point = point.to(self.args.device)
+                z = label.to(self.args.device)
+                z = torch.reshape(z, (self.args.batch_size, 512, 1)).to(self.args.device)
 
-            start_time = time.time()
+                start_time = time.time()
 
-            for d_iter in range(5):
-                self.D.zero_grad()
+                for d_iter in range(5):
+                    self.D.zero_grad()
                     
-                with torch.no_grad():
-                    fake_point = self.G(z) 
+                    with torch.no_grad():
+                        fake_point = self.G(z) 
                         
-                D_real = self.D(point)
-                D_realm = D_real.mean()
+                    D_real = self.D(point)
+                    D_realm = D_real.mean()
 
-                D_fake = self.D(fake_point)
-                D_fakem = D_fake.mean()
+                    D_fake = self.D(fake_point)
+                    D_fakem = D_fake.mean()
                     
-                gp_loss = self.GP(self.D, point.data, fake_point.data)
+                    gp_loss = self.GP(self.D, point.data, fake_point.data)
                     
-                d_loss = -D_realm + D_fakem
-                d_loss_gp = d_loss + gp_loss
-                d_loss_gp.backward()
-                self.optimizerD.step()
+                    d_loss = -D_realm + D_fakem
+                    d_loss_gp = d_loss + gp_loss
+                    d_loss_gp.backward()
+                    self.optimizerD.step()
 
-            self.G.zero_grad()
+                self.G.zero_grad()
             
-            fake_point = self.G(z).reshape(self.args.batch_size,2048,3)
-            G_fake = self.D(fake_point)
-            G_fakem = G_fake.mean()
+                fake_point = self.G(z).reshape(self.args.batch_size,2048,3)
+                G_fake = self.D(fake_point)
+                G_fakem = G_fake.mean()
                 
-            g_loss = -G_fakem
-            g_loss.backward()
-            self.optimizerG.step()
+                g_loss = -G_fakem
+                g_loss.backward()
+                self.optimizerG.step()
 
-            G_losses.append(g_loss.item())
-            D_losses.append(d_loss.item())
+                G_losses.append(g_loss.item())
+                D_losses.append(d_loss.item())
 
-            print("[Epoch/Iter] ", "{:3} / {:3}".format(epoch, 0),
-                  "[ D_Loss ] ", "{: 7.6f}".format(d_loss), 
-                  "[ G_Loss ] ", "{: 7.6f}".format(g_loss), 
-                "[ Time ] ", "{:4.2f}s".format(time.time()-start_time))
+                print("[Epoch/Iter] ", "{:3} / {:3}".format(epoch, _iter),
+                      "[ D_Loss ] ", "{: 7.6f}".format(d_loss), 
+                      "[ G_Loss ] ", "{: 7.6f}".format(g_loss), 
+                      "[ Time ] ", "{:4.2f}s".format(time.time()-start_time))
 
-        torch.save({'G_state_dict': self.G.state_dict()}, '../TrainedModels/model_' + str(count) + '.pt')
+            if epoch % 50 == 0:
+                torch.save({'G_state_dict': self.G.state_dict()}, '../TrainedModels/model.pt')
+                print('Checkpoint is saved.')
 
         plt.figure(figsize=(10,5))
         plt.title("Generator and Discriminator Loss During Training")
@@ -87,7 +90,7 @@ class GAN():
         plt.ylabel("Loss")
         plt.legend()
         plt.savefig("graph.png")
-        #plt.show()
+        plt.show()
 
 if __name__ == '__main__':
     args = Arguments().parser().parse_args()
@@ -96,6 +99,4 @@ if __name__ == '__main__':
     torch.cuda.set_device(args.device)
 
     model = GAN(args)
-
-    for i, data in enumerate(model.dataLoader):
-        model.run(data, i)
+    model.run()

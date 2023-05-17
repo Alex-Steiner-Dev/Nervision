@@ -1,15 +1,38 @@
-import trimesh
-import trimesh
+import torch
+import torchvision.models as models
+from model import *
+
+from text_to_vec import *
+
 import numpy as np
-import open3d as o3d
+import pyvista as pv
 
+target_model = Generator().to('cuda')
 
-mesh = trimesh.load("dataset/e71d05f223d527a5f91663a74ccd2338.obj", force="mesh")
+pretrained_model1 = Generator().to('cuda')
+pretrained_model2 = Generator().to('cuda')
 
-vertices, _ = trimesh.sample.sample_surface(mesh, count=2048)
-point_cloud_array = np.array(vertices, dtype=np.float32)
+checkpoint_model1 = torch.load('../TrainedModels/model_0.pt')
+checkpoint_model2 = torch.load('../TrainedModels/model_1.pt')
 
+pretrained_model1.load_state_dict(checkpoint_model1['G_state_dict'])
+pretrained_model2.load_state_dict(checkpoint_model2['G_state_dict'])
 
-pcd = o3d.geometry.PointCloud()
-pcd.points = o3d.utility.Vector3dVector(vertices)
-o3d.visualization.draw_geometries([pcd])
+combined_state_dict = target_model.state_dict()
+
+for name, param in pretrained_model1.named_parameters():
+    combined_state_dict[name] = param.data
+
+for name, param in pretrained_model2.named_parameters():
+    combined_state_dict[name] = param.data
+
+target_model.load_state_dict(combined_state_dict)
+
+z = torch.from_numpy(text_to_vec(process_text(correct_prompt("cocktail table that is tall and square and average sizel"))).astype(np.float64)).reshape(1,512, 1).cuda().float()
+
+with torch.no_grad():
+    sample = target_model(z).cpu()
+
+    vertices = sample.numpy()[0]
+
+    pv.PolyData(vertices).plot()

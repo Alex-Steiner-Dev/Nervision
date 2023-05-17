@@ -18,7 +18,6 @@ class LoadDataset(data.Dataset):
         self.data = json.load(f)
 
         for i, itObject in enumerate(self.data):
-            if i % 10 == 0:
                 obj_path = "dataset/" + itObject['mid'] + ".obj"
 
                 if itObject['desc'].split('.')[0].find(".") != -1:

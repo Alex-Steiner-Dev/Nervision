@@ -6,7 +6,7 @@ class Arguments:
         self._parser = argparse.ArgumentParser()
 
         self._parser.add_argument('--dataset_path', type=str, default='dataset', help='Dataset file path.')
-        self._parser.add_argument('--batch_size', type=int, default=1, help='Integer value for batch size.')
+        self._parser.add_argument('--batch_size', type=int, default=32, help='Integer value for batch size.')
         
         self._parser.add_argument('--gpu', type=int, default=0, help='GPU number to use.')
         self._parser.add_argument('--epochs', type=int, default=2001, help='Integer value for epochs.')
