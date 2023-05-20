@@ -20,7 +20,6 @@ with torch.no_grad():
     vertices = sample.numpy()[0]
 
     #mesh = generate_mesh(vertices)
-
     #o3d.visualization.draw_geometries([mesh])
 
     pv.PolyData(vertices).plot()
