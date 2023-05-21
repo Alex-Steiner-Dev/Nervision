@@ -1,4 +1,6 @@
 import open3d as o3d
+import numpy as np
+import trimesh
 
 def generate_mesh(points):
     pcd = o3d.geometry.PointCloud()
@@ -6,10 +8,17 @@ def generate_mesh(points):
 
     pcd.estimate_normals()
 
-    mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(
-        pcd, alpha=0.1
-    )
+    mesh = trimesh.Trimesh(np.asarray(pcd.points), np.asarray(pcd.normals))
 
-    mesh = mesh.filter_smooth_simple(number_of_iterations=5)
+    # Convert the trimesh object to an Open3D mesh object
+    o3d_mesh = o3d.geometry.TriangleMesh()
+    o3d_mesh.vertices = o3d.utility.Vector3dVector(mesh.vertices)
+    o3d_mesh.triangles = o3d.utility.Vector3iVector(mesh.faces)
 
+    # Clean the mesh
+    o3d_mesh.remove_degenerate_triangles()
+    o3d_mesh.remove_duplicated_vertices()
+    o3d_mesh.remove_unreferenced_vertices()
+
+    return o3d_mesh
     return mesh

@@ -6,6 +6,8 @@ from mesh_generation import *
 import numpy as np
 import pyvista as pv
 
+from scipy.ndimage import median_filter
+
 Generator = Generator().cuda()
 
 model_path = "../TrainedModels/model.pt" 
@@ -18,8 +20,10 @@ with torch.no_grad():
     sample = Generator(z).cpu()
 
     vertices = sample.numpy()[0]
+    vertices = median_filter(vertices, size=1)
 
-    #mesh = generate_mesh(vertices)
-    #o3d.visualization.draw_geometries([mesh])
+    from vedo import dataurl, printc, Plotter, Points, Mesh, Text2D, show
 
-    pv.PolyData(vertices).plot()
+    point_cloud = Points(vertices)
+ 
+    show(point_cloud.reconstruct_surface(dims=10, radius=0.02).c("gold"))
