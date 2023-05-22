@@ -44,7 +44,7 @@ def string_generator(size=12, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 def generate(text):
-    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,512,1).repeat(128, 1, 1).cuda().float()
+    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,512,1).repeat(32, 1, 1).cuda().float()
     name = string_generator()
 
     os.mkdir("static/generations/" + name)
@@ -56,6 +56,10 @@ def generate(text):
         
         mesh = generate_mesh(points)
 
+        o3d.io.write_triangle_mesh("static/generations/" + name + "/model.obj", mesh)
+
+        mesh = pv.read("static/generations/" + name + "/model.obj")
+
         p = pv.Plotter()
         p.add_mesh(mesh, texture=True)
         p.export_gltf("static/generations/" + name + "/model.gltf")
@@ -63,4 +67,4 @@ def generate(text):
     return name
 
 if __name__ == '__main__':
-    app.run(debug=False, port=8080, host='0.0.0.0')
+    app.run(debug=True, port=8080, host='0.0.0.0')

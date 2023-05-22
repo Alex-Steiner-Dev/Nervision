@@ -4,21 +4,28 @@ import trimesh
 
 def generate_mesh(points):
     pcd = o3d.geometry.PointCloud()
+
     pcd.points = o3d.utility.Vector3dVector(points)
+    
+    mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(
+        pcd, alpha=0.15
+    )
 
-    pcd.estimate_normals()
+    pcd = mesh.sample_points_uniformly(number_of_points=4096)
 
-    mesh = trimesh.Trimesh(np.asarray(pcd.points), np.asarray(pcd.normals))
+    mesh = mesh.filter_smooth_taubin(number_of_iterations=15)
 
-    # Convert the trimesh object to an Open3D mesh object
-    o3d_mesh = o3d.geometry.TriangleMesh()
-    o3d_mesh.vertices = o3d.utility.Vector3dVector(mesh.vertices)
-    o3d_mesh.triangles = o3d.utility.Vector3iVector(mesh.faces)
+    pcd = mesh.sample_points_uniformly(number_of_points=4096*8)
+    
+    mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(
+        pcd, alpha=0.15
+    )
 
-    # Clean the mesh
-    o3d_mesh.remove_degenerate_triangles()
-    o3d_mesh.remove_duplicated_vertices()
-    o3d_mesh.remove_unreferenced_vertices()
+    mesh = mesh.filter_smooth_simple(number_of_iterations=15)
 
-    return o3d_mesh
+    mesh.remove_duplicated_vertices()
+    mesh.remove_degenerate_triangles()
+
+    mesh = mesh.simplify_quadric_decimation(target_number_of_triangles=25000)
+
     return mesh
