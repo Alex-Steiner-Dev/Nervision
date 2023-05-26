@@ -8,7 +8,7 @@ def generate_mesh(points):
     pcd.points = o3d.utility.Vector3dVector(points)
     
     mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(
-        pcd, alpha=0.15
+        pcd, alpha=0.08
     )
 
     pcd = mesh.sample_points_uniformly(number_of_points=4096)
@@ -18,10 +18,10 @@ def generate_mesh(points):
     pcd = mesh.sample_points_uniformly(number_of_points=4096*8)
     
     mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(
-        pcd, alpha=0.15
+        pcd, alpha=0.08
     )
 
-    mesh = mesh.filter_smooth_simple(number_of_iterations=15)
+    mesh = mesh.filter_smooth_simple(number_of_iterations=10)
 
     mesh.remove_duplicated_vertices()
     mesh.remove_degenerate_triangles()
