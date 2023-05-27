@@ -52,16 +52,19 @@ def generate(text):
     with torch.no_grad():
         sample = Generator(z).cpu()[0]
 
-        points = sample.numpy().reshape(2048,3)
+        vertices = sample.numpy().reshape(2048,3)
         
-        mesh = generate_mesh(points)
+        mesh = generate_mesh(vertices)
 
         o3d.io.write_triangle_mesh("static/generations/" + name + "/model.obj", mesh)
 
         mesh = pv.read("static/generations/" + name + "/model.obj")
+        texture = pv.read_texture('texture.png')
+
+        mesh.texture_map_to_plane(inplace=True)
 
         p = pv.Plotter()
-        p.add_mesh(mesh, texture=True)
+        p.add_mesh(mesh, texture=texture)
         p.export_gltf("static/generations/" + name + "/model.gltf")
 
     return name

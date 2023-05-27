@@ -26,6 +26,6 @@ def generate_mesh(points):
     mesh.remove_duplicated_vertices()
     mesh.remove_degenerate_triangles()
 
-    mesh = mesh.simplify_quadric_decimation(target_number_of_triangles=25000)
+    mesh = mesh.simplify_quadric_decimation(target_number_of_triangles=20000)
 
     return mesh

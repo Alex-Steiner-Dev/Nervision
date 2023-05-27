@@ -12,7 +12,7 @@ model_path = "../TrainedModels/model.pt"
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
-z = torch.from_numpy(text_to_vec(process_text(correct_prompt("cocktail table that is tall and square and average size"))).astype(np.float64)).reshape(1,512, 1).repeat(32,1,1).cuda().float()
+z = torch.from_numpy(text_to_vec(process_text(correct_prompt("club chair that is average size and regular height and regular width and long"))).astype(np.float64)).reshape(1,512, 1).repeat(32,1,1).cuda().float()
 
 with torch.no_grad():
     sample = Generator(z).cpu()
@@ -20,14 +20,11 @@ with torch.no_grad():
     vertices = sample.numpy()[0]
 
     pcd = o3d.geometry.PointCloud()
+
     pcd.points = o3d.utility.Vector3dVector(vertices)
+    pcd.estimate_normals()
+    pcd.orient_normals_consistent_tangent_plane(100)
 
-    cl, ind = pcd.remove_statistical_outlier(nb_neighbors=40,std_ratio=4.0)
-    pcd = cl
+    mesh = generate_mesh(pcd)
 
-    #mesh = generate_mesh(pcd.points)
-
-    #o3d.visualization.draw_geometries([mesh])
-
-
-    pv.PolyData(vertices).plot()
+    o3d.io.write_triangle_mesh("model.obj", mesh)
