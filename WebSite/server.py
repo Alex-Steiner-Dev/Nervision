@@ -23,43 +23,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'
 
 
-#################################
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import json
-sentences = []
-ids = []
-
-f = open("../AI/GAN/captions.json")
-data = json.load(f)
-
-for i, itObject in enumerate(data):
-
-    if itObject['desc'].split('.')[0].find(".") != -1:
-        label = itObject['desc']
-    else:
-        label = itObject['desc'].split('.')[0]
-             
-    sentences.append(label)
-    ids.append(itObject['mid'])
-
-f.close()
-
-def fake(target_sentence):
-    vectorizer = TfidfVectorizer()
-    tfidf_matrix = vectorizer.fit_transform(sentences + [target_sentence])
-    cosine_similarities = cosine_similarity(tfidf_matrix[:-1], tfidf_matrix[-1])
-
-    most_similar_index = cosine_similarities.argmax()
-
-    mesh = trimesh.load('../AI/GAN/dataset/' + ids[most_similar_index] + '.obj', force="mesh")
-
-    vertices, _ = trimesh.sample.sample_surface(mesh, count=100000)
-    points = np.array(vertices, dtype=np.float32)
-    
-    return points
-################################
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -88,15 +51,12 @@ def generate(text):
     os.mkdir("static/generations/" + name)
 
     with torch.no_grad():
-        #sample = Generator(z).cpu()[0]
-        #vertices = sample.numpy().reshape(2048,3)
+        sample = Generator(z).cpu()[0]
+        vertices = sample.numpy().reshape(2048,3)
         
-        vertices = fake(text)
-        mesh = generate_mesh(vertices)
+        generate_mesh(vertices, "static/generations/" + name)
 
-        o3d.io.write_triangle_mesh("static/generations/" + name + "/model.obj", mesh)
-
-        mesh = pv.read("static/generations/" + name + "/model.obj")
+        mesh = pv.read("static/generations/" + name + "/model.ply")
         texture = pv.read_texture('texture.png')
 
         mesh.texture_map_to_plane(inplace=True)
