@@ -4,7 +4,7 @@ import json
 import pyvista as pv
 import open3d as o3d
 from mesh_generation import *
-
+import pyvista as pv
 
 f = open("../captions.json")
 data = json.load(f)
