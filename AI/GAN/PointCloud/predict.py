@@ -8,7 +8,7 @@ import pyvista as pv
 
 Generator = Generator().cuda()
 
-model_path = "../../TrainedModels/model.pt" 
+model_path = "../../TrainedModels/model_46400.pt" 
 checkpoint = torch.load(model_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
 
@@ -30,7 +30,7 @@ def create_mesh(vertices, faces):
 
     return mesh
 
-z = torch.from_numpy(text_to_vec(process_text(correct_prompt("cocktail table that is tall and square and average size"))).astype(np.float64)).reshape(1,512, 1).cuda().float()
+z = torch.from_numpy(text_to_vec(process_text(correct_prompt("cocktail table that is tall and square and average size"))).astype(np.float64)).reshape(1,512, 1).repeat(1, 1, 1).cuda().float()
 
 with torch.no_grad():
     sample = Generator(z).cpu()
@@ -48,7 +48,7 @@ with torch.no_grad():
 
     mesh = create_mesh(vertices, simplified_mesh.triangles)
 
-    o3d.visualization.draw_geometries([mesh])
-    
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(vertices)
 
-    pv.PolyData(vertices).plot()
+    o3d.visualization.draw_geometries([mesh, pcd])
