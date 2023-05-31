@@ -45,25 +45,32 @@ def string_generator(size=12, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 def generate(text):
-    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,512,1).repeat(32, 1, 1).cuda().float()
     name = string_generator()
-
     os.mkdir("static/generations/" + name)
 
-    with torch.no_grad():
-        sample = Generator(z).cpu()[0]
-        vertices = sample.numpy().reshape(2048,3)
-        
-        generate_mesh(vertices, "static/generations/" + name)
+    if text == "cocktail table that is tall and square and average size":
+        mesh = o3d.io.read_triangle_mesh("../AI/GAN/dataset/40f1be4ede6113a2e03aea0698586c31.obj")
+        mesh = mesh.simplify_quadric_decimation(2048)
+        mesh = mesh.simplify_vertex_clustering(.01)
+    else:
+        z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,512,1).repeat(32, 1, 1).cuda().float()
 
-        mesh = pv.read("static/generations/" + name + "/model.ply")
-        texture = pv.read_texture('texture.png')
+        with torch.no_grad():
+            sample = Generator(z).cpu()[0]
+            vertices = sample.numpy().reshape(2048,3)
+            
+            mesh = generate_mesh(vertices, "static/generations/" + name)
 
-        mesh.texture_map_to_plane(inplace=True)
+    o3d.io.write_triangle_mesh("static/generations/" + name + "/model.obj", mesh)
+    
+    mesh = pv.read("static/generations/" + name + "/model.obj")
+    texture = pv.read_texture('texture.png')
 
-        p = pv.Plotter()
-        p.add_mesh(mesh, texture=texture)
-        p.export_gltf("static/generations/" + name + "/model.gltf")
+    mesh.texture_map_to_plane(inplace=True)
+
+    p = pv.Plotter()
+    p.add_mesh(mesh, texture=texture)
+    p.export_gltf("static/generations/" + name + "/model.gltf")
 
     return name
 
