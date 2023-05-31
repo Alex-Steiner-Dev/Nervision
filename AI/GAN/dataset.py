@@ -15,22 +15,30 @@ class LoadDataset(data.Dataset):
         self.points = []
         self.text_embeddings = []
 
-        f = open("../captions.json")
+        f = open("captions.json")
         self.data = json.load(f)
 
         for i, itObject in enumerate(self.data):
             if i == 0:
-                obj_path = "../dataset/" + itObject['id'] + ".obj"
+                obj_path = "dataset/" + itObject['id'] + ".obj"
 
                 if itObject['desc'].split('.')[0].find(".") != -1:
                     label = text_to_vec(process_text(itObject['desc']))
                 else:
                     label = text_to_vec(process_text(itObject['desc'].split('.')[0]))
                 
-                mesh = trimesh.load(obj_path, force='mesh')
-       
-                vertices, _ = trimesh.sample.sample_surface(mesh, count=2048)
-                point_cloud = np.array(vertices, dtype=np.float32)
+                mesh = o3d.io.read_triangle_mesh(obj_path)
+                simplified_mesh = mesh.simplify_quadric_decimation(2048)
+
+                if len(simplified_mesh.vertices) > 2048:
+                    simplified_mesh = simplified_mesh.simplify_vertex_clustering(.0005)
+
+                vertices = np.array(simplified_mesh.vertices)
+    
+                expanded_array = np.zeros((2048, 3))
+                expanded_array[:vertices.shape[0], :] = vertices
+                
+                point_cloud = np.array(expanded_array, dtype=np.float32)
 
                 self.points.append(point_cloud)
                 self.text_embeddings.append(label)
