@@ -37,11 +37,12 @@ with torch.no_grad():
     simplified_mesh = mesh.simplify_quadric_decimation(2048)
     simplified_mesh = simplified_mesh.simplify_vertex_clustering(.0005)
 
-    print(np.array(simplified_mesh.vertices)[0], vertices[0])
-
     point_cloud = np.array(np.array(simplified_mesh.vertices), dtype=np.float32)
+
+    print(np.array(point_cloud)[0], vertices[0])
+
     
-    mesh = create_mesh(vertices, simplified_mesh.triangles)
+    mesh = create_mesh(point_cloud, simplified_mesh.triangles)
 
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(vertices)

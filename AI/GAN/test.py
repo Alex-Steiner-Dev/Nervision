@@ -6,7 +6,7 @@ import open3d as o3d
 from mesh_generation import *
 import pyvista as pv
 
-f = open("../captions.json")
+f = open("captions.json")
 data = json.load(f)
 
 def create_mesh(vertices, faces):
@@ -29,21 +29,28 @@ def create_mesh(vertices, faces):
 
 def simplify_mesh(mesh, n):
     mesh = o3d.io.read_triangle_mesh(obj_path)
-    simplified_mesh = mesh.simplify_quadric_decimation(n)
-    simplified_mesh = simplified_mesh.simplify_vertex_clustering(.01)
+    simplified_mesh = mesh.simplify_quadric_decimation(2048)
 
     if len(simplified_mesh.vertices) > 2048:
-        simplified_mesh = simplified_mesh.simplify_vertex_clustering(1)
-        count = count - 0.01
+        simplified_mesh = simplified_mesh.simplify_vertex_clustering(.0005)
 
-    mesh = create_mesh(simplified_mesh.vertices, simplified_mesh.triangles)
+    vertices = np.array(simplified_mesh.vertices)
+    
+    expanded_array = np.zeros((2048, 3))
+    expanded_array[:vertices.shape[0], :] = vertices
+                
+    point_cloud = np.array(expanded_array, dtype=np.float32)
+
+    print(point_cloud[0])
+
+    mesh = create_mesh(point_cloud, simplified_mesh.triangles)
 
     o3d.visualization.draw_geometries([mesh])
     
     return simplified_mesh
 
 
-obj_path = "../dataset/40f1be4ede6113a2e03aea0698586c31.obj"
+obj_path = "dataset/40f1be4ede6113a2e03aea0698586c31.obj"
 simplified_mesh = simplify_mesh(obj_path, 2048)
 
 f.close()

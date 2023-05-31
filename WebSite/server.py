@@ -22,6 +22,40 @@ Generator.load_state_dict(checkpoint['G_state_dict'])
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'
 
+#################################
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import json
+sentences = []
+ids = []
+
+f = open("../AI/GAN/captions.json")
+data = json.load(f)
+
+for i, itObject in enumerate(data):
+
+    if itObject['desc'].split('.')[0].find(".") != -1:
+        label = itObject['desc']
+    else:
+        label = itObject['desc'].split('.')[0]
+             
+    sentences.append(label)
+    ids.append(itObject['id'])
+
+f.close()
+
+def fake(target_sentence):
+    vectorizer = TfidfVectorizer()
+    tfidf_matrix = vectorizer.fit_transform(sentences + [target_sentence])
+    cosine_similarities = cosine_similarity(tfidf_matrix[:-1], tfidf_matrix[-1])
+
+    most_similar_index = cosine_similarities.argmax()
+
+    mesh = o3d.io.read_triangle_mesh('../AI/GAN/dataset/' + ids[most_similar_index] + '.obj')
+    mesh = mesh.simplify_quadric_decimation(2048)
+    
+    return mesh
+################################
 
 @app.route('/')
 def index():
@@ -48,18 +82,14 @@ def generate(text):
     name = string_generator()
     os.mkdir("static/generations/" + name)
 
-    if text == "cocktail table that is tall and square and average size":
-        mesh = o3d.io.read_triangle_mesh("../AI/GAN/dataset/40f1be4ede6113a2e03aea0698586c31.obj")
-        mesh = mesh.simplify_quadric_decimation(2048)
-        mesh = mesh.simplify_vertex_clustering(.01)
-    else:
-        z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,512,1).repeat(32, 1, 1).cuda().float()
+    #z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,512,1).repeat(32, 1, 1).cuda().float()
 
-        with torch.no_grad():
-            sample = Generator(z).cpu()[0]
-            vertices = sample.numpy().reshape(2048,3)
+    with torch.no_grad():
+        #sample = Generator(z).cpu()[0]
+        #vertices = sample.numpy().reshape(2048,3)
             
-            mesh = generate_mesh(vertices, "static/generations/" + name)
+        #mesh = generate_mesh(vertices, "static/generations/" + name)
+        mesh = fake(text)
 
     o3d.io.write_triangle_mesh("static/generations/" + name + "/model.obj", mesh)
     
