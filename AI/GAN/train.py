@@ -5,7 +5,7 @@ from gradient_penalty import GradientPenalty
 
 from model import Generator, Discriminator
 
-from dataset import LoadDataset
+from dataset import *
 from arguments import Arguments
 
 import time
@@ -14,7 +14,7 @@ class GAN():
     def __init__(self, args):
         self.args = args
       
-        self.data = LoadDataset(data_dir=args.dataset_path)
+        self.data = LoadVertices()
         self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=args.batch_size, shuffle=True)
         print("Training Dataset : {} prepared.".format(len(self.data)))
 
@@ -79,7 +79,7 @@ class GAN():
                       "[ Time ] ", "{:4.2f}s".format(time.time()-start_time))
 
             if epoch % 50 == 0:
-                torch.save({'G_state_dict': self.G.state_dict()}, '../TrainedModels/model.pt')
+                torch.save({'G_state_dict': self.G.state_dict()}, '../TrainedModels/vertices.pt')
                 print('Checkpoint is saved.')
 
         plt.figure(figsize=(10,5))

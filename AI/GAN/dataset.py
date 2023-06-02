@@ -10,8 +10,8 @@ import logging
 logger = logging.getLogger("trimesh")
 logger.setLevel(logging.ERROR)
 
-class LoadDataset(data.Dataset):
-    def __init__(self, data_dir):
+class LoadVertices(data.Dataset):
+    def __init__(self):
         self.points = []
         self.text_embeddings = []
 
@@ -53,3 +53,46 @@ class LoadDataset(data.Dataset):
     
     def __len__(self):
         return len(self.points)
+    
+class LoadFaces(data.Dataset):
+    def __init__(self):
+        self.faces = []
+        self.text_embeddings = []
+
+        f = open("captions.json")
+        self.data = json.load(f)
+
+        for i, itObject in enumerate(self.data):
+            if i == 0:
+                obj_path = "dataset/" + itObject['id'] + ".obj"
+
+                if itObject['desc'].split('.')[0].find(".") != -1:
+                    label = text_to_vec(process_text(itObject['desc']))
+                else:
+                    label = text_to_vec(process_text(itObject['desc'].split('.')[0]))
+                
+                mesh = o3d.io.read_triangle_mesh(obj_path)
+                simplified_mesh = mesh.simplify_quadric_decimation(2048)
+
+                faces = np.array(simplified_mesh.triangles)
+
+                print(faces.shape)
+    
+                expanded_array = np.zeros((2048, 3))
+                expanded_array[:faces.shape[0], :] = faces
+                
+                faces = np.array(expanded_array, dtype=np.float32)
+
+                self.faces.append(faces)
+                self.text_embeddings.append(label)
+
+        f.close()
+  
+    def __getitem__(self, idx):
+        faces = torch.tensor(self.faces[idx])
+        text_embedding = torch.tensor(self.text_embeddings[idx])
+
+        return faces, text_embedding
+    
+    def __len__(self):
+        return len(self.faces)

@@ -50,3 +50,33 @@ class Discriminator(nn.Module):
         out = self.final_layer(out) 
 
         return out
+    
+class Autoencoder(nn.Module):
+    def __init__(self):
+        super(Autoencoder, self).__init__()
+        self.encoder = nn.Sequential(
+            nn.Conv1d(2048, 1024, 1),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Conv1d(1024, 512, 1),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Conv1d(512, 256, 1),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Conv1d(256, 128, 1),
+            nn.LeakyReLU(negative_slope=0.2)
+        )
+
+        self.decoder = nn.Sequential(
+            nn.Conv1d(128, 256, 1),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Conv1d(256, 512, 1),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Conv1d(512, 1024, 1),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Conv1d(1024, 2048, 1),
+            nn.LeakyReLU(negative_slope=0.2),
+        )
+
+    def forward(self, x):
+        encoded = self.encoder(x)
+        decoded = self.decoder(encoded)
+        return decoded

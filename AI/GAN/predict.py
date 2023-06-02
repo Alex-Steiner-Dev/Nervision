@@ -1,16 +1,20 @@
 import torch
-from model import Generator
+from model import *
 from text_to_vec import *
-from mesh_generation import *
+import open3d as o3d
 
 import numpy as np
-import pyvista as pv
 
 Generator = Generator().cuda()
+Autoencoder = Autoencoder().cuda()
 
-model_path = "../TrainedModels/model.pt" 
-checkpoint = torch.load(model_path)
+vertices_path = "../TrainedModels/vertices.pt" 
+checkpoint = torch.load(vertices_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
+
+autoencoder_path = "../TrainedModels/autoencoder.pt" 
+checkpoint = torch.load(autoencoder_path)
+Autoencoder.load_state_dict(checkpoint['autoencoder'])
 
 z = torch.from_numpy(text_to_vec(process_text(correct_prompt("cocktail table that is tall and square and average size"))).astype(np.float64)).reshape(1,512, 1).repeat(1, 1, 1).cuda().float()
 
@@ -32,11 +36,16 @@ def predict():
     with torch.no_grad():
         sample = Generator(z).cpu()
         vertices = sample.numpy()[0]
+
         vertices = np.array(vertices, dtype=np.float32)
-        return vertices
+        vertices = Autoencoder(torch.from_numpy(vertices).float().to('cuda')).cpu().detach().numpy()
+        
+        mesh = o3d.io.read_triangle_mesh("dataset/40f1be4ede6113a2e03aea0698586c31.obj")
+        simplified_mesh = mesh.simplify_quadric_decimation(2048)
+
+        return vertices, np.array(simplified_mesh.triangles)
     
+v, f = predict()
+mesh = create_mesh(v, f)
 
-#pcd = o3d.geometry.PointCloud()
-#pcd.points = o3d.utility.Vector3dVector(vertices)
-
-#o3d.visualization.draw_geometries([pcd])
+o3d.visualization.draw_geometries([mesh])
