@@ -28,23 +28,15 @@ def create_mesh(vertices, faces):
 
     return mesh
 
-with torch.no_grad():
-    sample = Generator(z).cpu()
-
-    vertices = sample.numpy()[0]
-
-    mesh = o3d.io.read_triangle_mesh("dataset/40f1be4ede6113a2e03aea0698586c31.obj")
-    simplified_mesh = mesh.simplify_quadric_decimation(2048)
-    simplified_mesh = simplified_mesh.simplify_vertex_clustering(.0005)
-
-    point_cloud = np.array(np.array(simplified_mesh.vertices), dtype=np.float32)
-
-    print(np.array(point_cloud)[0], vertices[0])
-
+def predict():
+    with torch.no_grad():
+        sample = Generator(z).cpu()
+        vertices = sample.numpy()[0]
+        vertices = np.array(vertices, dtype=np.float32)
+        return vertices
     
-    mesh = create_mesh(point_cloud, simplified_mesh.triangles)
 
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(vertices)
+#pcd = o3d.geometry.PointCloud()
+#pcd.points = o3d.utility.Vector3dVector(vertices)
 
-    o3d.visualization.draw_geometries([pcd, mesh])
+#o3d.visualization.draw_geometries([pcd])

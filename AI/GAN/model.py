@@ -8,11 +8,15 @@ class Generator(nn.Module):
         self.main = nn.Sequential(
             nn.Conv1d(512, 512, 1, bias=False),
             nn.LeakyReLU(negative_slope=0.2),
+
             nn.Conv1d(512, 1024, 1, bias=False),
             nn.LeakyReLU(negative_slope=0.2),
+
             nn.Conv1d(1024, 2048, 1, bias=False),
             nn.LeakyReLU(negative_slope=0.2),
-            nn.Conv1d(2048, 2048*3, 1, bias=False)
+
+            nn.Conv1d(2048, 2048*3, 1, bias=False),
+            nn.LeakyReLU(negative_slope=0.2)
         )
 
     def forward(self, input):       
