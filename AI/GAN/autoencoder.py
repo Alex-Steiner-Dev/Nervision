@@ -10,26 +10,26 @@ class Autoencoder(nn.Module):
 
         # Encoder layers
         self.encoder = nn.Sequential(
-            nn.Conv1d(2048, 1024, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(True),
-            nn.Conv1d(1024, 512, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(True),
-            nn.Conv1d(512, 256, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(True),
-            nn.Conv1d(256, 128, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(True)
+            nn.Conv1d(2048, 1024, 1),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Conv1d(1024, 512, 1),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Conv1d(512, 256, 1),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Conv1d(256, 128, 1),
+            nn.LeakyReLU(negative_slope=0.2)
         )
 
         # Decoder layers
         self.decoder = nn.Sequential(
-            nn.Conv1d(128, 256, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(True),
-            nn.Conv1d(256, 512, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(True),
-            nn.Conv1d(512, 1024, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(True),
-            nn.Conv1d(1024, 2048, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(True),
+            nn.Conv1d(128, 256, 1),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Conv1d(256, 512, 1),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Conv1d(512, 1024, 1),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Conv1d(1024, 2048, 1),
+            nn.LeakyReLU(negative_slope=0.2),
         )
 
     def forward(self, x):
@@ -54,7 +54,7 @@ expanded_array[:vertices.shape[0], :] = vertices
                 
 point_cloud = np.array(expanded_array, dtype=np.float32)
 
-num_epochs = 50
+num_epochs = 2000
 
 target_data = torch.from_numpy(expanded_array)
 input_data = torch.from_numpy(predict())
@@ -88,10 +88,9 @@ def create_mesh(vertices, faces):
 
     return mesh
 
-print(denoised_output[0])
 mesh = create_mesh(denoised_output, simplified_mesh.triangles)
 
 pcd = o3d.geometry.PointCloud()
 pcd.points = o3d.utility.Vector3dVector(denoised_output)
 
-o3d.visualization.draw_geometries([pcd])
+o3d.visualization.draw_geometries([mesh])
