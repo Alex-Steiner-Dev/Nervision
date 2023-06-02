@@ -9,6 +9,7 @@ from dataset import *
 from arguments import Arguments
 
 import time
+import autoencoder
 
 class GAN():
     def __init__(self, args):
@@ -62,7 +63,7 @@ class GAN():
 
                 self.G.zero_grad()
             
-                fake_point = self.G(z).reshape(self.args.batch_size,2048,3)
+                fake_point = self.G(z).reshape(self.args.batch_size,4096,3)
                 G_fake = self.D(fake_point)
                 G_fakem = G_fake.mean()
                 
@@ -90,7 +91,7 @@ class GAN():
         plt.ylabel("Loss")
         plt.legend()
         plt.savefig("graph.png")
-        plt.show()
+        #plt.show()
 
 if __name__ == '__main__':
     args = Arguments().parser().parse_args()
@@ -100,3 +101,4 @@ if __name__ == '__main__':
 
     model = GAN(args)
     model.run()
+    autoencoder.train()

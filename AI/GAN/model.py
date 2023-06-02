@@ -15,17 +15,20 @@ class Generator(nn.Module):
             nn.Conv1d(1024, 2048, 1, bias=False),
             nn.LeakyReLU(negative_slope=0.2),
 
-            nn.Conv1d(2048, 2048*3, 1, bias=False),
+            nn.Conv1d(2048, 4096, 1, bias=False),
+            nn.LeakyReLU(negative_slope=0.2),
+
+            nn.Conv1d(4096, 4096*3, 1, bias=False),
             nn.LeakyReLU(negative_slope=0.2)
         )
 
     def forward(self, input):       
-        x = self.main(input).reshape(self.batch_size, 2048,3)  
+        x = self.main(input).reshape(self.batch_size, 4096,3)  
 
         return x
     
 class Discriminator(nn.Module):
-    def __init__(self, features=[3, 64, 128, 256, 512, 1024]):
+    def __init__(self, features=[3, 64, 128, 256, 512, 1024, 2048]):
         self.layer_num = len(features)-1
         super(Discriminator, self).__init__()
 
@@ -55,6 +58,8 @@ class Autoencoder(nn.Module):
     def __init__(self):
         super(Autoencoder, self).__init__()
         self.encoder = nn.Sequential(
+            nn.Conv1d(4096, 2048, 1),
+            nn.LeakyReLU(negative_slope=0.2),
             nn.Conv1d(2048, 1024, 1),
             nn.LeakyReLU(negative_slope=0.2),
             nn.Conv1d(1024, 512, 1),
@@ -73,6 +78,8 @@ class Autoencoder(nn.Module):
             nn.Conv1d(512, 1024, 1),
             nn.LeakyReLU(negative_slope=0.2),
             nn.Conv1d(1024, 2048, 1),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Conv1d(2048, 4096, 1),
             nn.LeakyReLU(negative_slope=0.2),
         )
 

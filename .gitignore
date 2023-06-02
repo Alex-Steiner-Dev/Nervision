@@ -127,3 +127,7 @@ dist
 .pnp.*
 *.DS_Store
 *.obj
+AI/TrainedModels/vertices.pt
+AI/TrainedModels/vertices.pt
+*.pt
+AI/TrainedModels/vertices.pt

@@ -7,55 +7,36 @@ sys.path.append("../AI/GAN/")
 
 from text_to_vec import *
 import pyvista as pv
-from model import Generator
-from mesh_generation import *
+import model
+import open3d as o3d
 import string
 import random
 
-Generator = Generator().cuda()
+import numpy as np
 
-model_path = "../AI/TrainedModels/model.pt" 
+Generator = model.Generator().cuda()
+Autoencoder = model.Autoencoder().cuda()
 
-checkpoint = torch.load(model_path)
+vertices_path = "../AI/TrainedModels/vertices.pt" 
+checkpoint = torch.load(vertices_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
+
+autoencoder_path = "../AI/TrainedModels/autoencoder.pt" 
+checkpoint_ae = torch.load(autoencoder_path)
+Autoencoder.load_state_dict(checkpoint_ae['autoencoder'])
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'
 
-#################################
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import json
-sentences = []
-ids = []
+#################################################################################
+mesh = o3d.io.read_triangle_mesh("../AI/GAN/dataset/tractor.obj")
+simplified_mesh = mesh.simplify_quadric_decimation(4096)
 
-f = open("../AI/GAN/captions.json")
-data = json.load(f)
+if len(simplified_mesh.vertices) > 4096:
+    simplified_mesh = simplified_mesh.simplify_vertex_clustering(.0005)
 
-for i, itObject in enumerate(data):
-
-    if itObject['desc'].split('.')[0].find(".") != -1:
-        label = itObject['desc']
-    else:
-        label = itObject['desc'].split('.')[0]
-             
-    sentences.append(label)
-    ids.append(itObject['id'])
-
-f.close()
-
-def fake(target_sentence):
-    vectorizer = TfidfVectorizer()
-    tfidf_matrix = vectorizer.fit_transform(sentences + [target_sentence])
-    cosine_similarities = cosine_similarity(tfidf_matrix[:-1], tfidf_matrix[-1])
-
-    most_similar_index = cosine_similarities.argmax()
-
-    mesh = o3d.io.read_triangle_mesh('../AI/GAN/dataset/' + ids[most_similar_index] + '.obj')
-    mesh = mesh.simplify_quadric_decimation(2048)
-    
-    return mesh
-################################
+faces = np.array(simplified_mesh.triangles)
+#################################################################################
 
 @app.route('/')
 def index():
@@ -82,14 +63,16 @@ def generate(text):
     name = string_generator()
     os.mkdir("static/generations/" + name)
 
-    #z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,512,1).repeat(32, 1, 1).cuda().float()
+    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,512,1).repeat(1, 1, 1).cuda().float()
 
     with torch.no_grad():
-        #sample = Generator(z).cpu()[0]
-        #vertices = sample.numpy().reshape(2048,3)
-            
-        #mesh = generate_mesh(vertices, "static/generations/" + name)
-        mesh = fake(text)
+        sample = Generator(z).cpu()
+        points = sample.numpy()[0]
+
+    vertices = Autoencoder(torch.from_numpy(points).to('cuda')).cpu().detach().numpy()
+    vertices = np.array(vertices, dtype=np.float32)
+ 
+    mesh = create_mesh(vertices, faces)
 
     o3d.io.write_triangle_mesh("static/generations/" + name + "/model.obj", mesh)
     
@@ -103,6 +86,21 @@ def generate(text):
     p.export_gltf("static/generations/" + name + "/model.gltf")
 
     return name
+
+def create_mesh(vertices, faces):
+    vertices = np.array(vertices)
+    faces = np.array(faces)
+
+    mesh = o3d.geometry.TriangleMesh()
+    
+    mesh.vertices = o3d.utility.Vector3dVector(vertices)
+    mesh.triangles = o3d.utility.Vector3iVector(faces)
+
+    mesh.compute_vertex_normals()
+    mesh.compute_triangle_normals()
+
+    return mesh
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080, host='0.0.0.0')
