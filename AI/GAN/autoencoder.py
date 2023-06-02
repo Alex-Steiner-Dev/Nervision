@@ -57,4 +57,4 @@ for epoch in range(num_epochs):
 
     print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
 
-torch.save({'autoencoder': autoencoder}, '../TrainedModels/autoencoder.pt')
+torch.save({'autoencoder': autoencoder.state_dict()}, '../TrainedModels/autoencoder.pt')
