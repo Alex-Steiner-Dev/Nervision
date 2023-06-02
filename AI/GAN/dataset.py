@@ -19,9 +19,9 @@ class LoadVertices(data.Dataset):
         self.data = json.load(f)
 
         for i, itObject in enumerate(self.data):
-            if i == 0:
+            if i == 21:
                 obj_path = "dataset/" + itObject['id'] + ".obj"
-
+     
                 if itObject['desc'].split('.')[0].find(".") != -1:
                     label = text_to_vec(process_text(itObject['desc']))
                 else:

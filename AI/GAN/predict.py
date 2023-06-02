@@ -16,7 +16,7 @@ autoencoder_path = "../TrainedModels/autoencoder.pt"
 checkpoint_ae = torch.load(autoencoder_path)
 Autoencoder.load_state_dict(checkpoint_ae['autoencoder'])
 
-z = torch.from_numpy(text_to_vec(process_text(correct_prompt("cocktail table that is tall and square and average size"))).astype(np.float64)).reshape(1,512, 1).repeat(1, 1, 1).cuda().float()
+z = torch.from_numpy(text_to_vec(process_text(correct_prompt("ping pong table that is regular height and average size"))).astype(np.float64)).reshape(1,512, 1).repeat(1, 1, 1).cuda().float()
 
 def create_mesh(vertices, faces):
     vertices = np.array(vertices)
@@ -40,7 +40,7 @@ def predict():
     vertices = Autoencoder(torch.from_numpy(points).to('cuda')).cpu().detach().numpy()
     vertices = np.array(vertices, dtype=np.float32)
         
-    mesh = o3d.io.read_triangle_mesh("dataset/40f1be4ede6113a2e03aea0698586c31.obj")
+    mesh = o3d.io.read_triangle_mesh("dataset/97deac79537426ac9255fc5df0de0bff.obj")
     simplified_mesh = mesh.simplify_quadric_decimation(2048)
 
     if len(simplified_mesh.vertices) > 2048:
