@@ -3,7 +3,7 @@ import torch
 import torch.optim as optim
 from gradient_penalty import GradientPenalty
 
-from model import Generator, Discriminator
+from model import *
 
 from dataset import *
 from arguments import Arguments
@@ -83,9 +83,7 @@ class GAN():
                       "[ G_Loss ] ", "{: 7.6f}".format(g_loss), 
                       "[ Time ] ", "{:4.2f}s".format(time.time()-start_time))
 
-            if epoch % 50 == 0:
-                torch.save({'G_state_dict': self.G.state_dict()}, '../TrainedModels/' + args.type + '.pt')
-                print('Checkpoint is saved.')
+        torch.save({'G_state_dict': self.G.state_dict()}, '../TrainedModels/' + args.type + '.pt')
 
         plt.figure(figsize=(10,5))
         plt.title("Generator and Discriminator Loss During Training")
@@ -105,7 +103,7 @@ if __name__ == '__main__':
 
     args.type = 'vertices'
     model = GAN(args)
-    #model.run()
+    model.run()
 
     args.type = 'faces'
     model = GAN(args)

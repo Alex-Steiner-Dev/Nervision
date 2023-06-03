@@ -6,11 +6,17 @@ import open3d as o3d
 import numpy as np
 
 Generator = model.Generator().cuda()
+Generator_f = model.Generator().cuda()
 Autoencoder = model.Autoencoder().cuda()
 
 vertices_path = "../TrainedModels/vertices.pt" 
+faces_path = "../TrainedModels/faces.pt" 
+
 checkpoint = torch.load(vertices_path)
 Generator.load_state_dict(checkpoint['G_state_dict'])
+
+checkpoint_f = torch.load(faces_path)
+Generator_f.load_state_dict(checkpoint_f['G_state_dict'])
 
 autoencoder_path = "../TrainedModels/autoencoder.pt" 
 checkpoint_ae = torch.load(autoencoder_path)
@@ -35,17 +41,17 @@ def predict(z):
         sample = Generator(z).cpu()
         points = sample.numpy()[0]
 
+        sample = Generator_f(z).cpu()
+        faces = sample.numpy()[0]
+
     vertices = Autoencoder(torch.from_numpy(points).to('cuda')).cpu().detach().numpy()
     vertices = np.array(vertices, dtype=np.float32)
         
-    mesh = o3d.io.read_triangle_mesh("dataset/tractor.obj")
-    simplified_mesh = mesh.simplify_quadric_decimation(4096)
+    vertices = Autoencoder(torch.from_numpy(points).to('cuda')).cpu().detach().numpy()
+    faces = np.array(faces, dtype=np.float32)
 
-    if len(simplified_mesh.vertices) > 4096:
-        simplified_mesh = simplified_mesh.simplify_vertex_clustering(.0005)
+    print(faces[0])
 
-    faces = np.array(simplified_mesh.triangles)
-    print(faces.shape)
     mesh = create_mesh(vertices, faces)
 
     o3d.visualization.draw_geometries([mesh])

@@ -10,6 +10,9 @@ import model
 logger = logging.getLogger("trimesh")
 logger.setLevel(logging.ERROR)
 
+key = np.random.rand(4096, 3)
+np.savetxt('key.txt', key)
+
 class LoadVertices(data.Dataset):
     def __init__(self):
         self.points = []
@@ -34,7 +37,7 @@ class LoadVertices(data.Dataset):
                     label = text_to_vec(process_text(itObject['desc'].split('.')[0]))
 
                 vertices = np.array(simplified_mesh.vertices)
-        
+
                 expanded_array = np.zeros((4096, 3))
                 expanded_array[:vertices.shape[0], :] = vertices
                     
@@ -63,27 +66,31 @@ class LoadFaces(data.Dataset):
         self.data = json.load(f)
 
         for i, itObject in enumerate(self.data):
-                obj_path = "dataset/" + itObject['id'] + ".obj"
+            obj_path = "dataset/" + itObject['id'] + ".obj"
+     
+            mesh = o3d.io.read_triangle_mesh(obj_path)
+            simplified_mesh = mesh.simplify_quadric_decimation(4096)
 
+            if len(simplified_mesh.vertices) > 4096:
+                simplified_mesh = simplified_mesh.simplify_vertex_clustering(.0005)
+
+            if len(simplified_mesh.vertices) < 4096:
                 if itObject['desc'].split('.')[0].find(".") != -1:
                     label = text_to_vec(process_text(itObject['desc']))
                 else:
                     label = text_to_vec(process_text(itObject['desc'].split('.')[0]))
-                
-                mesh = o3d.io.read_triangle_mesh(obj_path)
-                simplified_mesh = mesh.simplify_quadric_decimation(4096)
 
                 faces = np.array(simplified_mesh.triangles)
-    
-                expanded_array = np.zeros((4096, 3))
+
+                expanded_array = np.zeros((4096, 3)) 
                 expanded_array[:faces.shape[0], :] = faces
-                
-                faces = (np.array(expanded_array, dtype=np.float32) + np.random.normal(loc=0, scale=0.4, size=(4096,3))) * 10
+
+                faces = expanded_array 
                 faces = np.array(faces, dtype=np.float32)
+
 
                 self.faces.append(faces)
                 self.text_embeddings.append(label)
-
         f.close()
   
     def __getitem__(self, idx):
@@ -102,8 +109,8 @@ class LoadAutoEncoder(data.Dataset):
 
         Generator = model.Generator().cuda()
 
-        vertices_path = "../TrainedModels/vertices.pt" 
-        checkpoint = torch.load(vertices_path)
+        path = "../TrainedModels/vertices.pt" 
+        checkpoint = torch.load(path)
         Generator.load_state_dict(checkpoint['G_state_dict'])
 
         f = open("captions.json")
@@ -128,14 +135,15 @@ class LoadAutoEncoder(data.Dataset):
                 
                 with torch.no_grad():
                     sample = Generator(z).cpu()
-                    points = sample.numpy()[0]
+                    x = sample.numpy()[0]
 
-                generated = np.array(points)
+                generated = np.array(x)
+
                 vertices = np.array(simplified_mesh.vertices)
 
                 expanded_array = np.zeros((4096, 3))
                 expanded_array[:vertices.shape[0], :] = vertices
-                    
+                        
                 vertices = np.array(expanded_array, dtype=np.float32)
 
                 self.target.append(vertices)

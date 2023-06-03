@@ -63,7 +63,7 @@ def generate(text):
     name = string_generator()
     os.mkdir("static/generations/" + name)
 
-    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,512,1).repeat(13 , 1, 1).cuda().float()
+    z = torch.from_numpy(text_to_vec(process_text(correct_prompt(text)))).reshape(1,512,1).repeat(13, 1, 1).cuda().float()
 
     with torch.no_grad():
         sample = Generator(z).cpu()

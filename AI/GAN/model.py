@@ -53,7 +53,7 @@ class Discriminator(nn.Module):
         out = self.final_layer(out) 
 
         return out
-    
+
 class Autoencoder(nn.Module):
     def __init__(self):
         super(Autoencoder, self).__init__()
