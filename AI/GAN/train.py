@@ -15,8 +15,12 @@ class GAN():
     def __init__(self, args):
         self.args = args
       
-        self.data = LoadVertices()
-        self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=args.batch_size, shuffle=True)
+        if args.type == 'vertices':
+            self.data = LoadVertices()
+        else:
+            self.data = LoadFaces()
+
+        self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=args.batch_size, shuffle=False)
         print("Training Dataset : {} prepared.".format(len(self.data)))
 
         self.G = Generator().to(args.device)      
@@ -80,7 +84,7 @@ class GAN():
                       "[ Time ] ", "{:4.2f}s".format(time.time()-start_time))
 
             if epoch % 50 == 0:
-                torch.save({'G_state_dict': self.G.state_dict()}, '../TrainedModels/vertices.pt')
+                torch.save({'G_state_dict': self.G.state_dict()}, '../TrainedModels/' + args.type + '.pt')
                 print('Checkpoint is saved.')
 
         plt.figure(figsize=(10,5))
@@ -91,7 +95,7 @@ class GAN():
         plt.ylabel("Loss")
         plt.legend()
         plt.savefig("graph.png")
-        #plt.show()
+        plt.show()
 
 if __name__ == '__main__':
     args = Arguments().parser().parse_args()
@@ -99,6 +103,12 @@ if __name__ == '__main__':
     args.device = torch.device('cuda:'+ str(args.gpu) if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(args.device)
 
+    args.type = 'vertices'
     model = GAN(args)
     model.run()
+
+    args.type = 'faces'
+    model = GAN(args)
+    model.run()
+
     autoencoder.train()

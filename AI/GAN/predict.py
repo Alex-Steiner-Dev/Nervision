@@ -16,8 +16,6 @@ autoencoder_path = "../TrainedModels/autoencoder.pt"
 checkpoint_ae = torch.load(autoencoder_path)
 Autoencoder.load_state_dict(checkpoint_ae['autoencoder'])
 
-z = torch.from_numpy(text_to_vec(process_text(correct_prompt("old tractor"))).astype(np.float64)).reshape(1,512, 1).repeat(1, 1, 1).cuda().float()
-
 def create_mesh(vertices, faces):
     vertices = np.array(vertices)
     faces = np.array(faces)
@@ -32,7 +30,7 @@ def create_mesh(vertices, faces):
 
     return mesh
 
-def predict():
+def predict(z):
     with torch.no_grad():
         sample = Generator(z).cpu()
         points = sample.numpy()[0]
