@@ -101,7 +101,7 @@ class LoadAutoEncoder(data.Dataset):
         self.generated = []
 
         Generator = model.Generator().cuda()
-        
+
         vertices_path = "../TrainedModels/vertices.pt" 
         checkpoint = torch.load(vertices_path)
         Generator.load_state_dict(checkpoint['G_state_dict'])
@@ -124,7 +124,7 @@ class LoadAutoEncoder(data.Dataset):
                 else:
                     label = text_to_vec(process_text(correct_prompt(itObject['desc'].split('.')[0])))
 
-                z = torch.from_numpy(label).astype(np.float64).reshape(1,512, 1).repeat(1, 1, 1).cuda().float()
+                z = torch.from_numpy(label.astype(np.float64)).reshape(1,512, 1).repeat(13, 1, 1).cuda().float()
                 
                 with torch.no_grad():
                     sample = Generator(z).cpu()
@@ -144,10 +144,10 @@ class LoadAutoEncoder(data.Dataset):
         f.close()
   
     def __getitem__(self, idx):
-        target = torch.tensor(target.target[idx])
+        target = torch.tensor(self.target[idx])
         generated = torch.tensor(self.generated[idx])
 
         return generated, target
     
     def __len__(self):
-        return len(self.faces)
+        return len(self.target)

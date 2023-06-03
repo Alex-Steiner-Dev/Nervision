@@ -20,7 +20,7 @@ class GAN():
         else:
             self.data = LoadFaces()
 
-        self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=args.batch_size, shuffle=False)
+        self.dataLoader = torch.utils.data.DataLoader(self.data, batch_size=args.batch_size, shuffle=True)
         print("Training Dataset : {} prepared.".format(len(self.data)))
 
         self.G = Generator().to(args.device)      
@@ -95,7 +95,7 @@ class GAN():
         plt.ylabel("Loss")
         plt.legend()
         plt.savefig("graph.png")
-        plt.show()
+        #plt.show()
 
 if __name__ == '__main__':
     args = Arguments().parser().parse_args()
@@ -105,10 +105,10 @@ if __name__ == '__main__':
 
     args.type = 'vertices'
     model = GAN(args)
-    model.run()
+    #model.run()
 
     args.type = 'faces'
     model = GAN(args)
-    model.run()
+    #model.run()
 
     autoencoder.train()

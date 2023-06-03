@@ -45,7 +45,9 @@ def predict(z):
         simplified_mesh = simplified_mesh.simplify_vertex_clustering(.0005)
 
     faces = np.array(simplified_mesh.triangles)
- 
+    print(faces.shape)
     mesh = create_mesh(vertices, faces)
 
     o3d.visualization.draw_geometries([mesh])
+
+predict(torch.from_numpy(text_to_vec(process_text(correct_prompt("old tractor"))).astype(np.float64)).reshape(1,512, 1).repeat(13, 1, 1).cuda().float())

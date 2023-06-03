@@ -4,7 +4,7 @@ import torch.nn as nn
 class Generator(nn.Module):
     def __init__(self):
         super(Generator, self).__init__()
-        self.batch_size = 1
+        self.batch_size = 13
         self.main = nn.Sequential(
             nn.Conv1d(512, 512, 1, bias=False),
             nn.LeakyReLU(negative_slope=0.2),
