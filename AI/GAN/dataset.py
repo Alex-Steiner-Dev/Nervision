@@ -1,11 +1,11 @@
 import torch.utils.data as data
-from predict import *
 import json
 import open3d as o3d
 from text_to_vec import *
 import numpy as np
 import torch
 import logging
+import model
 
 logger = logging.getLogger("trimesh")
 logger.setLevel(logging.ERROR)
@@ -80,7 +80,7 @@ class LoadFaces(data.Dataset):
                 
                 faces = (np.array(expanded_array, dtype=np.float32) + np.random.normal(loc=0, scale=0.4, size=(4096,3))) * 10
                 faces = np.array(faces, dtype=np.float32)
-                
+
                 self.faces.append(faces)
                 self.text_embeddings.append(label)
 
@@ -99,6 +99,12 @@ class LoadAutoEncoder(data.Dataset):
     def __init__(self):
         self.target = []
         self.generated = []
+
+        Generator = model.Generator().cuda()
+        
+        vertices_path = "../TrainedModels/vertices.pt" 
+        checkpoint = torch.load(vertices_path)
+        Generator.load_state_dict(checkpoint['G_state_dict'])
 
         f = open("captions.json")
         self.data = json.load(f)
