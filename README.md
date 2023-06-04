@@ -7,7 +7,7 @@ Nervision is a Text to 3D Model AI developed by Alex Steiner for Acceleration La
 To develop this project, I utilized a research paper created by the University of Hong Kong and Stanford University, as well as MIT. Additionally, to generate the texture, I collaborated with the amazing tool PolyHive.
 
 ## Architecture
-![GAN](GAN.png)
+![GAN & AE](AI.png)
 
 ## Requirements
 
