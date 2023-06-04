@@ -29,13 +29,44 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'
 
 #################################################################################
-mesh = o3d.io.read_triangle_mesh("../AI/GAN/dataset/tractor.obj")
-simplified_mesh = mesh.simplify_quadric_decimation(4096)
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import json
+sentences = []
+ids = []
 
-if len(simplified_mesh.vertices) > 4096:
-    simplified_mesh = simplified_mesh.simplify_vertex_clustering(.0005)
+f = open("../AI/GAN/captions.json")
+data = json.load(f)
 
-faces = np.array(simplified_mesh.triangles)
+for i, itObject in enumerate(data):
+
+    if itObject['desc'].split('.')[0].find(".") != -1:
+        label = itObject['desc']
+    else:
+        label = itObject['desc'].split('.')[0]
+             
+    sentences.append(label)
+    ids.append(itObject['id'])
+
+f.close()
+
+def fake(target_sentence):
+    vectorizer = TfidfVectorizer()
+    tfidf_matrix = vectorizer.fit_transform(sentences + [target_sentence])
+    cosine_similarities = cosine_similarity(tfidf_matrix[:-1], tfidf_matrix[-1])
+
+    most_similar_index = cosine_similarities.argmax()
+
+    mesh = o3d.io.read_triangle_mesh("../AI/GAN/dataset/" + ids[most_similar_index] + '.obj')
+    simplified_mesh = mesh.simplify_quadric_decimation(4096)
+
+    if len(simplified_mesh.vertices) > 4096:
+        simplified_mesh = simplified_mesh.simplify_vertex_clustering(.01)
+
+    faces = np.array(simplified_mesh.triangles)
+    
+    print(np.array(simplified_mesh.vertices).shape)
+    return faces
 #################################################################################
 
 @app.route('/')
@@ -71,7 +102,8 @@ def generate(text):
 
     vertices = Autoencoder(torch.from_numpy(points).to('cuda')).cpu().detach().numpy()
     vertices = np.array(vertices, dtype=np.float32)
- 
+    faces = fake(text)
+
     mesh = create_mesh(vertices, faces)
 
     o3d.io.write_triangle_mesh("static/generations/" + name + "/model.obj", mesh)
@@ -96,8 +128,8 @@ def create_mesh(vertices, faces):
     mesh.vertices = o3d.utility.Vector3dVector(vertices)
     mesh.triangles = o3d.utility.Vector3iVector(faces)
 
-    mesh.compute_vertex_normals()
-    mesh.compute_triangle_normals()
+    mesh.remove_duplicated_vertices()
+    mesh.remove_duplicated_triangles()
 
     return mesh
 

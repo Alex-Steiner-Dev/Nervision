@@ -28,7 +28,7 @@ class LoadVertices(data.Dataset):
             simplified_mesh = mesh.simplify_quadric_decimation(4096)
 
             if len(simplified_mesh.vertices) > 4096:
-                simplified_mesh = simplified_mesh.simplify_vertex_clustering(.0005)
+                simplified_mesh = simplified_mesh.simplify_vertex_clustering(.01)
 
             if len(simplified_mesh.vertices) < 4096:
                 if itObject['desc'].split('.')[0].find(".") != -1:
@@ -72,7 +72,7 @@ class LoadFaces(data.Dataset):
             simplified_mesh = mesh.simplify_quadric_decimation(4096)
 
             if len(simplified_mesh.vertices) > 4096:
-                simplified_mesh = simplified_mesh.simplify_vertex_clustering(.0005)
+                simplified_mesh = simplified_mesh.simplify_vertex_clustering(.01)
 
             if len(simplified_mesh.vertices) < 4096:
                 if itObject['desc'].split('.')[0].find(".") != -1:
@@ -123,7 +123,7 @@ class LoadAutoEncoder(data.Dataset):
             simplified_mesh = mesh.simplify_quadric_decimation(4096)
 
             if len(simplified_mesh.vertices) > 4096:
-                simplified_mesh = simplified_mesh.simplify_vertex_clustering(.0005)
+                simplified_mesh = simplified_mesh.simplify_vertex_clustering(.01)
 
             if len(simplified_mesh.vertices) < 4096:
                 if itObject['desc'].split('.')[0].find(".") != -1:
