@@ -30,7 +30,7 @@ To run Nervision, the following requirements must be met:
 1. Clone the Nervision repository to your local machine.
 2. Install the required packages 
 3. Move into the WebSite folder `cd WebSite`
-4. Run the program using `node server.js`
+4. Run the program using `python server.py`
 5. Input a textual description to generate a 3D model.
 
 
